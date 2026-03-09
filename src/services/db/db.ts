@@ -140,9 +140,9 @@ async function runMigrations(database: Database): Promise<void> {
       migrateToV3Categories(database);
     }
 
-    // Migration: v2 → v3: Rename product_model_number → model_number, vendor_part_number → part_number
+    // Migration: v2 → v3: Rename item columns to generic equivalents
     if (currentVersion < 3) {
-      migrateToV3(database);
+      migrateToV3FieldRenames(database);
     }
 
     // Update schema version
@@ -342,7 +342,7 @@ function migrateToV3Categories(database: Database): void {
     );
   }
 
-  console.log(`Migrated to v2: seeded ${allCategories.length} categories`);
+  console.log(`Migrated to v3: seeded ${allCategories.length} categories`);
 }
 
 /**
@@ -350,7 +350,7 @@ function migrateToV3Categories(database: Database): void {
  * product_model_number → model_number
  * vendor_part_number → part_number
  */
-function migrateToV3(database: Database): void {
+function migrateToV3FieldRenames(database: Database): void {
   database.run('ALTER TABLE items RENAME COLUMN product_model_number TO model_number');
   database.run('ALTER TABLE items RENAME COLUMN vendor_part_number TO part_number');
   console.log('Migrated to v3: renamed product_model_number → model_number, vendor_part_number → part_number');
