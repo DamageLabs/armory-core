@@ -3,7 +3,8 @@ import { Item } from '../types/Item';
 import { DEFAULT_CATEGORIES } from '../types/Item';
 import { initializeDatabase, isDatabaseInitialized } from '../services/db/db';
 import { hasExistingLocalStorageData, migrateFromLocalStorage, verifyMigration } from '../services/db/migration';
-import { userRepository, itemRepository, categoryRepository } from '../services/db/repositories';
+import { userRepository, itemRepository, categoryRepository, inventoryTypeRepository } from '../services/db/repositories';
+import { PRESET_TYPES } from '../services/inventoryTypeService';
 
 const seedUsers: Omit<User, 'id'>[] = [
   {
@@ -34,567 +35,94 @@ const seedUsers: Omit<User, 'id'>[] = [
   },
 ];
 
+function makeElectronicsItem(
+  name: string,
+  description: string,
+  modelNumber: string,
+  partNumber: string,
+  vendorName: string,
+  quantity: number,
+  unitValue: number,
+  vendorUrl: string,
+  category: string,
+  location: string,
+  barcode: string,
+  reorderPoint: number
+): Omit<Item, 'id'> {
+  return {
+    name,
+    description,
+    quantity,
+    unitValue,
+    value: quantity * unitValue,
+    picture: null,
+    category,
+    location,
+    barcode,
+    reorderPoint,
+    inventoryTypeId: 1, // Electronics
+    customFields: { modelNumber, partNumber, vendorName, vendorUrl },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 const seedItems: Omit<Item, 'id'>[] = [
   // Arduino
-  {
-    name: 'Arduino Uno',
-    description: 'The Arduino Uno is a microcontroller board based on the ATmega328.',
-    modelNumber: 'R3',
-    partNumber: '50',
-    vendorName: 'Adafruit',
-    quantity: 8,
-    unitValue: 24.95,
-    value: 199.60,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/50',
-    category: 'Arduino',
-    location: 'H1LD1B1',
-    barcode: 'RIMS-0001',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Arduino Mega 2560',
-    description: 'The Arduino Mega 2560 is a microcontroller board based on the ATmega2560.',
-    modelNumber: 'R3',
-    partNumber: '191',
-    vendorName: 'Adafruit',
-    quantity: 1,
-    unitValue: 45.95,
-    value: 45.95,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/191',
-    category: 'Arduino',
-    location: 'H1LD1B3',
-    barcode: 'RIMS-0002',
-    reorderPoint: 2,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Arduino Nano',
-    description: 'Compact Arduino board with ATmega328P, ideal for breadboard projects.',
-    modelNumber: 'V3',
-    partNumber: '1501',
-    vendorName: 'SparkFun',
-    quantity: 15,
-    unitValue: 22.95,
-    value: 344.25,
-    picture: null,
-    vendorUrl: 'https://www.sparkfun.com/products/1501',
-    category: 'Arduino',
-    location: 'H1LD1B2',
-    barcode: 'RIMS-0003',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('Arduino Uno', 'The Arduino Uno is a microcontroller board based on the ATmega328.', 'R3', '50', 'Adafruit', 8, 24.95, 'https://www.adafruit.com/product/50', 'Arduino', 'H1LD1B1', 'RIMS-0001', 5),
+  makeElectronicsItem('Arduino Mega 2560', 'The Arduino Mega 2560 is a microcontroller board based on the ATmega2560.', 'R3', '191', 'Adafruit', 1, 45.95, 'https://www.adafruit.com/product/191', 'Arduino', 'H1LD1B3', 'RIMS-0002', 2),
+  makeElectronicsItem('Arduino Nano', 'Compact Arduino board with ATmega328P, ideal for breadboard projects.', 'V3', '1501', 'SparkFun', 15, 22.95, 'https://www.sparkfun.com/products/1501', 'Arduino', 'H1LD1B2', 'RIMS-0003', 5),
   // Raspberry Pi
-  {
-    name: 'Raspberry Pi 4 Model B',
-    description: 'Quad-core 64-bit ARM Cortex-A72 running at 1.5GHz with 4GB RAM.',
-    modelNumber: '4B-4GB',
-    partNumber: '4292',
-    vendorName: 'Adafruit',
-    quantity: 5,
-    unitValue: 55.00,
-    value: 275.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/4292',
-    category: 'Raspberry Pi',
-    location: 'H1LD2B1',
-    barcode: 'RIMS-0004',
-    reorderPoint: 3,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Raspberry Pi Zero 2 W',
-    description: 'Compact single-board computer with wireless connectivity.',
-    modelNumber: 'Zero2W',
-    partNumber: '5291',
-    vendorName: 'Adafruit',
-    quantity: 10,
-    unitValue: 15.00,
-    value: 150.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/5291',
-    category: 'Raspberry Pi',
-    location: 'H1LD2B2',
-    barcode: 'RIMS-0005',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('Raspberry Pi 4 Model B', 'Quad-core 64-bit ARM Cortex-A72 running at 1.5GHz with 4GB RAM.', '4B-4GB', '4292', 'Adafruit', 5, 55.00, 'https://www.adafruit.com/product/4292', 'Raspberry Pi', 'H1LD2B1', 'RIMS-0004', 3),
+  makeElectronicsItem('Raspberry Pi Zero 2 W', 'Compact single-board computer with wireless connectivity.', 'Zero2W', '5291', 'Adafruit', 10, 15.00, 'https://www.adafruit.com/product/5291', 'Raspberry Pi', 'H1LD2B2', 'RIMS-0005', 5),
   // Sensors
-  {
-    name: 'DHT22 Temperature & Humidity Sensor',
-    description: 'Digital temperature and humidity sensor with single-wire interface.',
-    modelNumber: 'DHT22',
-    partNumber: '385',
-    vendorName: 'Adafruit',
-    quantity: 25,
-    unitValue: 9.95,
-    value: 248.75,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/385',
-    category: 'Sensors',
-    location: 'H2LD1B1',
-    barcode: 'RIMS-0006',
-    reorderPoint: 10,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'HC-SR04 Ultrasonic Distance Sensor',
-    description: 'Ultrasonic ranging module with 2cm to 400cm range.',
-    modelNumber: 'HC-SR04',
-    partNumber: '3942',
-    vendorName: 'Adafruit',
-    quantity: 20,
-    unitValue: 3.95,
-    value: 79.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/3942',
-    category: 'Sensors',
-    location: 'H2LD1B2',
-    barcode: 'RIMS-0007',
-    reorderPoint: 10,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'MPU-6050 Accelerometer & Gyroscope',
-    description: '6-axis motion tracking device with I2C interface.',
-    modelNumber: 'MPU-6050',
-    partNumber: 'SEN-11028',
-    vendorName: 'SparkFun',
-    quantity: 12,
-    unitValue: 14.95,
-    value: 179.40,
-    picture: null,
-    vendorUrl: 'https://www.sparkfun.com/products/11028',
-    category: 'Sensors',
-    location: 'H2LD1B3',
-    barcode: 'RIMS-0008',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('DHT22 Temperature & Humidity Sensor', 'Digital temperature and humidity sensor with single-wire interface.', 'DHT22', '385', 'Adafruit', 25, 9.95, 'https://www.adafruit.com/product/385', 'Sensors', 'H2LD1B1', 'RIMS-0006', 10),
+  makeElectronicsItem('HC-SR04 Ultrasonic Distance Sensor', 'Ultrasonic ranging module with 2cm to 400cm range.', 'HC-SR04', '3942', 'Adafruit', 20, 3.95, 'https://www.adafruit.com/product/3942', 'Sensors', 'H2LD1B2', 'RIMS-0007', 10),
+  makeElectronicsItem('MPU-6050 Accelerometer & Gyroscope', '6-axis motion tracking device with I2C interface.', 'MPU-6050', 'SEN-11028', 'SparkFun', 12, 14.95, 'https://www.sparkfun.com/products/11028', 'Sensors', 'H2LD1B3', 'RIMS-0008', 5),
   // LCDs & Displays
-  {
-    name: '16x2 LCD Display with I2C',
-    description: 'Blue backlight 16x2 character LCD with I2C interface module.',
-    modelNumber: 'LCD1602-I2C',
-    partNumber: '181',
-    vendorName: 'Adafruit',
-    quantity: 18,
-    unitValue: 12.95,
-    value: 233.10,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/181',
-    category: 'LCDs & Displays',
-    location: 'H2LD2B1',
-    barcode: 'RIMS-0009',
-    reorderPoint: 8,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: '0.96" OLED Display 128x64',
-    description: 'Small monochrome OLED display with I2C interface.',
-    modelNumber: 'SSD1306',
-    partNumber: '326',
-    vendorName: 'Adafruit',
-    quantity: 30,
-    unitValue: 7.95,
-    value: 238.50,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/326',
-    category: 'LCDs & Displays',
-    location: 'H2LD2B2',
-    barcode: 'RIMS-0010',
-    reorderPoint: 15,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('16x2 LCD Display with I2C', 'Blue backlight 16x2 character LCD with I2C interface module.', 'LCD1602-I2C', '181', 'Adafruit', 18, 12.95, 'https://www.adafruit.com/product/181', 'LCDs & Displays', 'H2LD2B1', 'RIMS-0009', 8),
+  makeElectronicsItem('0.96" OLED Display 128x64', 'Small monochrome OLED display with I2C interface.', 'SSD1306', '326', 'Adafruit', 30, 7.95, 'https://www.adafruit.com/product/326', 'LCDs & Displays', 'H2LD2B2', 'RIMS-0010', 15),
   // LEDs
-  {
-    name: 'NeoPixel Ring 16 RGB LED',
-    description: 'Ring of 16 individually addressable RGB LEDs.',
-    modelNumber: 'WS2812B-16',
-    partNumber: '1463',
-    vendorName: 'Adafruit',
-    quantity: 8,
-    unitValue: 9.95,
-    value: 79.60,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/1463',
-    category: 'LEDs',
-    location: 'H2LD3B1',
-    barcode: 'RIMS-0011',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'LED Assortment Kit 5mm',
-    description: '100 piece LED kit with red, green, yellow, blue, and white LEDs.',
-    modelNumber: 'LED-5MM-KIT',
-    partNumber: 'COM-12062',
-    vendorName: 'SparkFun',
-    quantity: 5,
-    unitValue: 8.95,
-    value: 44.75,
-    picture: null,
-    vendorUrl: 'https://www.sparkfun.com/products/12062',
-    category: 'LEDs',
-    location: 'H2LD3B2',
-    barcode: 'RIMS-0012',
-    reorderPoint: 3,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('NeoPixel Ring 16 RGB LED', 'Ring of 16 individually addressable RGB LEDs.', 'WS2812B-16', '1463', 'Adafruit', 8, 9.95, 'https://www.adafruit.com/product/1463', 'LEDs', 'H2LD3B1', 'RIMS-0011', 5),
+  makeElectronicsItem('LED Assortment Kit 5mm', '100 piece LED kit with red, green, yellow, blue, and white LEDs.', 'LED-5MM-KIT', 'COM-12062', 'SparkFun', 5, 8.95, 'https://www.sparkfun.com/products/12062', 'LEDs', 'H2LD3B2', 'RIMS-0012', 3),
   // Components & Parts
-  {
-    name: 'Resistor Kit 1/4W',
-    description: '500 piece resistor assortment from 10 ohm to 1M ohm.',
-    modelNumber: 'RES-KIT-500',
-    partNumber: 'COM-10969',
-    vendorName: 'SparkFun',
-    quantity: 3,
-    unitValue: 12.95,
-    value: 38.85,
-    picture: null,
-    vendorUrl: 'https://www.sparkfun.com/products/10969',
-    category: 'Components & Parts',
-    location: 'H3LD1B1',
-    barcode: 'RIMS-0013',
-    reorderPoint: 2,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Ceramic Capacitor Kit',
-    description: '300 piece ceramic capacitor assortment, various values.',
-    modelNumber: 'CAP-KIT-300',
-    partNumber: 'COM-13698',
-    vendorName: 'SparkFun',
-    quantity: 4,
-    unitValue: 9.95,
-    value: 39.80,
-    picture: null,
-    vendorUrl: 'https://www.sparkfun.com/products/13698',
-    category: 'Components & Parts',
-    location: 'H3LD1B2',
-    barcode: 'RIMS-0014',
-    reorderPoint: 2,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Electrolytic Capacitor Kit',
-    description: '100 piece electrolytic capacitor assortment, 1uF to 1000uF.',
-    modelNumber: 'ECAP-KIT-100',
-    partNumber: '2975',
-    vendorName: 'Adafruit',
-    quantity: 6,
-    unitValue: 7.95,
-    value: 47.70,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/2975',
-    category: 'Components & Parts',
-    location: 'H3LD1B3',
-    barcode: 'RIMS-0015',
-    reorderPoint: 3,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('Resistor Kit 1/4W', '500 piece resistor assortment from 10 ohm to 1M ohm.', 'RES-KIT-500', 'COM-10969', 'SparkFun', 3, 12.95, 'https://www.sparkfun.com/products/10969', 'Components & Parts', 'H3LD1B1', 'RIMS-0013', 2),
+  makeElectronicsItem('Ceramic Capacitor Kit', '300 piece ceramic capacitor assortment, various values.', 'CAP-KIT-300', 'COM-13698', 'SparkFun', 4, 9.95, 'https://www.sparkfun.com/products/13698', 'Components & Parts', 'H3LD1B2', 'RIMS-0014', 2),
+  makeElectronicsItem('Electrolytic Capacitor Kit', '100 piece electrolytic capacitor assortment, 1uF to 1000uF.', 'ECAP-KIT-100', '2975', 'Adafruit', 6, 7.95, 'https://www.adafruit.com/product/2975', 'Components & Parts', 'H3LD1B3', 'RIMS-0015', 3),
   // Power
-  {
-    name: '5V 2.5A Power Supply',
-    description: 'USB-C power supply for Raspberry Pi 4, 5V 2.5A output.',
-    modelNumber: 'PS-5V-2.5A',
-    partNumber: '4298',
-    vendorName: 'Adafruit',
-    quantity: 10,
-    unitValue: 8.95,
-    value: 89.50,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/4298',
-    category: 'Power',
-    location: 'H3LD2B1',
-    barcode: 'RIMS-0016',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: '18650 Li-Ion Battery',
-    description: 'Rechargeable 3.7V 2600mAh lithium-ion battery.',
-    modelNumber: '18650-2600',
-    partNumber: '1781',
-    vendorName: 'Adafruit',
-    quantity: 20,
-    unitValue: 9.95,
-    value: 199.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/1781',
-    category: 'Power',
-    location: 'H3LD2B2',
-    barcode: 'RIMS-0017',
-    reorderPoint: 10,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'LM7805 Voltage Regulator',
-    description: '5V 1A linear voltage regulator IC.',
-    modelNumber: 'LM7805',
-    partNumber: '2164',
-    vendorName: 'Adafruit',
-    quantity: 50,
-    unitValue: 0.75,
-    value: 37.50,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/2164',
-    category: 'Power',
-    location: 'H3LD2B3',
-    barcode: 'RIMS-0018',
-    reorderPoint: 20,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('5V 2.5A Power Supply', 'USB-C power supply for Raspberry Pi 4, 5V 2.5A output.', 'PS-5V-2.5A', '4298', 'Adafruit', 10, 8.95, 'https://www.adafruit.com/product/4298', 'Power', 'H3LD2B1', 'RIMS-0016', 5),
+  makeElectronicsItem('18650 Li-Ion Battery', 'Rechargeable 3.7V 2600mAh lithium-ion battery.', '18650-2600', '1781', 'Adafruit', 20, 9.95, 'https://www.adafruit.com/product/1781', 'Power', 'H3LD2B2', 'RIMS-0017', 10),
+  makeElectronicsItem('LM7805 Voltage Regulator', '5V 1A linear voltage regulator IC.', 'LM7805', '2164', 'Adafruit', 50, 0.75, 'https://www.adafruit.com/product/2164', 'Power', 'H3LD2B3', 'RIMS-0018', 20),
   // Prototyping
-  {
-    name: 'Full-Size Breadboard',
-    description: '830 tie-point solderless breadboard.',
-    modelNumber: 'BB-830',
-    partNumber: '239',
-    vendorName: 'Adafruit',
-    quantity: 12,
-    unitValue: 5.95,
-    value: 71.40,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/239',
-    category: 'Prototyping',
-    location: 'H3LD3B1',
-    barcode: 'RIMS-0019',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Jumper Wire Kit',
-    description: '65 piece jumper wire kit for breadboarding.',
-    modelNumber: 'JW-65',
-    partNumber: '153',
-    vendorName: 'Adafruit',
-    quantity: 8,
-    unitValue: 6.95,
-    value: 55.60,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/153',
-    category: 'Prototyping',
-    location: 'H3LD3B2',
-    barcode: 'RIMS-0020',
-    reorderPoint: 4,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Perfboard 5x7cm',
-    description: 'Double-sided prototype PCB board, 5x7cm.',
-    modelNumber: 'PB-5x7',
-    partNumber: '2670',
-    vendorName: 'Adafruit',
-    quantity: 25,
-    unitValue: 1.50,
-    value: 37.50,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/2670',
-    category: 'Prototyping',
-    location: 'H3LD3B3',
-    barcode: 'RIMS-0021',
-    reorderPoint: 10,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('Full-Size Breadboard', '830 tie-point solderless breadboard.', 'BB-830', '239', 'Adafruit', 12, 5.95, 'https://www.adafruit.com/product/239', 'Prototyping', 'H3LD3B1', 'RIMS-0019', 5),
+  makeElectronicsItem('Jumper Wire Kit', '65 piece jumper wire kit for breadboarding.', 'JW-65', '153', 'Adafruit', 8, 6.95, 'https://www.adafruit.com/product/153', 'Prototyping', 'H3LD3B2', 'RIMS-0020', 4),
+  makeElectronicsItem('Perfboard 5x7cm', 'Double-sided prototype PCB board, 5x7cm.', 'PB-5x7', '2670', 'Adafruit', 25, 1.50, 'https://www.adafruit.com/product/2670', 'Prototyping', 'H3LD3B3', 'RIMS-0021', 10),
   // Wireless
-  {
-    name: 'ESP32 Development Board',
-    description: 'WiFi and Bluetooth enabled microcontroller development board.',
-    modelNumber: 'ESP32-DEVKIT',
-    partNumber: '3405',
-    vendorName: 'Adafruit',
-    quantity: 10,
-    unitValue: 14.95,
-    value: 149.50,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/3405',
-    category: 'Wireless',
-    location: 'H4LD1B1',
-    barcode: 'RIMS-0022',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'nRF24L01+ Wireless Module',
-    description: '2.4GHz wireless transceiver module.',
-    modelNumber: 'nRF24L01+',
-    partNumber: 'WRL-00691',
-    vendorName: 'SparkFun',
-    quantity: 15,
-    unitValue: 6.95,
-    value: 104.25,
-    picture: null,
-    vendorUrl: 'https://www.sparkfun.com/products/691',
-    category: 'Wireless',
-    location: 'H4LD1B2',
-    barcode: 'RIMS-0023',
-    reorderPoint: 8,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('ESP32 Development Board', 'WiFi and Bluetooth enabled microcontroller development board.', 'ESP32-DEVKIT', '3405', 'Adafruit', 10, 14.95, 'https://www.adafruit.com/product/3405', 'Wireless', 'H4LD1B1', 'RIMS-0022', 5),
+  makeElectronicsItem('nRF24L01+ Wireless Module', '2.4GHz wireless transceiver module.', 'nRF24L01+', 'WRL-00691', 'SparkFun', 15, 6.95, 'https://www.sparkfun.com/products/691', 'Wireless', 'H4LD1B2', 'RIMS-0023', 8),
   // Robotics
-  {
-    name: 'Servo Motor SG90',
-    description: 'Micro servo motor, 180 degree rotation, 9g weight.',
-    modelNumber: 'SG90',
-    partNumber: '169',
-    vendorName: 'Adafruit',
-    quantity: 20,
-    unitValue: 5.95,
-    value: 119.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/169',
-    category: 'Robotics',
-    location: 'H4LD2B1',
-    barcode: 'RIMS-0024',
-    reorderPoint: 10,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'DC Motor with Gearbox',
-    description: '6V DC motor with 48:1 gearbox, 200 RPM.',
-    modelNumber: 'DCM-48',
-    partNumber: '3777',
-    vendorName: 'Adafruit',
-    quantity: 8,
-    unitValue: 3.50,
-    value: 28.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/3777',
-    category: 'Robotics',
-    location: 'H4LD2B2',
-    barcode: 'RIMS-0025',
-    reorderPoint: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'L298N Motor Driver',
-    description: 'Dual H-bridge motor driver module for DC motors.',
-    modelNumber: 'L298N',
-    partNumber: 'ROB-14450',
-    vendorName: 'SparkFun',
-    quantity: 6,
-    unitValue: 12.95,
-    value: 77.70,
-    picture: null,
-    vendorUrl: 'https://www.sparkfun.com/products/14450',
-    category: 'Robotics',
-    location: 'H4LD2B3',
-    barcode: 'RIMS-0026',
-    reorderPoint: 3,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('Servo Motor SG90', 'Micro servo motor, 180 degree rotation, 9g weight.', 'SG90', '169', 'Adafruit', 20, 5.95, 'https://www.adafruit.com/product/169', 'Robotics', 'H4LD2B1', 'RIMS-0024', 10),
+  makeElectronicsItem('DC Motor with Gearbox', '6V DC motor with 48:1 gearbox, 200 RPM.', 'DCM-48', '3777', 'Adafruit', 8, 3.50, 'https://www.adafruit.com/product/3777', 'Robotics', 'H4LD2B2', 'RIMS-0025', 5),
+  makeElectronicsItem('L298N Motor Driver', 'Dual H-bridge motor driver module for DC motors.', 'L298N', 'ROB-14450', 'SparkFun', 6, 12.95, 'https://www.sparkfun.com/products/14450', 'Robotics', 'H4LD2B3', 'RIMS-0026', 3),
   // Tools
-  {
-    name: 'Soldering Iron 60W',
-    description: 'Temperature adjustable soldering iron with stand.',
-    modelNumber: 'SI-60W',
-    partNumber: '180',
-    vendorName: 'Adafruit',
-    quantity: 3,
-    unitValue: 22.00,
-    value: 66.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/180',
-    category: 'Tools',
-    location: 'H5LD1B1',
-    barcode: 'RIMS-0027',
-    reorderPoint: 2,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Digital Multimeter',
-    description: 'Auto-ranging digital multimeter with LCD display.',
-    modelNumber: 'DMM-AR',
-    partNumber: '2034',
-    vendorName: 'Adafruit',
-    quantity: 4,
-    unitValue: 17.50,
-    value: 70.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/2034',
-    category: 'Tools',
-    location: 'H5LD1B2',
-    barcode: 'RIMS-0028',
-    reorderPoint: 2,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('Soldering Iron 60W', 'Temperature adjustable soldering iron with stand.', 'SI-60W', '180', 'Adafruit', 3, 22.00, 'https://www.adafruit.com/product/180', 'Tools', 'H5LD1B1', 'RIMS-0027', 2),
+  makeElectronicsItem('Digital Multimeter', 'Auto-ranging digital multimeter with LCD display.', 'DMM-AR', '2034', 'Adafruit', 4, 17.50, 'https://www.adafruit.com/product/2034', 'Tools', 'H5LD1B2', 'RIMS-0028', 2),
   // Cables
-  {
-    name: 'USB-C Cable 1m',
-    description: 'USB-C to USB-A cable, 1 meter length.',
-    modelNumber: 'USB-C-1M',
-    partNumber: '4474',
-    vendorName: 'Adafruit',
-    quantity: 15,
-    unitValue: 4.95,
-    value: 74.25,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/4474',
-    category: 'Cables',
-    location: 'H5LD2B1',
-    barcode: 'RIMS-0029',
-    reorderPoint: 8,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    name: 'Micro USB Cable 1m',
-    description: 'Micro USB to USB-A cable, 1 meter length.',
-    modelNumber: 'MUSB-1M',
-    partNumber: '592',
-    vendorName: 'Adafruit',
-    quantity: 20,
-    unitValue: 2.95,
-    value: 59.00,
-    picture: null,
-    vendorUrl: 'https://www.adafruit.com/product/592',
-    category: 'Cables',
-    location: 'H5LD2B2',
-    barcode: 'RIMS-0030',
-    reorderPoint: 10,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+  makeElectronicsItem('USB-C Cable 1m', 'USB-C to USB-A cable, 1 meter length.', 'USB-C-1M', '4474', 'Adafruit', 15, 4.95, 'https://www.adafruit.com/product/4474', 'Cables', 'H5LD2B1', 'RIMS-0029', 8),
+  makeElectronicsItem('Micro USB Cable 1m', 'Micro USB to USB-A cable, 1 meter length.', 'MUSB-1M', '592', 'Adafruit', 20, 2.95, 'https://www.adafruit.com/product/592', 'Cables', 'H5LD2B2', 'RIMS-0030', 10),
 ];
+
+// Category presets per inventory type
+const CATEGORY_PRESETS: Record<string, string[]> = {
+  Electronics: DEFAULT_CATEGORIES as unknown as string[],
+  Firearms: ['Handguns', 'Rifles', 'Shotguns', 'Accessories', 'Optics', 'Holsters & Cases'],
+  Ammunition: ['Rimfire', 'Centerfire Pistol', 'Centerfire Rifle', 'Shotshell', 'Specialty'],
+};
 
 /**
  * Initialize the database and seed data if needed
- * This is now an async function that must be awaited
  */
 export async function initializeData(): Promise<void> {
-  // Initialize the SQLite database
   await initializeDatabase();
 
   // Check if we need to migrate from localStorage
@@ -602,8 +130,6 @@ export async function initializeData(): Promise<void> {
     console.log('Detected existing localStorage data, migrating to SQLite...');
     const result = migrateFromLocalStorage();
     console.log('Migration result:', result);
-
-    // Verify migration
     const verification = verifyMigration();
     console.log('Migration verification:', verification);
     return;
@@ -613,11 +139,16 @@ export async function initializeData(): Promise<void> {
   const existingUsers = userRepository.count();
   if (existingUsers > 0) {
     console.log('Database already initialized with', existingUsers, 'users');
+    // Ensure inventory types exist (for upgraded databases)
+    seedInventoryTypes();
     return;
   }
 
   // Seed fresh data
   console.log('Seeding fresh database...');
+
+  // Seed inventory types first
+  seedInventoryTypes();
 
   // Seed users
   for (const userData of seedUsers) {
@@ -629,22 +160,44 @@ export async function initializeData(): Promise<void> {
     itemRepository.create(itemData);
   }
 
-  // Seed categories
+  // Seed categories with type associations
   const existingCategories = categoryRepository.count();
   if (existingCategories === 0) {
+    const types = inventoryTypeRepository.getAll();
     const now = new Date().toISOString();
-    DEFAULT_CATEGORIES.forEach((name, index) => {
-      categoryRepository.create({
-        name,
-        sortOrder: index,
-        createdAt: now,
-        updatedAt: now,
+    for (const type of types) {
+      const cats = CATEGORY_PRESETS[type.name] || [];
+      cats.forEach((name, index) => {
+        categoryRepository.create({
+          name,
+          sortOrder: index,
+          inventoryTypeId: type.id,
+          createdAt: now,
+          updatedAt: now,
+        });
       });
-    });
-    console.log(`Seeded ${DEFAULT_CATEGORIES.length} categories`);
+    }
+    console.log('Seeded categories for all inventory types');
   }
 
   console.log('Database seeded successfully');
+}
+
+function seedInventoryTypes(): void {
+  const existingTypes = inventoryTypeRepository.count();
+  if (existingTypes > 0) return;
+
+  const now = new Date().toISOString();
+  for (const preset of PRESET_TYPES) {
+    inventoryTypeRepository.create({
+      name: preset.name,
+      icon: preset.icon,
+      schema: preset.schema,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+  console.log(`Seeded ${PRESET_TYPES.length} inventory types`);
 }
 
 export { seedUsers, seedItems };

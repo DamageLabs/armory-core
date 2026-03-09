@@ -145,6 +145,11 @@ async function runMigrations(database: Database): Promise<void> {
       migrateToV3FieldRenames(database);
     }
 
+    // Migration: v3 → v4: Add inventory types
+    if (currentVersion < 4) {
+      migrateToV4InventoryTypes(database);
+    }
+
     // Update schema version
     database.run(
       'INSERT OR REPLACE INTO app_metadata (key, value) VALUES (?, ?)',
@@ -354,6 +359,83 @@ function migrateToV3FieldRenames(database: Database): void {
   database.run('ALTER TABLE items RENAME COLUMN product_model_number TO model_number');
   database.run('ALTER TABLE items RENAME COLUMN vendor_part_number TO part_number');
   console.log('Migrated to v3: renamed product_model_number → model_number, vendor_part_number → part_number');
+}
+
+/**
+ * Migrate to schema v4: Add inventory types system.
+ * Creates inventory_types table, adds inventory_type_id and custom_fields to items,
+ * seeds Electronics type, and migrates existing items.
+ */
+function migrateToV4InventoryTypes(database: Database): void {
+  // Add columns to items table
+  try {
+    database.run('ALTER TABLE items ADD COLUMN inventory_type_id INTEGER NOT NULL DEFAULT 1');
+  } catch { /* Column may already exist */ }
+  try {
+    database.run("ALTER TABLE items ADD COLUMN custom_fields TEXT NOT NULL DEFAULT '{}'");
+  } catch { /* Column may already exist */ }
+
+  // Add inventory_type_id to categories
+  try {
+    database.run('ALTER TABLE categories ADD COLUMN inventory_type_id INTEGER NOT NULL DEFAULT 1');
+  } catch { /* Column may already exist */ }
+
+  // Remove old unique constraint and add new one (SQLite limitation: can't alter constraints)
+  // The new schema's UNIQUE(name, inventory_type_id) will apply on fresh DBs.
+  // For migration, we just ensure the column exists.
+
+  // Seed the Electronics inventory type (id=1) if not present
+  const existing = database.exec("SELECT COUNT(*) as count FROM inventory_types WHERE id = 1");
+  const count = existing.length > 0 ? existing[0].values[0][0] as number : 0;
+  if (count === 0) {
+    const now = new Date().toISOString();
+    const electronicsSchema = JSON.stringify([
+      { key: 'modelNumber', label: 'Model Number', type: 'text', required: false, placeholder: 'e.g., R3, V3' },
+      { key: 'partNumber', label: 'Part Number', type: 'text', required: false, placeholder: 'e.g., 50, 1501' },
+      { key: 'vendorName', label: 'Vendor Name', type: 'text', required: false, placeholder: 'e.g., Adafruit, SparkFun' },
+      { key: 'vendorUrl', label: 'Vendor URL', type: 'text', required: false, placeholder: 'https://...' },
+    ]);
+    database.run(
+      "INSERT INTO inventory_types (id, name, icon, schema, created_at, updated_at) VALUES (1, 'Electronics', 'FaMicrochip', ?, ?, ?)",
+      [electronicsSchema, now, now]
+    );
+  }
+
+  // Migrate existing items: move model_number, part_number, vendor_name, vendor_url into custom_fields
+  const itemRows = database.exec('SELECT id, model_number, part_number, vendor_name, vendor_url FROM items');
+  if (itemRows.length > 0) {
+    for (const row of itemRows[0].values) {
+      const [id, modelNumber, partNumber, vendorName, vendorUrl] = row;
+      const customFields = JSON.stringify({
+        modelNumber: modelNumber || '',
+        partNumber: partNumber || '',
+        vendorName: vendorName || '',
+        vendorUrl: vendorUrl || '',
+      });
+      database.run(
+        'UPDATE items SET custom_fields = ?, inventory_type_id = 1 WHERE id = ?',
+        [customFields, id]
+      );
+    }
+  }
+
+  // Drop old columns (SQLite doesn't support DROP COLUMN in older versions,
+  // but sql.js supports it). Try it, and if it fails, leave them.
+  for (const col of ['model_number', 'part_number', 'vendor_name', 'vendor_url']) {
+    try {
+      database.run(`ALTER TABLE items DROP COLUMN ${col}`);
+    } catch {
+      // Older SQLite may not support DROP COLUMN — columns remain but are unused
+    }
+  }
+
+  // Create indexes
+  try {
+    database.run('CREATE INDEX IF NOT EXISTS idx_items_type_id ON items(inventory_type_id)');
+    database.run('CREATE INDEX IF NOT EXISTS idx_categories_type_id ON categories(inventory_type_id)');
+  } catch { /* Indexes may already exist */ }
+
+  console.log('Migrated to v4: added inventory types system');
 }
 
 /**

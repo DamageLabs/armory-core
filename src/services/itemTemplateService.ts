@@ -41,19 +41,18 @@ export function createTemplateFromItem(
   name: string,
   item: {
     category: string;
-    vendorName?: string;
-    vendorUrl?: string;
     location?: string;
     reorderPoint?: number;
     description?: string;
+    customFields?: Record<string, unknown>;
   }
 ): ItemTemplate {
   return createTemplate({
     name,
     category: item.category,
     defaultFields: {
-      vendorName: item.vendorName || '',
-      vendorUrl: item.vendorUrl || '',
+      vendorName: (item.customFields?.vendorName as string) || '',
+      vendorUrl: (item.customFields?.vendorUrl as string) || '',
       location: item.location || '',
       reorderPoint: item.reorderPoint || 0,
       description: item.description || '',

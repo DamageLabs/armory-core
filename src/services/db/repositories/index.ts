@@ -6,3 +6,4 @@ export { bomRepository, BOMRepository } from './BOMRepository';
 export { itemTemplateRepository, ItemTemplateRepository } from './ItemTemplateRepository';
 export { vendorPriceCacheRepository, VendorPriceCacheRepository } from './VendorPriceCacheRepository';
 export { categoryRepository, CategoryRepository } from './CategoryRepository';
+export { inventoryTypeRepository, InventoryTypeRepository } from './InventoryTypeRepository';

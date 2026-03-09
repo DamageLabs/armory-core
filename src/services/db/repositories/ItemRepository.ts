@@ -5,6 +5,17 @@ import { mapRowsToEntities } from '../mapper';
 
 export class ItemRepository extends BaseRepository<Item> {
   protected tableName = 'items';
+  protected jsonFields = ['customFields'];
+
+  /**
+   * Find items by inventory type
+   */
+  findByType(inventoryTypeId: number): Item[] {
+    return this.query(
+      `SELECT * FROM ${this.tableName} WHERE inventory_type_id = ?`,
+      [inventoryTypeId]
+    );
+  }
 
   /**
    * Find items by category
@@ -14,7 +25,7 @@ export class ItemRepository extends BaseRepository<Item> {
       `SELECT * FROM ${this.tableName} WHERE category = ?`,
       [category]
     );
-    return mapRowsToEntities<Item>(rows);
+    return mapRowsToEntities<Item>(rows, this.jsonFields);
   }
 
   /**

@@ -1,10 +1,17 @@
-import { ItemFormData } from './Item';
+export interface ItemTemplateDefaultFields {
+  vendorName?: string;
+  vendorUrl?: string;
+  location?: string;
+  reorderPoint?: number;
+  description?: string;
+  [key: string]: unknown;
+}
 
 export interface ItemTemplate {
   id: number;
   name: string;
   category: string;
-  defaultFields: Partial<Omit<ItemFormData, 'picture'>>;
+  defaultFields: ItemTemplateDefaultFields;
   createdAt: string;
   updatedAt: string;
 }

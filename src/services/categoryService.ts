@@ -9,6 +9,20 @@ export function getAllCategories(): Category[] {
 }
 
 /**
+ * Get categories for a specific inventory type
+ */
+export function getCategoriesByType(inventoryTypeId: number): Category[] {
+  return categoryRepository.findByType(inventoryTypeId);
+}
+
+/**
+ * Get category names for a specific inventory type
+ */
+export function getCategoryNamesByType(inventoryTypeId: number): string[] {
+  return categoryRepository.findByType(inventoryTypeId).map((c) => c.name);
+}
+
+/**
  * Get all category names sorted by sort_order
  */
 export function getCategoryNames(): string[] {
@@ -30,8 +44,8 @@ export function createCategory(data: CategoryFormData): Category {
     throw new Error('Category name is required.');
   }
 
-  if (categoryRepository.nameExists(data.name)) {
-    throw new Error(`Category "${data.name}" already exists.`);
+  if (categoryRepository.nameExists(data.name, undefined, data.inventoryTypeId)) {
+    throw new Error(`Category "${data.name}" already exists for this inventory type.`);
   }
 
   const now = new Date().toISOString();
@@ -40,6 +54,7 @@ export function createCategory(data: CategoryFormData): Category {
   return categoryRepository.create({
     name: data.name.trim(),
     sortOrder,
+    inventoryTypeId: data.inventoryTypeId || 1,
     createdAt: now,
     updatedAt: now,
   });

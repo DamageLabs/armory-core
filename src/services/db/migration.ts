@@ -99,31 +99,38 @@ export function migrateFromLocalStorage(): {
     }
   }
 
-  // Migrate items
-  const items = getFromStorage<Item[]>(STORAGE_KEYS.ITEMS);
+  // Migrate items (handle both old flat format and new customFields format)
+  const items = getFromStorage<Record<string, unknown>[]>(STORAGE_KEYS.ITEMS);
   if (items && items.length > 0) {
     for (const item of items) {
       try {
         const db = getDatabaseOrThrow();
+        // Build customFields from old flat fields if not present
+        const customFields = item.customFields
+          ? JSON.stringify(item.customFields)
+          : JSON.stringify({
+              modelNumber: item.modelNumber || '',
+              partNumber: item.partNumber || item.vendorPartNumber || '',
+              vendorName: item.vendorName || '',
+              vendorUrl: item.vendorUrl || '',
+            });
         db.run(
-          `INSERT INTO items (id, name, description, model_number, part_number, vendor_name, quantity, unit_value, value, picture, vendor_url, category, location, barcode, reorder_point, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO items (id, name, description, quantity, unit_value, value, picture, category, location, barcode, reorder_point, inventory_type_id, custom_fields, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             item.id,
             item.name,
             item.description,
-            item.modelNumber,
-            item.partNumber,
-            item.vendorName,
             item.quantity,
             item.unitValue,
             item.value,
             item.picture,
-            item.vendorUrl,
             item.category,
             item.location,
             item.barcode,
             item.reorderPoint,
+            (item.inventoryTypeId as number) || 1,
+            customFields,
             item.createdAt,
             item.updatedAt,
           ]
