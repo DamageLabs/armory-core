@@ -2,18 +2,16 @@ export interface Item {
   id: number;
   name: string;
   description: string;
-  modelNumber: string;
-  partNumber: string;
-  vendorName: string;
   quantity: number;
   unitValue: number;
   value: number;
   picture: string | null;
-  vendorUrl: string;
   category: string;
   location: string;
   barcode: string;
   reorderPoint: number;
+  inventoryTypeId: number;
+  customFields: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

@@ -13,6 +13,16 @@ export class CategoryRepository extends BaseRepository<Category> {
   }
 
   /**
+   * Get categories for a specific inventory type, sorted
+   */
+  findByType(inventoryTypeId: number): Category[] {
+    return this.query(
+      `SELECT * FROM ${this.tableName} WHERE inventory_type_id = ? ORDER BY sort_order ASC, name ASC`,
+      [inventoryTypeId]
+    );
+  }
+
+  /**
    * Find a category by name (case-insensitive)
    */
   findByName(name: string): Category | null {
@@ -23,13 +33,24 @@ export class CategoryRepository extends BaseRepository<Category> {
   }
 
   /**
-   * Check if a category name already exists (optionally excluding a specific ID)
+   * Check if a category name already exists within a type (optionally excluding a specific ID)
    */
-  nameExists(name: string, excludeId?: number): boolean {
-    const sql = excludeId
-      ? `SELECT COUNT(*) as count FROM ${this.tableName} WHERE LOWER(name) = LOWER(?) AND id != ?`
-      : `SELECT COUNT(*) as count FROM ${this.tableName} WHERE LOWER(name) = LOWER(?)`;
-    const params = excludeId ? [name, excludeId] : [name];
+  nameExists(name: string, excludeId?: number, inventoryTypeId?: number): boolean {
+    let sql: string;
+    let params: unknown[];
+    if (excludeId && inventoryTypeId) {
+      sql = `SELECT COUNT(*) as count FROM ${this.tableName} WHERE LOWER(name) = LOWER(?) AND id != ? AND inventory_type_id = ?`;
+      params = [name, excludeId, inventoryTypeId];
+    } else if (excludeId) {
+      sql = `SELECT COUNT(*) as count FROM ${this.tableName} WHERE LOWER(name) = LOWER(?) AND id != ?`;
+      params = [name, excludeId];
+    } else if (inventoryTypeId) {
+      sql = `SELECT COUNT(*) as count FROM ${this.tableName} WHERE LOWER(name) = LOWER(?) AND inventory_type_id = ?`;
+      params = [name, inventoryTypeId];
+    } else {
+      sql = `SELECT COUNT(*) as count FROM ${this.tableName} WHERE LOWER(name) = LOWER(?)`;
+      params = [name];
+    }
     const rows = execQuery<{ count: number }>(sql, params);
     return rows.length > 0 && rows[0].count > 0;
   }

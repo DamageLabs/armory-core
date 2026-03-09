@@ -1,6 +1,6 @@
 // SQL Schema definitions for RIMS database
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export const CREATE_TABLES_SQL = `
 -- App metadata for tracking initialization and schema version
@@ -25,23 +25,31 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TEXT NOT NULL
 );
 
+-- Inventory types table
+CREATE TABLE IF NOT EXISTS inventory_types (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  icon TEXT NOT NULL DEFAULT '',
+  schema TEXT NOT NULL DEFAULT '[]',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
 -- Items table
 CREATE TABLE IF NOT EXISTS items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
-  model_number TEXT NOT NULL DEFAULT '',
-  part_number TEXT NOT NULL DEFAULT '',
-  vendor_name TEXT NOT NULL DEFAULT '',
   quantity INTEGER NOT NULL DEFAULT 0,
   unit_value REAL NOT NULL DEFAULT 0,
   value REAL NOT NULL DEFAULT 0,
   picture TEXT,
-  vendor_url TEXT NOT NULL DEFAULT '',
   category TEXT NOT NULL DEFAULT '',
   location TEXT NOT NULL DEFAULT '',
   barcode TEXT NOT NULL DEFAULT '',
   reorder_point INTEGER NOT NULL DEFAULT 0,
+  inventory_type_id INTEGER NOT NULL DEFAULT 1,
+  custom_fields TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -110,16 +118,20 @@ CREATE TABLE IF NOT EXISTS vendor_price_cache (
 -- Categories table
 CREATE TABLE IF NOT EXISTS categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
+  inventory_type_id INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  UNIQUE(name, inventory_type_id)
 );
 
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_categories_sort_order ON categories(sort_order);
+CREATE INDEX IF NOT EXISTS idx_categories_type_id ON categories(inventory_type_id);
 CREATE INDEX IF NOT EXISTS idx_items_category ON items(category);
 CREATE INDEX IF NOT EXISTS idx_items_barcode ON items(barcode);
+CREATE INDEX IF NOT EXISTS idx_items_type_id ON items(inventory_type_id);
 CREATE INDEX IF NOT EXISTS idx_stock_history_item_id ON stock_history(item_id);
 CREATE INDEX IF NOT EXISTS idx_stock_history_timestamp ON stock_history(timestamp);
 CREATE INDEX IF NOT EXISTS idx_cost_history_item_id ON cost_history(item_id);
@@ -135,6 +147,7 @@ DROP TABLE IF EXISTS item_templates;
 DROP TABLE IF EXISTS cost_history;
 DROP TABLE IF EXISTS stock_history;
 DROP TABLE IF EXISTS items;
+DROP TABLE IF EXISTS inventory_types;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS app_metadata;
 `;
