@@ -5,13 +5,12 @@ describe('ItemTemplate types', () => {
   describe('ItemTemplateDefaultFields interface', () => {
     it('accepts known fields', () => {
       const fields: ItemTemplateDefaultFields = {
-        vendorName: 'Adafruit',
-        vendorUrl: 'https://adafruit.com',
+        manufacturer: 'Brownells',
         location: 'Shelf A',
         reorderPoint: 5,
         description: 'Default desc',
       };
-      expect(fields.vendorName).toBe('Adafruit');
+      expect(fields.manufacturer).toBe('Brownells');
     });
 
     it('accepts arbitrary custom fields via index signature', () => {
@@ -32,14 +31,14 @@ describe('ItemTemplate types', () => {
     it('accepts valid template', () => {
       const template: ItemTemplate = {
         id: 1,
-        name: 'Arduino Template',
-        category: 'Arduino',
-        defaultFields: { vendorName: 'Adafruit', location: 'H1' },
+        name: 'Handgun Template',
+        category: 'Handguns',
+        defaultFields: { manufacturer: 'Brownells', location: 'H1' },
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z',
       };
-      expect(template.name).toBe('Arduino Template');
-      expect(template.defaultFields.vendorName).toBe('Adafruit');
+      expect(template.name).toBe('Handgun Template');
+      expect(template.defaultFields.manufacturer).toBe('Brownells');
     });
   });
 
@@ -47,7 +46,7 @@ describe('ItemTemplate types', () => {
     it('excludes id and timestamps', () => {
       const formData: ItemTemplateFormData = {
         name: 'New Template',
-        category: 'Sensors',
+        category: 'Rifles',
         defaultFields: { reorderPoint: 10 },
       };
       expect(formData).not.toHaveProperty('id');

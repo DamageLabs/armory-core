@@ -18,12 +18,12 @@ describe('Vendor types', () => {
   describe('VendorPriceResult interface', () => {
     it('accepts result with stock', () => {
       const result: VendorPriceResult = {
-        vendor: 'Adafruit',
-        partNumber: '50',
-        price: 24.95,
+        vendor: 'Brownells',
+        partNumber: 'BCG-556',
+        price: 149.99,
         inStock: true,
         stockQuantity: 150,
-        vendorUrl: 'https://adafruit.com/product/50',
+        vendorUrl: 'https://www.brownells.com/product/BCG-556',
         lastChecked: '2026-01-01T00:00:00Z',
       };
       expect(result.inStock).toBe(true);
@@ -32,8 +32,8 @@ describe('Vendor types', () => {
 
     it('accepts result without optional fields', () => {
       const result: VendorPriceResult = {
-        vendor: 'DigiKey',
-        partNumber: '123',
+        vendor: 'MidwayUSA',
+        partNumber: 'MG-123',
         price: 10.00,
         inStock: false,
         lastChecked: '2026-01-01T00:00:00Z',
@@ -46,12 +46,12 @@ describe('Vendor types', () => {
   describe('VendorPriceCache interface', () => {
     it('accepts cache with string keys', () => {
       const cache: VendorPriceCache = {
-        'adafruit-50': {
-          vendor: 'Adafruit', partNumber: '50', price: 24.95,
+        'brownells-BCG-556': {
+          vendor: 'Brownells', partNumber: 'BCG-556', price: 149.99,
           inStock: true, lastChecked: '2026-01-01T00:00:00Z',
         },
       };
-      expect(cache['adafruit-50'].price).toBe(24.95);
+      expect(cache['brownells-BCG-556'].price).toBe(149.99);
     });
   });
 
@@ -60,10 +60,10 @@ describe('Vendor types', () => {
       expect(SUPPORTED_VENDORS).toHaveLength(5);
     });
 
-    it('includes Adafruit', () => {
-      const adafruit = SUPPORTED_VENDORS.find(v => v.id === 'adafruit');
-      expect(adafruit).toBeDefined();
-      expect(adafruit!.name).toBe('Adafruit');
+    it('includes Brownells', () => {
+      const brownells = SUPPORTED_VENDORS.find(v => v.id === 'brownells');
+      expect(brownells).toBeDefined();
+      expect(brownells!.name).toBe('Brownells');
     });
 
     it('all vendors have required fields', () => {

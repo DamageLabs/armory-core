@@ -58,7 +58,7 @@ describe('BOM types', () => {
         totalCost: 45.90,
         itemCosts: [{
           itemId: 1,
-          itemName: 'Arduino Uno',
+          itemName: 'Glock 19',
           unitCost: 24.95,
           quantity: 1,
           lineCost: 24.95,

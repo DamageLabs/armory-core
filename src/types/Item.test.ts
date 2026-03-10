@@ -13,12 +13,12 @@ describe('Item types', () => {
         unitValue: 5.99,
         value: 59.9,
         picture: null,
-        category: 'Arduino',
+        category: 'Handguns',
         location: 'Shelf A1',
         barcode: '123456789',
         reorderPoint: 5,
         inventoryTypeId: 1,
-        customFields: { modelNumber: 'TM-001', partNumber: 'VP-001', vendorName: 'Test Vendor' },
+        customFields: { serialNumber: 'SN-001', caliber: '9mm', manufacturer: 'Test Mfg' },
         parentItemId: null,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
@@ -39,7 +39,7 @@ describe('Item types', () => {
         unitValue: 10.0,
         value: 50.0,
         picture: 'data:image/png;base64,abc123',
-        category: 'Components & Parts',
+        category: 'Rifles',
         location: 'Bin B2',
         barcode: '',
         reorderPoint: 2,
@@ -62,12 +62,12 @@ describe('Item types', () => {
         quantity: 1,
         unitValue: 9.99,
         picture: null,
-        category: 'LEDs',
+        category: 'Optics',
         location: 'Drawer 1',
         barcode: '',
         reorderPoint: 0,
         inventoryTypeId: 1,
-        customFields: { modelNumber: 'NI-001' },
+        customFields: { magnification: '1x' },
         parentItemId: null,
       };
 
@@ -81,11 +81,11 @@ describe('Item types', () => {
 
   describe('DEFAULT_CATEGORIES constant', () => {
     it('contains expected categories', () => {
-      expect(DEFAULT_CATEGORIES).toContain('Arduino');
-      expect(DEFAULT_CATEGORIES).toContain('Raspberry Pi');
-      expect(DEFAULT_CATEGORIES).toContain('Components & Parts');
-      expect(DEFAULT_CATEGORIES).toContain('Sensors');
-      expect(DEFAULT_CATEGORIES).toContain('3D Printing');
+      expect(DEFAULT_CATEGORIES).toContain('Handguns');
+      expect(DEFAULT_CATEGORIES).toContain('Rifles');
+      expect(DEFAULT_CATEGORIES).toContain('Optics');
+      expect(DEFAULT_CATEGORIES).toContain('Rimfire');
+      expect(DEFAULT_CATEGORIES).toContain('Cases & Bags');
     });
 
     it('has expected number of categories', () => {

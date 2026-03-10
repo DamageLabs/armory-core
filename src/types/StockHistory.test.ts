@@ -14,7 +14,7 @@ describe('StockHistory types', () => {
       const entry: StockHistoryEntry = {
         id: 1,
         itemId: 10,
-        itemName: 'Arduino Uno',
+        itemName: 'Glock 19',
         changeType: 'adjusted',
         previousQuantity: 8,
         newQuantity: 12,
@@ -35,7 +35,7 @@ describe('StockHistory types', () => {
       const entry: StockHistoryEntry = {
         id: 2,
         itemId: 10,
-        itemName: 'Arduino Uno',
+        itemName: 'Glock 19',
         changeType: 'deleted',
         previousQuantity: 8,
         newQuantity: null,
