@@ -13,9 +13,9 @@ const mockItems = [
     parentItemId: null, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
   },
   {
-    id: 2, name: 'Arduino Uno', description: '', quantity: 5, unitValue: 25,
-    value: 125, picture: null, category: 'Arduino', location: '',
-    barcode: '', reorderPoint: 0, inventoryTypeId: 1, customFields: {},
+    id: 2, name: 'Sig P365', description: '', quantity: 5, unitValue: 25,
+    value: 125, picture: null, category: 'Handguns', location: '',
+    barcode: '', reorderPoint: 0, inventoryTypeId: 2, customFields: {},
     parentItemId: null, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
   },
   {
@@ -43,7 +43,7 @@ describe('ParentItemSelector', () => {
     render(<ParentItemSelector value={null} onChange={vi.fn()} />);
     await waitFor(() => {
       expect(screen.getByText('Glock 19')).toBeInTheDocument();
-      expect(screen.getByText('Arduino Uno')).toBeInTheDocument();
+      expect(screen.getByText('Sig P365')).toBeInTheDocument();
     });
   });
 
@@ -51,7 +51,7 @@ describe('ParentItemSelector', () => {
     render(<ParentItemSelector value={null} onChange={vi.fn()} currentItemId={1} />);
     await waitFor(() => {
       expect(screen.queryByText('Glock 19')).not.toBeInTheDocument();
-      expect(screen.getByText('Arduino Uno')).toBeInTheDocument();
+      expect(screen.getByText('Sig P365')).toBeInTheDocument();
     });
   });
 

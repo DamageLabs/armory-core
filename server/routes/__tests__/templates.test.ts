@@ -17,8 +17,8 @@ import * as db from '../../db/index';
 const app = createApp(templateRoutes, '/api/templates');
 
 const mockTemplate = {
-  id: 1, name: 'Arduino Template', category: 'Arduino',
-  defaultFields: { vendorName: 'Adafruit' },
+  id: 1, name: 'Handgun Template', category: 'Handguns',
+  defaultFields: { manufacturer: 'Brownells' },
   createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
 };
 
@@ -51,7 +51,7 @@ describe('templates routes', () => {
   describe('POST /', () => {
     it('creates template', async () => {
       vi.mocked(db.insert).mockReturnValue({ ...mockTemplate, id: 2 });
-      const res = await request(app).post('/api/templates').send({ name: 'New', category: 'Sensors', defaultFields: {} });
+      const res = await request(app).post('/api/templates').send({ name: 'New', category: 'Rifles', defaultFields: {} });
       expect(res.status).toBe(201);
     });
   });

@@ -20,9 +20,9 @@ vi.mock('./api', () => ({
 
 const mockTemplate = {
   id: 1,
-  name: 'Arduino Template',
-  category: 'Arduino',
-  defaultFields: { vendorName: 'Adafruit', location: 'Shelf A' },
+  name: 'Handgun Template',
+  category: 'Handguns',
+  defaultFields: { manufacturer: 'Brownells', location: 'Shelf A' },
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
@@ -58,7 +58,7 @@ describe('itemTemplateService', () => {
 
   describe('createTemplate', () => {
     it('creates template via API', async () => {
-      const formData = { name: 'New', category: 'Sensors', defaultFields: {} };
+      const formData = { name: 'New', category: 'Rifles', defaultFields: {} };
       vi.mocked(api.post).mockResolvedValue({ ...mockTemplate, ...formData, id: 2 });
       const result = await createTemplate(formData);
       expect(api.post).toHaveBeenCalledWith('/templates', formData);
