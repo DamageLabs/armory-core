@@ -55,12 +55,15 @@ export default function ItemForm() {
       try {
         const types = await inventoryTypeService.getAllTypes();
         setInventoryTypes(types);
+        if (!isEditing && types.length > 0) {
+          setFormData((prev) => ({ ...prev, inventoryTypeId: types[0].id }));
+        }
       } catch {
         showError('Failed to load inventory types.');
       }
     }
     loadTypes();
-  }, [showError]);
+  }, [showError, isEditing]);
 
   // Load categories when type changes
   useEffect(() => {
