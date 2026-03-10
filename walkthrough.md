@@ -1,6 +1,6 @@
-# RIMS - React Inventory Management System
+# Armory Core - Firearms Inventory Management System
 
-A comprehensive walkthrough of the RIMS application features.
+A comprehensive walkthrough of the Armory Core application features.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ A comprehensive walkthrough of the RIMS application features.
 
 ### Welcome Page
 
-The landing page introduces RIMS and its key features. Users can sign up or log in to access the inventory system.
+The landing page introduces Armory Core and its key features. Users can sign up or log in to access the inventory system.
 
 ![Welcome Page](screenshots/01-welcome.png)
 
@@ -231,7 +231,7 @@ Power users can navigate quickly with keyboard shortcuts:
 
 ## Dark Mode
 
-RIMS supports dark mode for comfortable viewing in low-light environments. Toggle the theme using the sun/moon icon in the header.
+Armory Core supports dark mode for comfortable viewing in low-light environments. Toggle the theme using the sun/moon icon in the header.
 
 ### Item List - Dark Mode
 
@@ -262,7 +262,7 @@ Administrators can manage users:
 
 ### Progressive Web App (PWA)
 
-RIMS is a PWA, meaning you can:
+Armory Core is a PWA, meaning you can:
 - Install it on your device
 - Use it offline
 - Get a native app-like experience
@@ -286,5 +286,5 @@ Images are automatically compressed:
 ## Getting Help
 
 - Press `?` for keyboard shortcuts
-- Check the [GitHub repository](https://github.com/DamageLabs/rims) for issues and updates
+- Check the [GitHub repository](https://github.com/DamageLabs/armory-core) for issues and updates
 - Default login: admin@example.com / changeme

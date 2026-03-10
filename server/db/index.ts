@@ -6,7 +6,7 @@ import { CREATE_TABLES_SQL } from './schema';
 import { mapRowToEntity, mapRowsToEntities, buildInsertSQL, buildUpdateSQL } from './mapper';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, '../../data/rims.db');
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, '../../data/armory.db');
 
 let db: Database.Database | null = null;
 

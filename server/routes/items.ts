@@ -70,6 +70,117 @@ router.get('/low-stock', (req: Request, res: Response) => {
   }
 });
 
+// POST /bulk-create — Create multiple items with parent-child remapping
+router.post('/bulk-create', (req: Request, res: Response) => {
+  try {
+    const { items } = req.body as { items: Record<string, unknown>[] };
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      res.status(400).json({ error: 'items array is required' });
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const db = getDatabase();
+    const idMapping: Record<number, number> = {};
+    let created = 0;
+
+    const parents = items.filter((it) => !it.parentItemId);
+    const children = items.filter((it) => it.parentItemId);
+
+    const txn = db.transaction(() => {
+      for (const item of parents) {
+        const qty = Number(item.quantity) || 0;
+        const uv = Number(item.unitValue) || 0;
+        const value = qty * uv;
+        const oldId = item.id as number | undefined;
+
+        const result = insert('items', {
+          name: item.name || '',
+          description: item.description || '',
+          quantity: qty,
+          unitValue: uv,
+          value,
+          picture: item.picture || null,
+          category: item.category || '',
+          location: item.location || '',
+          barcode: item.barcode || '',
+          reorderPoint: Number(item.reorderPoint) || 0,
+          inventoryTypeId: Number(item.inventoryTypeId) || 1,
+          customFields: item.customFields || {},
+          parentItemId: null,
+          createdAt: now,
+          updatedAt: now,
+        }, JSON_FIELDS) as Record<string, unknown>;
+
+        if (oldId) idMapping[oldId] = result.id as number;
+        run(
+          'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [result.id, item.name, 'created', 0, qty, 0, value, null, item.category || '', 'Bulk restore', null, null, now]
+        );
+        created++;
+      }
+
+      for (const item of children) {
+        const qty = Number(item.quantity) || 0;
+        const uv = Number(item.unitValue) || 0;
+        const value = qty * uv;
+        const oldId = item.id as number | undefined;
+        const oldParentId = item.parentItemId as number;
+        const newParentId = idMapping[oldParentId] || null;
+
+        const result = insert('items', {
+          name: item.name || '',
+          description: item.description || '',
+          quantity: qty,
+          unitValue: uv,
+          value,
+          picture: item.picture || null,
+          category: item.category || '',
+          location: item.location || '',
+          barcode: item.barcode || '',
+          reorderPoint: Number(item.reorderPoint) || 0,
+          inventoryTypeId: Number(item.inventoryTypeId) || 1,
+          customFields: item.customFields || {},
+          parentItemId: newParentId,
+          createdAt: now,
+          updatedAt: now,
+        }, JSON_FIELDS) as Record<string, unknown>;
+
+        if (oldId) idMapping[oldId] = result.id as number;
+        run(
+          'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [result.id, item.name, 'created', 0, qty, 0, value, null, item.category || '', 'Bulk restore', null, null, now]
+        );
+        created++;
+      }
+    });
+    txn();
+
+    res.status(201).json({ created, idMapping });
+  } catch (error) {
+    console.error('Error bulk creating items:', error);
+    res.status(500).json({ error: 'Failed to bulk create items' });
+  }
+});
+
+// DELETE /all — Delete all items and related history
+router.delete('/all', (_req: Request, res: Response) => {
+  try {
+    const db = getDatabase();
+    const txn = db.transaction(() => {
+      run('DELETE FROM stock_history');
+      run('DELETE FROM cost_history');
+      run('DELETE FROM items');
+    });
+    txn();
+
+    res.json({ message: 'All items and history cleared' });
+  } catch (error) {
+    console.error('Error deleting all items:', error);
+    res.status(500).json({ error: 'Failed to delete all items' });
+  }
+});
+
 // POST /bulk-delete — Delete multiple items (must be before /:id)
 router.post('/bulk-delete', (req: Request, res: Response) => {
   try {

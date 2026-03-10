@@ -15,9 +15,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['vite.svg'],
       manifest: {
-        name: 'RIMS - React Inventory Management System',
-        short_name: 'RIMS',
-        description: 'Inventory management system for tracking electronic parts and components',
+        name: 'Armory Core - Firearms Inventory Management System',
+        short_name: 'Armory Core',
+        description: 'Inventory management system for tracking firearms, accessories, and ammunition',
         theme_color: '#212529',
         background_color: '#ffffff',
         display: 'standalone',

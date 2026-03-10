@@ -399,7 +399,7 @@ export default function ItemForm() {
                   name="barcode"
                   value={formData.barcode}
                   onChange={handleChange}
-                  placeholder="e.g., RIMS-0001 or UPC"
+                  placeholder="e.g., AC-0001 or UPC"
                 />
               </Col>
             </Row>

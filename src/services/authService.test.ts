@@ -4,7 +4,7 @@ import { STORAGE_KEYS, getFromStorage, removeFromStorage } from './storage';
 
 vi.mock('./storage', () => ({
   STORAGE_KEYS: {
-    CURRENT_USER: 'rims_current_user',
+    CURRENT_USER: 'armory_current_user',
   },
   saveToStorage: vi.fn(),
   getFromStorage: vi.fn(),

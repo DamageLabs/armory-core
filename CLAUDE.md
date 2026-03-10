@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-RIMS (React Inventory Management System) is a full-stack inventory management system with a React frontend and Express/better-sqlite3 backend. Supports multiple inventory types (Electronics, Firearms, Ammunition) with per-type custom field schemas.
+Armory Core is a full-stack inventory management system for firearms, accessories, and ammunition, with a React frontend and Express/better-sqlite3 backend. Supports multiple inventory types (Firearms, Accessories, Ammunition) with per-type custom field schemas.
 
 ## Commands
 
@@ -25,7 +25,7 @@ npm run test:run     # Run tests
 ### Tech Stack
 - **Frontend**: React 18 with TypeScript, Vite, React Bootstrap, React Router v6
 - **Backend**: Express with TypeScript (tsx), better-sqlite3
-- **Data Storage**: SQLite file at `data/rims.db` (server-side)
+- **Data Storage**: SQLite file at `data/armory.db` (server-side)
 - **API**: REST API at `/api/*`, proxied from Vite dev server
 
 ### Directory Structure
@@ -101,5 +101,5 @@ server/                       # Backend
 ## Contributing
 
 - Sign the CLA before contributing
-- Branch naming: `rims-[issue-num]`
+- Branch naming: `ac-[issue-num]`
 - Use `Fixes #123` in commit messages to auto-close issues

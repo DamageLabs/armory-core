@@ -100,7 +100,7 @@ export default function PrintLabels() {
     const sizeConfig = LABEL_SIZES[config.size];
 
     for (const item of selectedItems) {
-      const barcodeValue = item.barcode || `RIMS-${String(item.id).padStart(4, '0')}`;
+      const barcodeValue = item.barcode || `AC-${String(item.id).padStart(4, '0')}`;
 
       if (config.type === 'barcode') {
         const canvas = document.createElement('canvas');
@@ -150,7 +150,7 @@ export default function PrintLabels() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Print Labels - RIMS</title>
+          <title>Print Labels - Armory Core</title>
           <style>
             @media print {
               @page {

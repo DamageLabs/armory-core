@@ -13,7 +13,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
     picture: null,
     category: 'Electronics',
     location: 'Shelf A',
-    barcode: 'RIMS-0001',
+    barcode: 'AC-0001',
     reorderPoint: 3,
     inventoryTypeId: 1,
     customFields: { partNumber: '123', vendorName: 'Acme' },
@@ -33,7 +33,7 @@ describe('generateBackupJSON', () => {
     expect(parsed[0].name).toBe('Test Item');
     expect(parsed[0].inventoryTypeId).toBe(1);
     expect(parsed[0].parentItemId).toBeNull();
-    expect(parsed[0].barcode).toBe('RIMS-0001');
+    expect(parsed[0].barcode).toBe('AC-0001');
     expect(parsed[0].reorderPoint).toBe(3);
     expect(parsed[0].customFields.partNumber).toBe('123');
   });
