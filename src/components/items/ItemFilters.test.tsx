@@ -21,7 +21,7 @@ describe('ItemFilters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(inventoryTypeService.getAllTypes).mockResolvedValue([
-      { id: 1, name: 'Electronics', icon: 'FaMicrochip', schema: [], createdAt: '', updatedAt: '' },
+      { id: 1, name: 'Firearms', icon: 'FaCrosshairs', schema: [], createdAt: '', updatedAt: '' },
     ]);
     vi.mocked(categoryService.getCategoryNames).mockResolvedValue(['Resistors', 'Capacitors']);
     vi.mocked(categoryService.getCategoryNamesByType).mockResolvedValue(['Resistors']);
@@ -35,7 +35,7 @@ describe('ItemFilters', () => {
   it('loads and displays inventory types', async () => {
     render(<ItemFilters {...defaultProps} />);
     await waitFor(() => {
-      expect(screen.getByText('Electronics')).toBeInTheDocument();
+      expect(screen.getByText('Firearms')).toBeInTheDocument();
     });
   });
 

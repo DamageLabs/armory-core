@@ -18,8 +18,8 @@ import * as db from '../../db/index';
 const app = createApp(inventoryTypeRoutes, '/api/inventory-types');
 
 const mockType = {
-  id: 1, name: 'Electronics', icon: 'FaMicrochip',
-  schema: [{ key: 'modelNumber', label: 'Model Number', type: 'text', required: false }],
+  id: 1, name: 'Firearms', icon: 'FaCrosshairs',
+  schema: [{ key: 'serialNumber', label: 'Serial Number', type: 'text', required: false }],
   createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
 };
 
@@ -64,7 +64,7 @@ describe('inventoryTypes routes', () => {
 
     it('returns 400 for duplicate name', async () => {
       vi.mocked(db.queryOne).mockReturnValue({ id: 1 });
-      const res = await request(app).post('/api/inventory-types').send({ name: 'Electronics' });
+      const res = await request(app).post('/api/inventory-types').send({ name: 'Firearms' });
       expect(res.status).toBe(400);
     });
   });

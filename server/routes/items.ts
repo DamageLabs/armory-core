@@ -31,14 +31,14 @@ router.get('/stats', (_req: Request, res: Response) => {
   }
 });
 
-// GET /reorder — Items needing reorder (Electronics and Ammunition only)
+// GET /reorder — Items needing reorder (Ammunition only)
 router.get('/reorder', (_req: Request, res: Response) => {
   try {
     const items = queryAll(
       `SELECT items.* FROM items
        JOIN inventory_types ON items.inventory_type_id = inventory_types.id
        WHERE items.quantity <= items.reorder_point AND items.reorder_point > 0
-         AND inventory_types.name IN ('Electronics', 'Ammunition')
+         AND inventory_types.name IN ('Ammunition')
        ORDER BY items.name`,
       [],
       JSON_FIELDS
@@ -50,7 +50,7 @@ router.get('/reorder', (_req: Request, res: Response) => {
   }
 });
 
-// GET /low-stock — Items below threshold (Electronics and Ammunition only)
+// GET /low-stock — Items below threshold (Ammunition only)
 router.get('/low-stock', (req: Request, res: Response) => {
   try {
     const threshold = parseInt(req.query.threshold as string, 10) || 10;
@@ -58,7 +58,7 @@ router.get('/low-stock', (req: Request, res: Response) => {
       `SELECT items.* FROM items
        JOIN inventory_types ON items.inventory_type_id = inventory_types.id
        WHERE items.quantity < ?
-         AND inventory_types.name IN ('Electronics', 'Ammunition')
+         AND inventory_types.name IN ('Ammunition')
        ORDER BY items.name`,
       [threshold],
       JSON_FIELDS

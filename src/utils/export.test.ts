@@ -11,7 +11,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
     unitValue: 5.99,
     value: 59.90,
     picture: null,
-    category: 'Electronics',
+    category: 'Handguns',
     location: 'Shelf A',
     barcode: 'AC-0001',
     reorderPoint: 3,

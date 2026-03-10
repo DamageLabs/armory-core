@@ -8,7 +8,7 @@ vi.mock('../../services/categoryService');
 describe('BulkActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(categoryService.getCategoryNames).mockResolvedValue(['Electronics', 'Sensors']);
+    vi.mocked(categoryService.getCategoryNames).mockResolvedValue(['Handguns', 'Rifles']);
   });
 
   it('returns null when selectedCount is 0', () => {

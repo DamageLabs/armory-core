@@ -10,7 +10,7 @@ export const ITEMS_PER_PAGE = 25;
 export const LOW_STOCK_THRESHOLD = 5;
 
 // Inventory types where low stock / reorder alerts apply
-export const LOW_STOCK_TYPE_NAMES = ['Electronics', 'Ammunition'];
+export const LOW_STOCK_TYPE_NAMES = ['Ammunition'];
 
 // Theme
 export const THEME_STORAGE_KEY = 'armory-theme';

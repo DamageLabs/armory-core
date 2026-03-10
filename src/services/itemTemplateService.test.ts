@@ -101,22 +101,22 @@ describe('itemTemplateService', () => {
       vi.mocked(api.post).mockResolvedValue({ ...mockTemplate, id: 3, name: 'From Item' });
 
       const result = await createTemplateFromItem('From Item', {
-        category: 'Electronics',
+        category: 'Handguns',
         location: 'Shelf B',
         reorderPoint: 5,
-        description: 'A widget',
-        customFields: { vendorName: 'SparkFun', vendorUrl: 'https://sparkfun.com' },
+        description: 'A pistol',
+        customFields: { serialNumber: 'SN-001', caliber: '9mm' },
       });
 
       expect(api.post).toHaveBeenCalledWith('/templates', {
         name: 'From Item',
-        category: 'Electronics',
+        category: 'Handguns',
         defaultFields: {
-          vendorName: 'SparkFun',
-          vendorUrl: 'https://sparkfun.com',
+          serialNumber: 'SN-001',
+          caliber: '9mm',
           location: 'Shelf B',
           reorderPoint: 5,
-          description: 'A widget',
+          description: 'A pistol',
         },
       });
       expect(result.name).toBe('From Item');
@@ -131,8 +131,6 @@ describe('itemTemplateService', () => {
         name: 'Minimal',
         category: 'Misc',
         defaultFields: {
-          vendorName: '',
-          vendorUrl: '',
           location: '',
           reorderPoint: 0,
           description: '',

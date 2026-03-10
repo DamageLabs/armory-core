@@ -13,28 +13,24 @@ const FIREARMS_SCHEMA = JSON.stringify([
   { key: 'condition', label: 'Condition', type: 'select', required: false, options: ['New', 'Like New', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor'] },
 ]);
 
-const OPTICS_SCHEMA = JSON.stringify([
+const ACCESSORIES_SCHEMA = JSON.stringify([
+  { key: 'accessoryType', label: 'Accessory Type', type: 'select', required: false, options: ['Optic', 'Light', 'Laser', 'Grip', 'Magazine', 'Holster', 'Case', 'Mount', 'Suppressor', 'Bipod', 'Sling', 'Trigger', 'Muzzle Device', 'Other'] },
   { key: 'magnification', label: 'Magnification', type: 'text', required: false, placeholder: 'e.g., 1x, 1-6x, 3.25 MOA dot' },
   { key: 'reticleType', label: 'Reticle Type', type: 'select', required: false, options: ['Red Dot', 'Green Dot', 'Holographic', 'Crosshair', 'BDC', 'ACSS', 'MOA', 'MRAD', 'Duplex'] },
   { key: 'tubeDiameter', label: 'Tube Diameter', type: 'text', required: false, placeholder: 'e.g., N/A, 30mm, 34mm' },
-  { key: 'mountType', label: 'Mount Type', type: 'text', required: false, placeholder: 'e.g., RMR footprint, Picatinny' },
-  { key: 'eyeRelief', label: 'Eye Relief', type: 'text', required: false, placeholder: 'e.g., Unlimited, 3.5"' },
   { key: 'objectiveLens', label: 'Objective Lens', type: 'text', required: false, placeholder: 'e.g., 20mm' },
-  { key: 'batteryType', label: 'Battery Type', type: 'text', required: false, placeholder: 'e.g., CR2032' },
-  { key: 'weight', label: 'Weight', type: 'text', required: false, placeholder: 'e.g., 1.2 oz' },
-  { key: 'manufacturer', label: 'Manufacturer', type: 'text', required: false },
-]);
-
-const LIGHTS_SCHEMA = JSON.stringify([
+  { key: 'eyeRelief', label: 'Eye Relief', type: 'text', required: false, placeholder: 'e.g., Unlimited, 3.5"' },
   { key: 'lumens', label: 'Lumens', type: 'text', required: false, placeholder: 'e.g., 1000, 2000' },
   { key: 'candela', label: 'Candela', type: 'text', required: false, placeholder: 'e.g., 27,600' },
   { key: 'beamDistance', label: 'Beam Distance', type: 'text', required: false, placeholder: 'e.g., 332m' },
-  { key: 'batteryType', label: 'Battery Type', type: 'text', required: false, placeholder: 'e.g., CR123A, 18650' },
   { key: 'runtime', label: 'Runtime', type: 'text', required: false, placeholder: 'e.g., 1.5 hrs high' },
-  { key: 'mountType', label: 'Mount Type', type: 'text', required: false, placeholder: 'e.g., Picatinny, M-LOK' },
   { key: 'activationMethod', label: 'Activation', type: 'select', required: false, options: ['Momentary', 'Constant', 'Strobe', 'Momentary/Constant', 'Programmable'] },
-  { key: 'weight', label: 'Weight', type: 'text', required: false, placeholder: 'e.g., 4.0 oz' },
+  { key: 'mountType', label: 'Mount Type', type: 'text', required: false, placeholder: 'e.g., Picatinny, M-LOK, RMR footprint' },
+  { key: 'batteryType', label: 'Battery Type', type: 'text', required: false, placeholder: 'e.g., CR2032, CR123A' },
+  { key: 'weight', label: 'Weight', type: 'text', required: false, placeholder: 'e.g., 1.2 oz' },
   { key: 'manufacturer', label: 'Manufacturer', type: 'text', required: false },
+  { key: 'compatibility', label: 'Compatibility', type: 'text', required: false, placeholder: 'e.g., Glock MOS, Picatinny rail' },
+  { key: 'condition', label: 'Condition', type: 'select', required: false, options: ['New', 'Like New', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor'] },
 ]);
 
 const AMMUNITION_SCHEMA = JSON.stringify([
@@ -48,16 +44,14 @@ const AMMUNITION_SCHEMA = JSON.stringify([
 
 const INVENTORY_TYPES = [
   { name: 'Firearms', icon: 'FaCrosshairs', schema: FIREARMS_SCHEMA },
+  { name: 'Accessories', icon: 'FaToolbox', schema: ACCESSORIES_SCHEMA },
   { name: 'Ammunition', icon: 'FaShieldAlt', schema: AMMUNITION_SCHEMA },
-  { name: 'Optics', icon: 'FaBullseye', schema: OPTICS_SCHEMA },
-  { name: 'Lights', icon: 'FaLightbulb', schema: LIGHTS_SCHEMA },
 ];
 
 const CATEGORY_PRESETS: Record<string, string[]> = {
-  Firearms: ['Handguns', 'Rifles', 'Shotguns', 'Accessories', 'Holsters & Cases'],
-  Ammunition: ['Rimfire', 'Centerfire Pistol', 'Centerfire Rifle', 'Shotshell', 'Specialty'],
-  Optics: ['Red Dots', 'Scopes', 'Magnifiers', 'Mounts & Rings', 'Accessories'],
-  Lights: ['Weapon Lights', 'Handheld', 'Headlamps', 'Laser/Light Combos', 'Accessories'],
+  Firearms: ['Handguns', 'Rifles', 'Shotguns', 'Pistol Caliber Carbines', 'AR Platform', 'AK Platform', 'Bolt Action', 'Lever Action', 'Other'],
+  Accessories: ['Optics', 'Lights', 'Lasers', 'Grips & Foregrips', 'Magazines', 'Holsters', 'Cases & Bags', 'Mounts & Rings', 'Suppressors & Muzzle Devices', 'Bipods & Supports', 'Slings', 'Triggers & Fire Control', 'Stocks & Braces', 'Barrels & Handguards', 'Cleaning & Maintenance', 'Other'],
+  Ammunition: ['Rimfire', 'Centerfire Pistol', 'Centerfire Rifle', 'Shotshell', 'Specialty', 'Reloading Components'],
 };
 
 function ensureParentItemIdColumn(): void {
@@ -76,7 +70,7 @@ function ensureInventoryTypes(): void {
   const upsert = db.prepare(`
     INSERT INTO inventory_types (name, icon, schema, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT(name) DO UPDATE SET schema = excluded.schema, updated_at = excluded.updated_at
+    ON CONFLICT(name) DO UPDATE SET schema = excluded.schema, icon = excluded.icon, updated_at = excluded.updated_at
   `);
   for (const t of INVENTORY_TYPES) {
     upsert.run(t.name, t.icon, t.schema, now, now);
@@ -97,8 +91,63 @@ function ensureCategories(): void {
   }
 }
 
+function migrateOpticsAndLights(): void {
+  const db = getDatabase();
+  const accessoriesType = db.prepare("SELECT id FROM inventory_types WHERE name = 'Accessories'").get() as { id: number } | undefined;
+  if (!accessoriesType) return;
+
+  const accessoriesId = accessoriesType.id;
+
+  const oldTypes = db.prepare("SELECT id, name FROM inventory_types WHERE name IN ('Optics', 'Lights', 'Electronics')").all() as { id: number; name: string }[];
+  if (oldTypes.length === 0) return;
+
+  const oldIds = oldTypes.map((t) => t.id);
+
+  const txn = db.transaction(() => {
+    // Reassign items from old types to Accessories
+    const updateItems = db.prepare(`UPDATE items SET inventory_type_id = ? WHERE inventory_type_id = ?`);
+    for (const oldId of oldIds) {
+      updateItems.run(accessoriesId, oldId);
+    }
+
+    // Delete old-type categories that would conflict when merged into Accessories
+    // (duplicates across old types or with existing Accessories categories)
+    const placeholders = oldIds.map(() => '?').join(',');
+    db.prepare(`
+      DELETE FROM categories
+      WHERE inventory_type_id IN (${placeholders})
+        AND name IN (SELECT name FROM categories WHERE inventory_type_id = ?)
+    `).run(...oldIds, accessoriesId);
+
+    // Among the remaining old-type categories, keep only one per name (delete duplicates)
+    db.prepare(`
+      DELETE FROM categories
+      WHERE inventory_type_id IN (${placeholders})
+        AND id NOT IN (
+          SELECT MIN(id) FROM categories
+          WHERE inventory_type_id IN (${placeholders})
+          GROUP BY name
+        )
+    `).run(...oldIds, ...oldIds);
+
+    // Reassign remaining categories from old types to Accessories
+    const updateCats = db.prepare(`UPDATE categories SET inventory_type_id = ? WHERE inventory_type_id = ?`);
+    for (const oldId of oldIds) {
+      updateCats.run(accessoriesId, oldId);
+    }
+
+    // Delete old types
+    const deleteType = db.prepare(`DELETE FROM inventory_types WHERE id = ?`);
+    for (const oldId of oldIds) {
+      deleteType.run(oldId);
+    }
+  });
+  txn();
+}
+
 export function seedDatabase(): void {
   ensureParentItemIdColumn();
   ensureInventoryTypes();
+  migrateOpticsAndLights();
   ensureCategories();
 }
