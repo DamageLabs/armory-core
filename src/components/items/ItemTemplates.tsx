@@ -20,8 +20,7 @@ export default function ItemTemplates() {
     name: '',
     category: '',
     defaultFields: {
-      vendorName: '',
-      vendorUrl: '',
+      manufacturer: '',
       location: '',
       reorderPoint: 0,
       description: '',
@@ -58,8 +57,7 @@ export default function ItemTemplates() {
       name: '',
       category: categories[0] || '',
       defaultFields: {
-        vendorName: '',
-        vendorUrl: '',
+        manufacturer: '',
         location: '',
         reorderPoint: 0,
         description: '',
@@ -166,7 +164,7 @@ export default function ItemTemplates() {
               <tr>
                 <th>Name</th>
                 <th>Category</th>
-                <th>Default Vendor</th>
+                <th>Manufacturer</th>
                 <th>Default Location</th>
                 <th>Actions</th>
               </tr>
@@ -178,7 +176,7 @@ export default function ItemTemplates() {
                   <td>
                     <Badge bg="secondary">{template.category}</Badge>
                   </td>
-                  <td>{template.defaultFields.vendorName || '-'}</td>
+                  <td>{template.defaultFields.manufacturer || '-'}</td>
                   <td>{template.defaultFields.location || '-'}</td>
                   <td>
                     <div className="d-flex gap-1">
@@ -222,7 +220,7 @@ export default function ItemTemplates() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  placeholder="e.g., Adafruit Sensor"
+                  placeholder="e.g., Glock 19 Template"
                 />
               </Col>
             </Row>
@@ -246,27 +244,14 @@ export default function ItemTemplates() {
             <h6>Default Values</h6>
 
             <Row className="mb-3">
-              <Form.Label column sm={3}>Vendor Name</Form.Label>
+              <Form.Label column sm={3}>Manufacturer</Form.Label>
               <Col sm={9}>
                 <Form.Control
                   type="text"
-                  name="default_vendorName"
-                  value={formData.defaultFields.vendorName || ''}
+                  name="default_manufacturer"
+                  value={formData.defaultFields.manufacturer || ''}
                   onChange={handleChange}
-                  placeholder="e.g., Adafruit"
-                />
-              </Col>
-            </Row>
-
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Vendor URL</Form.Label>
-              <Col sm={9}>
-                <Form.Control
-                  type="url"
-                  name="default_vendorUrl"
-                  value={formData.defaultFields.vendorUrl || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., https://www.adafruit.com"
+                  placeholder="e.g., Glock, Sig Sauer"
                 />
               </Col>
             </Row>

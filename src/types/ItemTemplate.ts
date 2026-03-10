@@ -1,6 +1,5 @@
 export interface ItemTemplateDefaultFields {
-  vendorName?: string;
-  vendorUrl?: string;
+  manufacturer?: string;
   location?: string;
   reorderPoint?: number;
   description?: string;

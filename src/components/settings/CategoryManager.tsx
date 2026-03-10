@@ -255,7 +255,7 @@ export default function CategoryManager() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  placeholder="e.g., Sensors"
+                  placeholder="e.g., Handguns"
                   autoFocus
                 />
               </Col>

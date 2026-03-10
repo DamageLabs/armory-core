@@ -181,7 +181,7 @@ export default function BOMForm() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                placeholder="e.g., Arduino Weather Station"
+                placeholder="e.g., AR-15 Build Kit"
               />
             </Col>
           </Row>
