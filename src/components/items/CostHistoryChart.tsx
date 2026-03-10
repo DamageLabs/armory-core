@@ -29,7 +29,30 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
     loadData();
   }, [itemId, currentValue]);
 
-  if (history.length === 0 || !stats) {
+  // Create chart data points — must be before early return to respect Rules of Hooks
+  const chartPoints = useMemo(() => {
+    const points: { date: string; value: number }[] = [];
+
+    // Add initial value from first history entry
+    if (history.length > 0) {
+      points.push({
+        date: history[0].timestamp,
+        value: history[0].oldValue,
+      });
+    }
+
+    // Add all subsequent values
+    history.forEach((entry) => {
+      points.push({
+        date: entry.timestamp,
+        value: entry.newValue,
+      });
+    });
+
+    return points;
+  }, [history]);
+
+  if (history.length === 0 || !stats || stats.min == null) {
     return null;
   }
 
@@ -53,29 +76,6 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
   };
 
   const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
-
-  // Create chart data points
-  const chartPoints = useMemo(() => {
-    const points: { date: string; value: number }[] = [];
-
-    // Add initial value from first history entry
-    if (history.length > 0) {
-      points.push({
-        date: history[0].timestamp,
-        value: history[0].oldValue,
-      });
-    }
-
-    // Add all subsequent values
-    history.forEach((entry) => {
-      points.push({
-        date: entry.timestamp,
-        value: entry.newValue,
-      });
-    });
-
-    return points;
-  }, [history]);
 
   // Simple SVG line chart
   const chartWidth = 400;
