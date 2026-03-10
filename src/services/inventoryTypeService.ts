@@ -97,7 +97,7 @@ export const PRESET_TYPES: InventoryTypeFormData[] = [
     icon: 'FaBullseye',
     schema: [
       { key: 'magnification', label: 'Magnification', type: 'text', required: false, placeholder: 'e.g., 1x, 1-6x, 3.25 MOA dot' },
-      { key: 'reticleType', label: 'Reticle Type', type: 'select', required: false, options: ['Red Dot', 'Holographic', 'Crosshair', 'BDC', 'ACSS', 'MOA', 'MRAD', 'Duplex'] },
+      { key: 'reticleType', label: 'Reticle Type', type: 'select', required: false, options: ['Red Dot', 'Green Dot', 'Holographic', 'Crosshair', 'BDC', 'ACSS', 'MOA', 'MRAD', 'Duplex'] },
       { key: 'tubeDiameter', label: 'Tube Diameter', type: 'text', required: false, placeholder: 'e.g., N/A, 30mm, 34mm' },
       { key: 'mountType', label: 'Mount Type', type: 'text', required: false, placeholder: 'e.g., RMR footprint, Picatinny' },
       { key: 'eyeRelief', label: 'Eye Relief', type: 'text', required: false, placeholder: 'e.g., Unlimited, 3.5"' },
