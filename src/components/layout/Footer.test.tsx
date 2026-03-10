@@ -6,14 +6,14 @@ describe('Footer', () => {
   it('renders application name', () => {
     render(<Footer />);
 
-    expect(screen.getByText('RIMS - React Inventory Management System')).toBeInTheDocument();
+    expect(screen.getByText('Armory Core - Firearms Inventory Management System')).toBeInTheDocument();
   });
 
   it('renders GitHub link with correct attributes', () => {
     render(<Footer />);
 
     const githubLink = screen.getByText('View on GitHub');
-    expect(githubLink).toHaveAttribute('href', 'https://github.com/DamageLabs/rims');
+    expect(githubLink).toHaveAttribute('href', 'https://github.com/DamageLabs/armory-core');
     expect(githubLink).toHaveAttribute('target', '_blank');
     expect(githubLink).toHaveAttribute('rel', 'noopener noreferrer');
   });

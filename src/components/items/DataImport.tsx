@@ -258,7 +258,7 @@ export default function DataImport() {
       '9.99',
       categories[0] || '',
       'A1B2',
-      'RIMS-0001',
+      'AC-0001',
       '5',
       ...customFieldExamples,
     ];
@@ -271,7 +271,7 @@ export default function DataImport() {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'rims-import-template.csv';
+    link.download = 'armory-core-import-template.csv';
     link.click();
     URL.revokeObjectURL(link.href);
   };

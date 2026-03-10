@@ -127,6 +127,6 @@ describe('ThemeContext', () => {
       screen.getByText('Toggle').click();
     });
 
-    expect(localStorage.setItem).toHaveBeenCalledWith('rims-theme', 'dark');
+    expect(localStorage.setItem).toHaveBeenCalledWith('armory-theme', 'dark');
   });
 });

@@ -5,11 +5,11 @@ export default function Footer() {
     <footer className="mt-5 py-4 text-center text-muted border-top">
       <Container>
         <p className="mb-0">
-          RIMS - React Inventory Management System
+          Armory Core - Firearms Inventory Management System
         </p>
         <p className="mb-0">
           <a
-            href="https://github.com/DamageLabs/rims"
+            href="https://github.com/DamageLabs/armory-core"
             target="_blank"
             rel="noopener noreferrer"
           >

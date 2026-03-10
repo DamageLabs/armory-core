@@ -21,7 +21,7 @@ export default function Header() {
     <Navbar bg="dark" variant="dark" expand="lg" fixed="top">
       <Container>
         <Navbar.Brand as={Link} to="/">
-          RIMS
+          Armory Core
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
@@ -38,6 +38,9 @@ export default function Header() {
                   <NavDropdown.Divider />
                   <NavDropdown.Item as={Link} to="/items/import">
                     Import Data
+                  </NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/items/restore">
+                    Restore Backup
                   </NavDropdown.Item>
                   <NavDropdown.Item as={Link} to="/items/scanner">
                     Barcode Scanner
