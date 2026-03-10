@@ -10,16 +10,16 @@ describe('vendorService', () => {
   describe('lookupPrice', () => {
     it('returns price result for supported vendor', async () => {
       vi.useFakeTimers();
-      const promise = lookupPrice('Adafruit', '50');
+      const promise = lookupPrice('Brownells', 'BCG-556');
       vi.advanceTimersByTime(2000);
       const result = await promise;
 
       expect(result).not.toBeNull();
-      expect(result!.vendor).toBe('Adafruit');
-      expect(result!.partNumber).toBe('50');
+      expect(result!.vendor).toBe('Brownells');
+      expect(result!.partNumber).toBe('BCG-556');
       expect(typeof result!.price).toBe('number');
       expect(typeof result!.inStock).toBe('boolean');
-      expect(result!.vendorUrl).toContain('adafruit.com');
+      expect(result!.vendorUrl).toContain('brownells.com');
     });
 
     it('returns null for unsupported vendor', async () => {
@@ -33,11 +33,11 @@ describe('vendorService', () => {
 
     it('returns cached result on second call', async () => {
       vi.useFakeTimers();
-      const p1 = lookupPrice('Adafruit', '50');
+      const p1 = lookupPrice('Brownells', 'BCG-556');
       vi.advanceTimersByTime(2000);
       const first = await p1;
 
-      const p2 = lookupPrice('Adafruit', '50');
+      const p2 = lookupPrice('Brownells', 'BCG-556');
       vi.advanceTimersByTime(2000);
       const second = await p2;
 
@@ -68,21 +68,21 @@ describe('vendorService', () => {
     it('returns array of vendor names', () => {
       const vendors = getSupportedVendors();
       expect(vendors.length).toBeGreaterThan(0);
-      expect(vendors).toContain('Adafruit');
+      expect(vendors).toContain('Brownells');
     });
   });
 
   describe('isVendorSupported', () => {
     it('returns true for supported vendor name', () => {
-      expect(isVendorSupported('Adafruit')).toBe(true);
+      expect(isVendorSupported('Brownells')).toBe(true);
     });
 
     it('returns true for supported vendor ID', () => {
-      expect(isVendorSupported('adafruit')).toBe(true);
+      expect(isVendorSupported('brownells')).toBe(true);
     });
 
     it('is case insensitive', () => {
-      expect(isVendorSupported('ADAFRUIT')).toBe(true);
+      expect(isVendorSupported('BROWNELLS')).toBe(true);
     });
 
     it('returns false for unsupported vendor', () => {
@@ -93,14 +93,14 @@ describe('vendorService', () => {
   describe('clearPriceCache', () => {
     it('clears cached results', async () => {
       vi.useFakeTimers();
-      const p1 = lookupPrice('Adafruit', '50');
+      const p1 = lookupPrice('Brownells', 'BCG-556');
       vi.advanceTimersByTime(2000);
       await p1;
 
       clearPriceCache();
 
       // After clearing, the next call should go through the mock delay again
-      const p2 = lookupPrice('Adafruit', '50');
+      const p2 = lookupPrice('Brownells', 'BCG-556');
       vi.advanceTimersByTime(2000);
       const result = await p2;
       expect(result).not.toBeNull();
