@@ -22,6 +22,7 @@ import ValuationReport from './components/reports/ValuationReport';
 import MovementReport from './components/reports/MovementReport';
 import CustomReport from './components/reports/CustomReport';
 import ItemTemplates from './components/items/ItemTemplates';
+import RestoreBackup from './components/items/RestoreBackup';
 import BOMList from './components/bom/BOMList';
 import BOMForm from './components/bom/BOMForm';
 import BOMDetail from './components/bom/BOMDetail';
@@ -123,6 +124,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ItemTemplates />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="items/restore"
+                  element={
+                    <ProtectedRoute>
+                      <RestoreBackup />
                     </ProtectedRoute>
                   }
                 />
