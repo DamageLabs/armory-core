@@ -69,3 +69,13 @@ export async function getItemsNeedingReorder(): Promise<Item[]> {
 export async function getItemChildren(id: number): Promise<Item[]> {
   return api.get<Item[]>(`/items/${id}/children`);
 }
+
+export async function bulkCreateItems(
+  items: ItemFormData[],
+): Promise<{ created: number; idMapping: Record<number, number> }> {
+  return api.post('/items/bulk-create', { items });
+}
+
+export async function deleteAllItems(): Promise<{ message: string }> {
+  return api.delete('/items/all');
+}
