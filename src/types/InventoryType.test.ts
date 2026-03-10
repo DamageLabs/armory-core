@@ -36,8 +36,8 @@ describe('InventoryType types', () => {
     it('accepts valid inventory type', () => {
       const type: InventoryType = {
         id: 1,
-        name: 'Electronics',
-        icon: 'FaMicrochip',
+        name: 'Firearms',
+        icon: 'FaCrosshairs',
         schema: [{ key: 'model', label: 'Model', type: 'text', required: false }],
         createdAt: '2026-01-01T00:00:00Z',
         updatedAt: '2026-01-01T00:00:00Z',

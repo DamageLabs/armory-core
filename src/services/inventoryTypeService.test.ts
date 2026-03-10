@@ -22,11 +22,11 @@ vi.mock('./api', () => ({
 
 const mockType = {
   id: 1,
-  name: 'Electronics',
-  icon: 'FaMicrochip',
+  name: 'Firearms',
+  icon: 'FaCrosshairs',
   schema: [
-    { key: 'modelNumber', label: 'Model Number', type: 'text' as const, required: false },
-    { key: 'partNumber', label: 'Part Number', type: 'text' as const, required: true },
+    { key: 'serialNumber', label: 'Serial Number', type: 'text' as const, required: false },
+    { key: 'caliber', label: 'Caliber', type: 'text' as const, required: true },
   ],
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
@@ -118,7 +118,7 @@ describe('inventoryTypeService', () => {
   describe('validateCustomFields', () => {
     it('returns no errors when all required fields present', () => {
       const errors = validateCustomFields(
-        { partNumber: 'VP-001', modelNumber: 'TM-001' },
+        { caliber: '9mm', serialNumber: 'SN-001' },
         mockType.schema
       );
       expect(errors).toHaveLength(0);
@@ -126,31 +126,31 @@ describe('inventoryTypeService', () => {
 
     it('returns error for missing required field', () => {
       const errors = validateCustomFields(
-        { modelNumber: 'TM-001' },
+        { serialNumber: 'SN-001' },
         mockType.schema
       );
-      expect(errors).toContain('Part Number is required.');
+      expect(errors).toContain('Caliber is required.');
     });
 
     it('returns error for empty string required field', () => {
       const errors = validateCustomFields(
-        { partNumber: '' },
+        { caliber: '' },
         mockType.schema
       );
-      expect(errors).toContain('Part Number is required.');
+      expect(errors).toContain('Caliber is required.');
     });
 
     it('returns error for null required field', () => {
       const errors = validateCustomFields(
-        { partNumber: null } as unknown as Record<string, unknown>,
+        { caliber: null } as unknown as Record<string, unknown>,
         mockType.schema
       );
-      expect(errors).toContain('Part Number is required.');
+      expect(errors).toContain('Caliber is required.');
     });
 
     it('allows optional fields to be missing', () => {
       const errors = validateCustomFields(
-        { partNumber: 'VP-001' },
+        { caliber: '9mm' },
         mockType.schema
       );
       expect(errors).toHaveLength(0);
@@ -160,11 +160,9 @@ describe('inventoryTypeService', () => {
   describe('PRESET_TYPES', () => {
     it('contains expected preset types', () => {
       const names = PRESET_TYPES.map((t) => t.name);
-      expect(names).toContain('Electronics');
       expect(names).toContain('Firearms');
+      expect(names).toContain('Accessories');
       expect(names).toContain('Ammunition');
-      expect(names).toContain('Optics');
-      expect(names).toContain('Lights');
     });
 
     it('all presets have name, icon, and schema', () => {

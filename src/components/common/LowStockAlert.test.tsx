@@ -11,7 +11,7 @@ const makeItem = (overrides: Partial<Item> = {}): Item => ({
   unitValue: 5,
   value: 50,
   picture: null,
-  category: 'Electronics',
+  category: 'Ammunition',
   location: '',
   barcode: '',
   reorderPoint: 5,

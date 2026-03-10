@@ -22,7 +22,7 @@ const app = createApp(itemRoutes, '/api/items');
 
 const mockItem = {
   id: 1, name: 'Resistor', description: 'A resistor', quantity: 10,
-  unitValue: 0.50, value: 5.0, picture: null, category: 'Electronics',
+  unitValue: 0.50, value: 5.0, picture: null, category: 'Handguns',
   location: 'Shelf A', barcode: '', reorderPoint: 5, inventoryTypeId: 1,
   customFields: {}, parentItemId: null,
   createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
@@ -70,7 +70,7 @@ describe('items routes', () => {
       vi.mocked(db.insert).mockReturnValue({ ...mockItem, id: 2 });
       vi.mocked(db.run).mockReturnValue({ changes: 1, lastInsertRowid: 1 } as never);
       const res = await request(app).post('/api/items').send({
-        name: 'Capacitor', quantity: 5, unitValue: 1.0, category: 'Electronics',
+        name: 'Glock 19', quantity: 5, unitValue: 1.0, category: 'Handguns',
       });
       expect(res.status).toBe(201);
       expect(db.insert).toHaveBeenCalled();
