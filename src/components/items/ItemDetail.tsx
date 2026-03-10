@@ -10,6 +10,7 @@ import { VendorPriceResult } from '../../types/Vendor';
 import { useAlert } from '../../contexts/AlertContext';
 import ConfirmModal from '../common/ConfirmModal';
 import CostHistoryChart from './CostHistoryChart';
+import ChildItemsList from './ChildItemsList';
 import Breadcrumbs from '../common/Breadcrumbs';
 import { SkeletonDetailPage } from '../common/Skeleton';
 
@@ -18,6 +19,7 @@ export default function ItemDetail() {
   const navigate = useNavigate();
   const { showSuccess, showError } = useAlert();
   const [item, setItem] = useState<Item | null>(null);
+  const [parentItem, setParentItem] = useState<Item | null>(null);
   const [inventoryType, setInventoryType] = useState<InventoryType | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [vendorPrices, setVendorPrices] = useState<VendorPriceResult[]>([]);
@@ -32,6 +34,10 @@ export default function ItemDetail() {
             setItem(foundItem);
             const type = await inventoryTypeService.getTypeById(foundItem.inventoryTypeId);
             setInventoryType(type);
+            if (foundItem.parentItemId) {
+              const parent = await itemService.getItemById(foundItem.parentItemId);
+              setParentItem(parent);
+            }
           } else {
             showError('Item not found.');
             navigate('/items');
@@ -118,6 +124,15 @@ export default function ItemDetail() {
           </Row>
         )}
 
+        {parentItem && (
+          <Row className="mb-2">
+            <Col md={3} className="text-muted">Mounted On</Col>
+            <Col md={9}>
+              <Link to={`/items/${parentItem.id}`}>{parentItem.name}</Link>
+            </Col>
+          </Row>
+        )}
+
         <Row className="mb-2">
           <Col md={3} className="text-muted">Description</Col>
           <Col md={9}>
@@ -194,6 +209,9 @@ export default function ItemDetail() {
 
         {/* Cost History Chart */}
         <CostHistoryChart itemId={item.id} currentValue={item.unitValue} />
+
+        {/* Child Items */}
+        <ChildItemsList parentId={item.id} />
 
         {/* Vendor Price Comparison */}
         {!!(item.customFields?.partNumber) && (
