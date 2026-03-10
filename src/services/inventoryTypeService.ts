@@ -55,16 +55,6 @@ export function validateCustomFields(
 
 export const PRESET_TYPES: InventoryTypeFormData[] = [
   {
-    name: 'Electronics',
-    icon: 'FaMicrochip',
-    schema: [
-      { key: 'modelNumber', label: 'Model Number', type: 'text', required: false, placeholder: 'e.g., R3, V3' },
-      { key: 'partNumber', label: 'Part Number', type: 'text', required: false, placeholder: 'e.g., 50, 1501' },
-      { key: 'vendorName', label: 'Vendor Name', type: 'text', required: false, placeholder: 'e.g., Adafruit, SparkFun' },
-      { key: 'vendorUrl', label: 'Vendor URL', type: 'text', required: false, placeholder: 'https://...' },
-    ],
-  },
-  {
     name: 'Firearms',
     icon: 'FaCrosshairs',
     schema: [
@@ -81,6 +71,29 @@ export const PRESET_TYPES: InventoryTypeFormData[] = [
     ],
   },
   {
+    name: 'Accessories',
+    icon: 'FaToolbox',
+    schema: [
+      { key: 'accessoryType', label: 'Accessory Type', type: 'select', required: false, options: ['Optic', 'Light', 'Laser', 'Grip', 'Magazine', 'Holster', 'Case', 'Mount', 'Suppressor', 'Bipod', 'Sling', 'Trigger', 'Muzzle Device', 'Other'] },
+      { key: 'magnification', label: 'Magnification', type: 'text', required: false, placeholder: 'e.g., 1x, 1-6x, 3.25 MOA dot' },
+      { key: 'reticleType', label: 'Reticle Type', type: 'select', required: false, options: ['Red Dot', 'Green Dot', 'Holographic', 'Crosshair', 'BDC', 'ACSS', 'MOA', 'MRAD', 'Duplex'] },
+      { key: 'tubeDiameter', label: 'Tube Diameter', type: 'text', required: false, placeholder: 'e.g., N/A, 30mm, 34mm' },
+      { key: 'objectiveLens', label: 'Objective Lens', type: 'text', required: false, placeholder: 'e.g., 20mm' },
+      { key: 'eyeRelief', label: 'Eye Relief', type: 'text', required: false, placeholder: 'e.g., Unlimited, 3.5"' },
+      { key: 'lumens', label: 'Lumens', type: 'text', required: false, placeholder: 'e.g., 1000, 2000' },
+      { key: 'candela', label: 'Candela', type: 'text', required: false, placeholder: 'e.g., 27,600' },
+      { key: 'beamDistance', label: 'Beam Distance', type: 'text', required: false, placeholder: 'e.g., 332m' },
+      { key: 'runtime', label: 'Runtime', type: 'text', required: false, placeholder: 'e.g., 1.5 hrs high' },
+      { key: 'activationMethod', label: 'Activation', type: 'select', required: false, options: ['Momentary', 'Constant', 'Strobe', 'Momentary/Constant', 'Programmable'] },
+      { key: 'mountType', label: 'Mount Type', type: 'text', required: false, placeholder: 'e.g., Picatinny, M-LOK, RMR footprint' },
+      { key: 'batteryType', label: 'Battery Type', type: 'text', required: false, placeholder: 'e.g., CR2032, CR123A' },
+      { key: 'weight', label: 'Weight', type: 'text', required: false, placeholder: 'e.g., 1.2 oz' },
+      { key: 'manufacturer', label: 'Manufacturer', type: 'text', required: false },
+      { key: 'compatibility', label: 'Compatibility', type: 'text', required: false, placeholder: 'e.g., Glock MOS, Picatinny rail' },
+      { key: 'condition', label: 'Condition', type: 'select', required: false, options: ['New', 'Like New', 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor'] },
+    ],
+  },
+  {
     name: 'Ammunition',
     icon: 'FaShieldAlt',
     schema: [
@@ -89,36 +102,6 @@ export const PRESET_TYPES: InventoryTypeFormData[] = [
       { key: 'cartridgeType', label: 'Cartridge Type', type: 'select', required: false, options: ['FMJ', 'JHP', 'SP', 'BTHP', 'Buckshot', 'Slug', 'Birdshot', 'Tracer', 'AP'] },
       { key: 'roundCount', label: 'Rounds Per Box', type: 'number', required: false, placeholder: 'e.g., 50, 20' },
       { key: 'casing', label: 'Casing', type: 'select', required: false, options: ['Brass', 'Steel', 'Aluminum', 'Nickel-Plated'] },
-      { key: 'manufacturer', label: 'Manufacturer', type: 'text', required: false },
-    ],
-  },
-  {
-    name: 'Optics',
-    icon: 'FaBullseye',
-    schema: [
-      { key: 'magnification', label: 'Magnification', type: 'text', required: false, placeholder: 'e.g., 1x, 1-6x, 3.25 MOA dot' },
-      { key: 'reticleType', label: 'Reticle Type', type: 'select', required: false, options: ['Red Dot', 'Green Dot', 'Holographic', 'Crosshair', 'BDC', 'ACSS', 'MOA', 'MRAD', 'Duplex'] },
-      { key: 'tubeDiameter', label: 'Tube Diameter', type: 'text', required: false, placeholder: 'e.g., N/A, 30mm, 34mm' },
-      { key: 'mountType', label: 'Mount Type', type: 'text', required: false, placeholder: 'e.g., RMR footprint, Picatinny' },
-      { key: 'eyeRelief', label: 'Eye Relief', type: 'text', required: false, placeholder: 'e.g., Unlimited, 3.5"' },
-      { key: 'objectiveLens', label: 'Objective Lens', type: 'text', required: false, placeholder: 'e.g., 20mm' },
-      { key: 'batteryType', label: 'Battery Type', type: 'text', required: false, placeholder: 'e.g., CR2032' },
-      { key: 'weight', label: 'Weight', type: 'text', required: false, placeholder: 'e.g., 1.2 oz' },
-      { key: 'manufacturer', label: 'Manufacturer', type: 'text', required: false },
-    ],
-  },
-  {
-    name: 'Lights',
-    icon: 'FaLightbulb',
-    schema: [
-      { key: 'lumens', label: 'Lumens', type: 'text', required: false, placeholder: 'e.g., 1000, 2000' },
-      { key: 'candela', label: 'Candela', type: 'text', required: false, placeholder: 'e.g., 27,600' },
-      { key: 'beamDistance', label: 'Beam Distance', type: 'text', required: false, placeholder: 'e.g., 332m' },
-      { key: 'batteryType', label: 'Battery Type', type: 'text', required: false, placeholder: 'e.g., CR123A, 18650' },
-      { key: 'runtime', label: 'Runtime', type: 'text', required: false, placeholder: 'e.g., 1.5 hrs high' },
-      { key: 'mountType', label: 'Mount Type', type: 'text', required: false, placeholder: 'e.g., Picatinny, M-LOK' },
-      { key: 'activationMethod', label: 'Activation', type: 'select', required: false, options: ['Momentary', 'Constant', 'Strobe', 'Momentary/Constant', 'Programmable'] },
-      { key: 'weight', label: 'Weight', type: 'text', required: false, placeholder: 'e.g., 4.0 oz' },
       { key: 'manufacturer', label: 'Manufacturer', type: 'text', required: false },
     ],
   },

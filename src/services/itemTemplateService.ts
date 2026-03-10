@@ -48,8 +48,9 @@ export async function createTemplateFromItem(
     name,
     category: item.category,
     defaultFields: {
-      vendorName: (item.customFields?.vendorName as string) || '',
-      vendorUrl: (item.customFields?.vendorUrl as string) || '',
+      ...Object.fromEntries(
+        Object.entries(item.customFields || {}).map(([k, v]) => [k, v ?? ''])
+      ),
       location: item.location || '',
       reorderPoint: item.reorderPoint || 0,
       description: item.description || '',

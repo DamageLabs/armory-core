@@ -141,7 +141,7 @@ export default function ItemList() {
         return false;
       }
 
-      // Low stock filter (only applies to Electronics and Ammunition)
+      // Low stock filter (only applies to Ammunition)
       if (showLowStockOnly) {
         if (!lowStockTypeIds.has(item.inventoryTypeId) || item.quantity > LOW_STOCK_THRESHOLD) {
           return false;
