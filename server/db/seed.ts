@@ -33,6 +33,18 @@ const OPTICS_SCHEMA = JSON.stringify([
   { key: 'manufacturer', label: 'Manufacturer', type: 'text', required: false },
 ]);
 
+const LIGHTS_SCHEMA = JSON.stringify([
+  { key: 'lumens', label: 'Lumens', type: 'text', required: false, placeholder: 'e.g., 1000, 2000' },
+  { key: 'candela', label: 'Candela', type: 'text', required: false, placeholder: 'e.g., 27,600' },
+  { key: 'beamDistance', label: 'Beam Distance', type: 'text', required: false, placeholder: 'e.g., 332m' },
+  { key: 'batteryType', label: 'Battery Type', type: 'text', required: false, placeholder: 'e.g., CR123A, 18650' },
+  { key: 'runtime', label: 'Runtime', type: 'text', required: false, placeholder: 'e.g., 1.5 hrs high' },
+  { key: 'mountType', label: 'Mount Type', type: 'text', required: false, placeholder: 'e.g., Picatinny, M-LOK' },
+  { key: 'activationMethod', label: 'Activation', type: 'select', required: false, options: ['Momentary', 'Constant', 'Strobe', 'Momentary/Constant', 'Programmable'] },
+  { key: 'weight', label: 'Weight', type: 'text', required: false, placeholder: 'e.g., 4.0 oz' },
+  { key: 'manufacturer', label: 'Manufacturer', type: 'text', required: false },
+]);
+
 const AMMUNITION_SCHEMA = JSON.stringify([
   { key: 'caliber', label: 'Caliber', type: 'text', required: true, placeholder: 'e.g., 9mm, .223, 12ga' },
   { key: 'grainWeight', label: 'Grain Weight', type: 'number', required: false, placeholder: 'e.g., 115, 55' },
@@ -47,6 +59,7 @@ const INVENTORY_TYPES = [
   { name: 'Firearms', icon: 'FaCrosshairs', schema: FIREARMS_SCHEMA },
   { name: 'Ammunition', icon: 'FaShieldAlt', schema: AMMUNITION_SCHEMA },
   { name: 'Optics', icon: 'FaBullseye', schema: OPTICS_SCHEMA },
+  { name: 'Lights', icon: 'FaLightbulb', schema: LIGHTS_SCHEMA },
 ];
 
 const CATEGORY_PRESETS: Record<string, string[]> = {
@@ -58,6 +71,7 @@ const CATEGORY_PRESETS: Record<string, string[]> = {
   Firearms: ['Handguns', 'Rifles', 'Shotguns', 'Accessories', 'Holsters & Cases'],
   Ammunition: ['Rimfire', 'Centerfire Pistol', 'Centerfire Rifle', 'Shotshell', 'Specialty'],
   Optics: ['Red Dots', 'Scopes', 'Magnifiers', 'Mounts & Rings', 'Accessories'],
+  Lights: ['Weapon Lights', 'Handheld', 'Headlamps', 'Laser/Light Combos', 'Accessories'],
 };
 
 function ensureParentItemIdColumn(): void {
@@ -206,8 +220,23 @@ export function seedDatabase(): void {
       manufacturer: 'Trijicon',
     });
     insertItem.run('Trijicon RMR Type 2', 'Ruggedized miniature reflex sight with 3.25 MOA adjustable LED dot.', 1, 469.00, 469.00, 'Red Dots', 'Safe A1', 'RIMS-O001', 0, opticsTypeId, rmrFields, glockId, now, now);
+
+    // --- Lights Item (Streamlight TLR-7A, paired to Glock 19) ---
+    const lightsTypeId = typeIds['Lights'];
+    const tlr7Fields = JSON.stringify({
+      lumens: '500',
+      candela: '5,000',
+      beamDistance: '141m',
+      batteryType: 'CR123A',
+      runtime: '1.5 hrs',
+      mountType: 'Picatinny / Universal Rail',
+      activationMethod: 'Momentary/Constant',
+      weight: '2.48 oz',
+      manufacturer: 'Streamlight',
+    });
+    insertItem.run('Streamlight TLR-7A', 'Compact rail-mounted tactical weapon light with high/low switch.', 1, 125.00, 125.00, 'Weapon Lights', 'Safe A1', 'RIMS-L001', 0, lightsTypeId, tlr7Fields, glockId, now, now);
   });
 
   seed();
-  console.log('Database seeded: 2 users, 4 inventory types, 34 categories, 33 items');
+  console.log('Database seeded: 2 users, 5 inventory types, 39 categories, 34 items');
 }
