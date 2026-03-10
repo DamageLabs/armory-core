@@ -1,13 +1,13 @@
 const STORAGE_KEYS = {
-  USERS: 'rims_users',
-  ITEMS: 'rims_items',
-  CURRENT_USER: 'rims_current_user',
-  INITIALIZED: 'rims_initialized',
-  STOCK_HISTORY: 'rims_stock_history',
-  ITEM_TEMPLATES: 'rims_item_templates',
-  COST_HISTORY: 'rims_cost_history',
-  BOMS: 'rims_boms',
-  VENDOR_PRICE_CACHE: 'rims_vendor_price_cache',
+  USERS: 'armory_users',
+  ITEMS: 'armory_items',
+  CURRENT_USER: 'armory_current_user',
+  INITIALIZED: 'armory_initialized',
+  STOCK_HISTORY: 'armory_stock_history',
+  ITEM_TEMPLATES: 'armory_item_templates',
+  COST_HISTORY: 'armory_cost_history',
+  BOMS: 'armory_boms',
+  VENDOR_PRICE_CACHE: 'armory_vendor_price_cache',
 } as const;
 
 export function getFromStorage<T>(key: string): T | null {

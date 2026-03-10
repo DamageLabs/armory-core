@@ -1,7 +1,7 @@
 {
-  "name": "RIMS - React Inventory Management System",
-  "short_name": "RIMS",
-  "description": "Inventory management system for tracking electronic parts and components",
+  "name": "Armory Core - Firearms Inventory Management System",
+  "short_name": "Armory Core",
+  "description": "Inventory management system for tracking firearms, accessories, and ammunition",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

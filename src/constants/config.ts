@@ -1,7 +1,7 @@
 // Application configuration constants
 
-export const APP_NAME = 'RIMS';
-export const APP_DESCRIPTION = 'React Inventory Management System';
+export const APP_NAME = 'Armory Core';
+export const APP_DESCRIPTION = 'Firearms Inventory Management System';
 
 // Pagination
 export const ITEMS_PER_PAGE = 25;
@@ -13,6 +13,6 @@ export const LOW_STOCK_THRESHOLD = 5;
 export const LOW_STOCK_TYPE_NAMES = ['Electronics', 'Ammunition'];
 
 // Theme
-export const THEME_STORAGE_KEY = 'rims-theme';
+export const THEME_STORAGE_KEY = 'armory-theme';
 export type Theme = 'light' | 'dark';
 export const DEFAULT_THEME: Theme = 'light';
