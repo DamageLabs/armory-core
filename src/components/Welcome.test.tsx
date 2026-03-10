@@ -3,14 +3,12 @@ import { render, screen } from '@testing-library/react';
 import Welcome from './Welcome';
 
 describe('Welcome', () => {
-  it('renders the logo text', () => {
+  it('renders the SVG logo', () => {
     render(<Welcome />);
-    expect(screen.getByText('AC')).toBeInTheDocument();
-  });
-
-  it('renders the project title', () => {
-    render(<Welcome />);
-    expect(screen.getByText('Armory Core')).toBeInTheDocument();
+    const svg = document.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    expect(screen.getByText('Armory')).toBeInTheDocument();
+    expect(screen.getByText('Core')).toBeInTheDocument();
   });
 
   it('renders the GitHub link', () => {
@@ -20,8 +18,9 @@ describe('Welcome', () => {
     expect(link).toHaveAttribute('target', '_blank');
   });
 
-  it('renders the project status section', () => {
+  it('renders the description text', () => {
     render(<Welcome />);
-    expect(screen.getByText('Project Status')).toBeInTheDocument();
+    expect(screen.getByText(/complete firearm management system/)).toBeInTheDocument();
+    expect(screen.getByText(/accountability engine/)).toBeInTheDocument();
   });
 });
