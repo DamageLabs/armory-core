@@ -19,6 +19,7 @@ describe('Item types', () => {
         reorderPoint: 5,
         inventoryTypeId: 1,
         customFields: { modelNumber: 'TM-001', partNumber: 'VP-001', vendorName: 'Test Vendor' },
+        parentItemId: null,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
       };
@@ -44,6 +45,7 @@ describe('Item types', () => {
         reorderPoint: 2,
         inventoryTypeId: 1,
         customFields: {},
+        parentItemId: null,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
       };
@@ -66,6 +68,7 @@ describe('Item types', () => {
         reorderPoint: 0,
         inventoryTypeId: 1,
         customFields: { modelNumber: 'NI-001' },
+        parentItemId: null,
       };
 
       expect(formData.name).toBe('New Item');

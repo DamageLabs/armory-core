@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Table, Button, Form, ButtonGroup } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen } from 'react-icons/fa';
+import { Card, Table, Button, Form, ButtonGroup, Badge } from 'react-bootstrap';
+import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { Item } from '../../types/Item';
@@ -366,7 +366,13 @@ export default function ItemList() {
                   />
                 </td>
                 <td>
+                  {item.parentItemId && <FaLink className="me-1 text-muted" size={12} title="Attached to parent item" />}
                   <Link to={`/items/${item.id}`}>{item.name}</Link>
+                  {(item.childCount ?? 0) > 0 && (
+                    <Badge bg="info" className="ms-1" title={`${item.childCount} attached item(s)`}>
+                      {item.childCount}
+                    </Badge>
+                  )}
                 </td>
                 <td className="text-center">
                   <small>{inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name || '-'}</small>

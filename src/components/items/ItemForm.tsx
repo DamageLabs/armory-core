@@ -11,6 +11,7 @@ import { ItemTemplate } from '../../types/ItemTemplate';
 import { useAlert } from '../../contexts/AlertContext';
 import { compressImage, formatBytes, compressionPercent } from '../../utils/imageOptimizer';
 import CustomFieldRenderer from './CustomFieldRenderer';
+import ParentItemSelector from './ParentItemSelector';
 import Breadcrumbs from '../common/Breadcrumbs';
 
 export default function ItemForm() {
@@ -34,6 +35,7 @@ export default function ItemForm() {
     reorderPoint: 0,
     inventoryTypeId: 1,
     customFields: {},
+    parentItemId: null,
   });
 
   const [inventoryTypes, setInventoryTypes] = useState<InventoryType[]>([]);
@@ -96,6 +98,7 @@ export default function ItemForm() {
               reorderPoint: item.reorderPoint,
               inventoryTypeId: item.inventoryTypeId,
               customFields: item.customFields || {},
+              parentItemId: item.parentItemId,
             });
             if (item.picture) {
               setPreviewImage(item.picture);
@@ -319,6 +322,19 @@ export default function ItemForm() {
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </Form.Select>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Form.Label column sm={3}>Parent Item</Form.Label>
+              <Col sm={5}>
+                <ParentItemSelector
+                  value={formData.parentItemId}
+                  onChange={(parentId) => setFormData((prev) => ({ ...prev, parentItemId: parentId }))}
+                  currentItemId={id ? parseInt(id) : undefined}
+                />
+                <Form.Text className="text-muted">
+                  Attach this item to a parent (e.g., optic mounted on a firearm)
+                </Form.Text>
               </Col>
             </Row>
           </fieldset>

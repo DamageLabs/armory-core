@@ -10,6 +10,7 @@ import {
   getLowStockItems,
   getItemsNeedingReorder,
   getItemStats,
+  getItemChildren,
 } from './itemService';
 import { api } from './api';
 
@@ -36,6 +37,7 @@ const mockItem = {
   reorderPoint: 5,
   inventoryTypeId: 1,
   customFields: { modelNumber: 'TM-001', partNumber: 'VP-001', vendorName: 'Test Vendor' },
+  parentItemId: null,
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
 };
@@ -90,6 +92,7 @@ describe('itemService', () => {
         reorderPoint: 0,
         inventoryTypeId: 1,
         customFields: { modelNumber: 'TM-002', vendorName: 'Vendor' },
+        parentItemId: null,
       };
       vi.mocked(api.post).mockResolvedValue({ ...mockItem, ...formData, id: 2, value: 50.0 });
 
@@ -193,6 +196,18 @@ describe('itemService', () => {
 
       expect(api.get).toHaveBeenCalledWith('/items/reorder');
       expect(result).toEqual(reorderItems);
+    });
+  });
+
+  describe('getItemChildren', () => {
+    it('returns child items for a parent', async () => {
+      const children = [{ ...mockItem, id: 2, name: 'Child Item', parentItemId: 1 }];
+      vi.mocked(api.get).mockResolvedValue(children);
+
+      const result = await getItemChildren(1);
+
+      expect(api.get).toHaveBeenCalledWith('/items/1/children');
+      expect(result).toEqual(children);
     });
   });
 });
