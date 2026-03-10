@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Table, Button, Form, ButtonGroup, Badge } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { Item } from '../../types/Item';
@@ -13,7 +13,7 @@ import ItemFilters from './ItemFilters';
 import BulkActions from './BulkActions';
 import LowStockAlert from '../common/LowStockAlert';
 import EmptyState from '../common/EmptyState';
-import { exportToCSV, exportToPDF } from '../../utils/export';
+import { exportToCSV, exportToPDF, backupItemsToCSV, backupItemsToJSON } from '../../utils/export';
 import { formatCurrency } from '../../utils/formatters';
 import { ITEMS_PER_PAGE, LOW_STOCK_THRESHOLD, LOW_STOCK_TYPE_NAMES } from '../../constants/config';
 
@@ -298,6 +298,16 @@ export default function ItemList() {
               <Button variant="outline-danger" onClick={() => exportToPDF(filteredItems)}>
                 <FaFilePdf className="me-1" />
                 PDF
+              </Button>
+            </ButtonGroup>
+            <ButtonGroup size="sm">
+              <Button variant="outline-secondary" onClick={() => backupItemsToCSV(items)} disabled={items.length === 0} title="Backup all items as CSV">
+                <FaDatabase className="me-1" />
+                Backup CSV
+              </Button>
+              <Button variant="outline-info" onClick={() => backupItemsToJSON(items)} disabled={items.length === 0} title="Backup all items as JSON">
+                <FaFileCode className="me-1" />
+                Backup JSON
               </Button>
             </ButtonGroup>
             <Link to="/items/new" className="btn btn-primary">

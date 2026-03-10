@@ -94,12 +94,62 @@ export function exportToPDF(items: Item[]): void {
   doc.save(`${APP_NAME.toLowerCase()}-inventory-${getDateStamp()}.pdf`);
 }
 
-function getDateStamp(): string {
+export function generateBackupJSON(items: Item[]): string {
+  return JSON.stringify(items, null, 2);
+}
+
+export function generateBackupCSV(items: Item[]): string {
+  const customFieldKeys = new Set<string>();
+  for (const item of items) {
+    if (item.customFields) {
+      for (const key of Object.keys(item.customFields)) {
+        customFieldKeys.add(key);
+      }
+    }
+  }
+  const cfKeys = Array.from(customFieldKeys);
+
+  const headers = [
+    'ID', 'Name', 'Description', 'Quantity', 'Unit Value', 'Total Value',
+    'Category', 'Location', 'Inventory Type ID', 'Parent Item ID',
+    'Barcode', 'Reorder Point', ...cfKeys, 'Created At', 'Updated At',
+  ];
+
+  const rows = items.map((item) => [
+    item.id, item.name, item.description, item.quantity, item.unitValue, item.value,
+    item.category, item.location, item.inventoryTypeId, item.parentItemId ?? '',
+    item.barcode, item.reorderPoint, ...cfKeys.map((key) => item.customFields?.[key] ?? ''),
+    item.createdAt, item.updatedAt,
+  ]);
+
+  return [
+    headers.join(','),
+    ...rows.map((row) =>
+      row.map((cell) => {
+        const str = String(cell ?? '');
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      }).join(',')
+    ),
+  ].join('\n');
+}
+
+export function backupItemsToJSON(items: Item[]): void {
+  downloadFile(generateBackupJSON(items), `${APP_NAME.toLowerCase()}-items-backup-${getDateStamp()}.json`, 'application/json');
+}
+
+export function backupItemsToCSV(items: Item[]): void {
+  downloadFile(generateBackupCSV(items), `${APP_NAME.toLowerCase()}-items-backup-${getDateStamp()}.csv`, 'text/csv');
+}
+
+export function getDateStamp(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
-function downloadFile(content: string, filename: string, mimeType: string): void {
+export function downloadFile(content: string, filename: string, mimeType: string): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
