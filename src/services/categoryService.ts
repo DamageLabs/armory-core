@@ -16,7 +16,7 @@ export async function getCategoryNamesByType(inventoryTypeId: number): Promise<s
 
 export async function getCategoryNames(): Promise<string[]> {
   const cats = await getAllCategories();
-  return cats.map((c) => c.name);
+  return [...new Set(cats.map((c) => c.name))];
 }
 
 export async function getCategoryById(id: number): Promise<Category | null> {
