@@ -145,9 +145,31 @@ function migrateOpticsAndLights(): void {
   txn();
 }
 
+function fixOrphanedItems(): void {
+  const db = getDatabase();
+  // Reassign items whose inventory_type_id points to a deleted type
+  const orphaned = db.prepare(`
+    SELECT i.id FROM items i
+    LEFT JOIN inventory_types t ON i.inventory_type_id = t.id
+    WHERE t.id IS NULL
+  `).all() as { id: number }[];
+
+  if (orphaned.length === 0) return;
+
+  // Default to Accessories for orphaned items (most likely came from deleted Electronics/Optics/Lights)
+  const accessories = db.prepare("SELECT id FROM inventory_types WHERE name = 'Accessories'").get() as { id: number } | undefined;
+  if (!accessories) return;
+
+  const update = db.prepare('UPDATE items SET inventory_type_id = ? WHERE id = ?');
+  for (const item of orphaned) {
+    update.run(accessories.id, item.id);
+  }
+}
+
 export function seedDatabase(): void {
   ensureParentItemIdColumn();
   ensureInventoryTypes();
   migrateOpticsAndLights();
+  fixOrphanedItems();
   ensureCategories();
 }
