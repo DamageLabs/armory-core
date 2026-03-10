@@ -134,4 +134,70 @@ describe('items routes', () => {
       expect(res.body).toHaveLength(1);
     });
   });
+
+  describe('POST /api/items/bulk-create', () => {
+    it('creates multiple items and returns count with id mapping', async () => {
+      let insertCallCount = 0;
+      vi.mocked(db.insert).mockImplementation(() => {
+        insertCallCount++;
+        return { id: insertCallCount, name: 'Item' };
+      });
+      vi.mocked(db.run).mockReturnValue({ changes: 1, lastInsertRowid: 0 } as never);
+      const mockDb = { transaction: vi.fn((fn: () => void) => fn) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
+
+      const res = await request(app).post('/api/items/bulk-create').send({
+        items: [
+          { id: 10, name: 'Item A', quantity: 5, unitValue: 10 },
+          { id: 11, name: 'Item B', quantity: 3, unitValue: 20 },
+        ],
+      });
+      expect(res.status).toBe(201);
+      expect(res.body.created).toBe(2);
+      expect(res.body.idMapping).toBeDefined();
+    });
+
+    it('remaps parent-child relationships', async () => {
+      let insertCallCount = 0;
+      vi.mocked(db.insert).mockImplementation(() => {
+        insertCallCount++;
+        return { id: 100 + insertCallCount, name: 'Item' };
+      });
+      vi.mocked(db.run).mockReturnValue({ changes: 1, lastInsertRowid: 0 } as never);
+      const mockDb = { transaction: vi.fn((fn: () => void) => fn) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
+
+      const res = await request(app).post('/api/items/bulk-create').send({
+        items: [
+          { id: 1, name: 'Parent' },
+          { id: 2, name: 'Child', parentItemId: 1 },
+        ],
+      });
+      expect(res.status).toBe(201);
+      expect(res.body.created).toBe(2);
+    });
+
+    it('returns 400 when items array is missing', async () => {
+      const res = await request(app).post('/api/items/bulk-create').send({});
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 when items array is empty', async () => {
+      const res = await request(app).post('/api/items/bulk-create').send({ items: [] });
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('DELETE /api/items/all', () => {
+    it('deletes all items and history', async () => {
+      vi.mocked(db.run).mockReturnValue({ changes: 1, lastInsertRowid: 0 } as never);
+      const mockDb = { transaction: vi.fn((fn: () => void) => fn) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
+
+      const res = await request(app).delete('/api/items/all');
+      expect(res.status).toBe(200);
+      expect(res.body.message).toContain('cleared');
+      expect(db.run).toHaveBeenCalledTimes(3);
+    });
+  });
 });
