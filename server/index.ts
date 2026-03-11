@@ -17,6 +17,7 @@ async function main() {
   const userRoutes = (await import('./routes/users')).default;
   const receiptRoutes = (await import('./routes/receipts')).default;
   const auditLogRoutes = (await import('./routes/auditLog')).default;
+  const savedFilterRoutes = (await import('./routes/savedFilters')).default;
 
   // Seed database on startup
   await seedDatabase();
@@ -42,6 +43,7 @@ async function main() {
   app.use('/api/boms', requireAuth, bomRoutes);
   app.use('/api/receipts', requireAuth, receiptRoutes);
   app.use('/api/users', requireAuth, requireAdmin, userRoutes);
+  app.use('/api/saved-filters', requireAuth, savedFilterRoutes);
   app.use('/api/audit-log', requireAuth, requireAdmin, auditLogRoutes);
 
   // Health check

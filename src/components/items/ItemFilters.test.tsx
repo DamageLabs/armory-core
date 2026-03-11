@@ -16,6 +16,8 @@ describe('ItemFilters', () => {
     typeFilter: '',
     onTypeChange: vi.fn(),
     onReset: vi.fn(),
+    advancedFilters: [],
+    onAdvancedFiltersChange: vi.fn(),
   };
 
   beforeEach(() => {
