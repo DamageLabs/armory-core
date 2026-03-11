@@ -16,7 +16,7 @@ async function main() {
   const userRoutes = (await import('./routes/users')).default;
 
   // Seed database on startup
-  seedDatabase();
+  await seedDatabase();
 
   const app = express();
   const PORT = process.env.PORT || 3001;
