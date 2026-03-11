@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
-import { Card, Table, Button, Modal, Form, Row, Col, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CForm, CRow, CCol, CBadge, CFormLabel, CFormInput, CFormSelect, CFormTextarea } from '@coreui/react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import * as itemTemplateService from '../../services/itemTemplateService';
 import * as categoryService from '../../services/categoryService';
@@ -142,14 +142,14 @@ export default function ItemTemplates() {
   };
 
   return (
-    <Card>
-      <Card.Header className="d-flex justify-content-between align-items-center">
+    <CCard>
+      <CCardHeader className="d-flex justify-content-between align-items-center">
         <h4 className="mb-0">Item Templates</h4>
-        <Button variant="primary" onClick={() => handleOpenModal()}>
+        <CButton color="primary" onClick={() => handleOpenModal()}>
           <FaPlus className="me-1" /> New Template
-        </Button>
-      </Card.Header>
-      <Card.Body>
+        </CButton>
+      </CCardHeader>
+      <CCardBody>
         <p className="text-muted">
           Create templates to quickly fill in common values when adding new items.
         </p>
@@ -159,62 +159,66 @@ export default function ItemTemplates() {
             No templates created yet. Create a template to speed up item entry.
           </p>
         ) : (
-          <Table striped hover responsive>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Manufacturer</th>
-                <th>Default Location</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map((template) => (
-                <tr key={template.id}>
-                  <td>{template.name}</td>
-                  <td>
-                    <Badge bg="secondary">{template.category}</Badge>
-                  </td>
-                  <td>{template.defaultFields.manufacturer || '-'}</td>
-                  <td>{template.defaultFields.location || '-'}</td>
-                  <td>
-                    <div className="d-flex gap-1">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => handleOpenModal(template)}
-                      >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => setDeleteTarget(template)}
-                      >
-                        <FaTrash />
-                      </Button>
-                    </div>
-                  </td>
+          <div className="table-responsive">
+            <table className="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Manufacturer</th>
+                  <th>Default Location</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {templates.map((template) => (
+                  <tr key={template.id}>
+                    <td>{template.name}</td>
+                    <td>
+                      <CBadge color="secondary">{template.category}</CBadge>
+                    </td>
+                    <td>{template.defaultFields.manufacturer || '-'}</td>
+                    <td>{template.defaultFields.location || '-'}</td>
+                    <td>
+                      <div className="d-flex gap-1">
+                        <CButton
+                          color="primary"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenModal(template)}
+                        >
+                          <FaEdit />
+                        </CButton>
+                        <CButton
+                          color="danger"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDeleteTarget(template)}
+                        >
+                          <FaTrash />
+                        </CButton>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </Card.Body>
+      </CCardBody>
 
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>
+      <CModal visible={showModal} onClose={handleCloseModal} size="lg">
+        <CModalHeader closeButton>
+          <CModalTitle>
             {editingTemplate ? 'Edit Template' : 'New Template'}
-          </Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSubmit}>
-          <Modal.Body>
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Template Name</Form.Label>
-              <Col sm={9}>
-                <Form.Control
+          </CModalTitle>
+        </CModalHeader>
+        <CForm onSubmit={handleSubmit}>
+          <CModalBody>
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Template Name</CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
                   type="text"
                   name="name"
                   value={formData.name}
@@ -222,13 +226,13 @@ export default function ItemTemplates() {
                   required
                   placeholder="e.g., Glock 19 Template"
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Category</Form.Label>
-              <Col sm={9}>
-                <Form.Select
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Category</CFormLabel>
+              <CCol sm={9}>
+                <CFormSelect
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
@@ -236,76 +240,75 @@ export default function ItemTemplates() {
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
-                </Form.Select>
-              </Col>
-            </Row>
+                </CFormSelect>
+              </CCol>
+            </CRow>
 
             <hr />
             <h6>Default Values</h6>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Manufacturer</Form.Label>
-              <Col sm={9}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Manufacturer</CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
                   type="text"
                   name="default_manufacturer"
                   value={formData.defaultFields.manufacturer || ''}
                   onChange={handleChange}
                   placeholder="e.g., Glock, Sig Sauer"
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Location</Form.Label>
-              <Col sm={9}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Location</CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
                   type="text"
                   name="default_location"
                   value={formData.defaultFields.location || ''}
                   onChange={handleChange}
                   placeholder="e.g., Shelf A-1"
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Reorder Point</Form.Label>
-              <Col sm={9}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Reorder Point</CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
                   type="number"
                   name="default_reorderPoint"
                   value={formData.defaultFields.reorderPoint || 0}
                   onChange={handleChange}
                   min={0}
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Description</Form.Label>
-              <Col sm={9}>
-                <Form.Control
-                  as="textarea"
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Description</CFormLabel>
+              <CCol sm={9}>
+                <CFormTextarea
                   rows={3}
                   name="default_description"
                   value={formData.defaultFields.description || ''}
                   onChange={handleChange}
                   placeholder="Default description text..."
                 />
-              </Col>
-            </Row>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
+              </CCol>
+            </CRow>
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={handleCloseModal}>
               Cancel
-            </Button>
-            <Button variant="primary" type="submit">
+            </CButton>
+            <CButton color="primary" type="submit">
               {editingTemplate ? 'Update' : 'Create'}
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
+            </CButton>
+          </CModalFooter>
+        </CForm>
+      </CModal>
 
       <ConfirmModal
         show={!!deleteTarget}
@@ -315,6 +318,6 @@ export default function ItemTemplates() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
-    </Card>
+    </CCard>
   );
 }

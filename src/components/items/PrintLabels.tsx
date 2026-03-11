@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Item } from '../../types/Item';
-import { Card, Form, Button, Row, Col, Table, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CRow, CCol, CBadge, CFormLabel, CFormCheck, CFormSelect, CFormInput } from '@coreui/react';
 import { FaPrint, FaBarcode, FaQrcode, FaCheck } from 'react-icons/fa';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode';
@@ -227,24 +227,24 @@ export default function PrintLabels() {
           Print Labels
         </h4>
         {selectedIds.size > 0 && (
-          <Button variant="primary" onClick={handlePrint}>
+          <CButton color="primary" onClick={handlePrint}>
             <FaPrint className="me-2" />
             Print {selectedIds.size} Label{selectedIds.size !== 1 ? 's' : ''}
-          </Button>
+          </CButton>
         )}
       </div>
 
-      <Row>
-        <Col lg={4} className="mb-4">
-          <Card>
-            <Card.Header>
+      <CRow>
+        <CCol lg={4} className="mb-4">
+          <CCard>
+            <CCardHeader>
               <h6 className="mb-0">Label Settings</h6>
-            </Card.Header>
-            <Card.Body>
-              <Form.Group className="mb-3">
-                <Form.Label>Label Type</Form.Label>
+            </CCardHeader>
+            <CCardBody>
+              <div className="mb-3">
+                <CFormLabel>Label Type</CFormLabel>
                 <div>
-                  <Form.Check
+                  <CFormCheck
                     inline
                     type="radio"
                     id="type-barcode"
@@ -252,7 +252,7 @@ export default function PrintLabels() {
                     checked={config.type === 'barcode'}
                     onChange={() => setConfig((c) => ({ ...c, type: 'barcode' }))}
                   />
-                  <Form.Check
+                  <CFormCheck
                     inline
                     type="radio"
                     id="type-qrcode"
@@ -261,11 +261,11 @@ export default function PrintLabels() {
                     onChange={() => setConfig((c) => ({ ...c, type: 'qrcode' }))}
                   />
                 </div>
-              </Form.Group>
+              </div>
 
-              <Form.Group className="mb-3">
-                <Form.Label>Label Size</Form.Label>
-                <Form.Select
+              <div className="mb-3">
+                <CFormLabel>Label Size</CFormLabel>
+                <CFormSelect
                   value={config.size}
                   onChange={(e) =>
                     setConfig((c) => ({ ...c, size: e.target.value as LabelSize }))
@@ -274,45 +274,45 @@ export default function PrintLabels() {
                   <option value="small">Small (1.5" x 0.8")</option>
                   <option value="medium">Medium (2" x 1")</option>
                   <option value="large">Large (2.8" x 1.4")</option>
-                </Form.Select>
-              </Form.Group>
+                </CFormSelect>
+              </div>
 
-              <Form.Group className="mb-3">
-                <Form.Label>Include on Label</Form.Label>
-                <Form.Check
+              <div className="mb-3">
+                <CFormLabel>Include on Label</CFormLabel>
+                <CFormCheck
                   type="checkbox"
                   label="Item Name"
                   checked={config.showName}
                   onChange={(e) => setConfig((c) => ({ ...c, showName: e.target.checked }))}
                 />
-                <Form.Check
+                <CFormCheck
                   type="checkbox"
                   label="Location"
                   checked={config.showLocation}
                   onChange={(e) => setConfig((c) => ({ ...c, showLocation: e.target.checked }))}
                 />
-                <Form.Check
+                <CFormCheck
                   type="checkbox"
                   label="Unit Price"
                   checked={config.showPrice}
                   onChange={(e) => setConfig((c) => ({ ...c, showPrice: e.target.checked }))}
                 />
-                <Form.Check
+                <CFormCheck
                   type="checkbox"
                   label="Quantity"
                   checked={config.showQuantity}
                   onChange={(e) => setConfig((c) => ({ ...c, showQuantity: e.target.checked }))}
                 />
-              </Form.Group>
-            </Card.Body>
-          </Card>
+              </div>
+            </CCardBody>
+          </CCard>
 
           {selectedItems.length > 0 && (
-            <Card className="mt-3">
-              <Card.Header>
+            <CCard className="mt-3">
+              <CCardHeader>
                 <h6 className="mb-0">Preview</h6>
-              </Card.Header>
-              <Card.Body className="d-flex flex-wrap gap-2 justify-content-center">
+              </CCardHeader>
+              <CCardBody className="d-flex flex-wrap gap-2 justify-content-center">
                 {selectedItems.slice(0, 2).map((item) => (
                   <div
                     key={item.id}
@@ -367,29 +367,29 @@ export default function PrintLabels() {
                     +{selectedItems.length - 2} more
                   </div>
                 )}
-              </Card.Body>
-            </Card>
+              </CCardBody>
+            </CCard>
           )}
-        </Col>
+        </CCol>
 
-        <Col lg={8}>
-          <Card>
-            <Card.Header>
+        <CCol lg={8}>
+          <CCard>
+            <CCardHeader>
               <div className="d-flex justify-content-between align-items-center">
                 <h6 className="mb-0">Select Items</h6>
                 <div>
-                  <Button variant="link" size="sm" onClick={selectAll}>
+                  <CButton color="link" size="sm" onClick={selectAll}>
                     Select All
-                  </Button>
-                  <Button variant="link" size="sm" onClick={selectNone}>
+                  </CButton>
+                  <CButton color="link" size="sm" onClick={selectNone}>
                     Select None
-                  </Button>
+                  </CButton>
                 </div>
               </div>
-            </Card.Header>
-            <Card.Body className="p-0">
+            </CCardHeader>
+            <CCardBody className="p-0">
               <div className="p-2 border-bottom">
-                <Form.Control
+                <CFormInput
                   type="text"
                   placeholder="Search items..."
                   value={searchTerm}
@@ -397,7 +397,7 @@ export default function PrintLabels() {
                 />
               </div>
               <div style={{ maxHeight: '500px', overflow: 'auto' }}>
-                <Table hover className="mb-0">
+                <table className="table table-hover mb-0">
                   <thead className="sticky-top bg-light">
                     <tr>
                       <th style={{ width: '40px' }}></th>
@@ -424,7 +424,7 @@ export default function PrintLabels() {
                           {item.barcode ? (
                             <code>{item.barcode}</code>
                           ) : (
-                            <Badge bg="secondary">Auto-generate</Badge>
+                            <CBadge color="secondary">Auto-generate</CBadge>
                           )}
                         </td>
                         <td>{item.location || '-'}</td>
@@ -438,12 +438,12 @@ export default function PrintLabels() {
                       </tr>
                     )}
                   </tbody>
-                </Table>
+                </table>
               </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
 
       {/* Hidden print container */}
       <div style={{ display: 'none' }}>

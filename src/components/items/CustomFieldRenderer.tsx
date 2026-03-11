@@ -1,4 +1,4 @@
-import { Form, Row, Col } from 'react-bootstrap';
+import { CRow, CCol, CFormLabel, CFormSelect, CFormCheck, CFormInput } from '@coreui/react';
 import { FieldDefinition } from '../../types/InventoryType';
 
 interface CustomFieldRendererProps {
@@ -20,15 +20,15 @@ export default function CustomFieldRenderer({
     <fieldset className="mb-4">
       <legend className="h6 text-muted border-bottom pb-2 mb-3">Type-Specific Fields</legend>
       {schema.map((field) => (
-        <Row className="mb-3" key={field.key}>
-          <Form.Label column sm={3}>
+        <CRow className="mb-3" key={field.key}>
+          <CFormLabel className="col-sm-3 col-form-label">
             {field.label}
             {field.required && <span className="text-danger"> *</span>}
-          </Form.Label>
-          <Col sm={5}>
+          </CFormLabel>
+          <CCol sm={5}>
             {renderField(field, values[field.key], onChange, readOnly)}
-          </Col>
-        </Row>
+          </CCol>
+        </CRow>
       ))}
     </fieldset>
   );
@@ -43,7 +43,7 @@ function renderField(
   switch (field.type) {
     case 'select':
       return (
-        <Form.Select
+        <CFormSelect
           value={String(value || '')}
           onChange={(e) => onChange(field.key, e.target.value)}
           disabled={readOnly}
@@ -53,11 +53,11 @@ function renderField(
           {(field.options || []).map((opt) => (
             <option key={opt} value={opt}>{opt}</option>
           ))}
-        </Form.Select>
+        </CFormSelect>
       );
     case 'boolean':
       return (
-        <Form.Check
+        <CFormCheck
           type="checkbox"
           checked={!!value}
           onChange={(e) => onChange(field.key, e.target.checked)}
@@ -67,7 +67,7 @@ function renderField(
       );
     case 'number':
       return (
-        <Form.Control
+        <CFormInput
           type="number"
           value={value !== undefined && value !== null ? String(value) : ''}
           onChange={(e) => onChange(field.key, e.target.value ? parseFloat(e.target.value) : '')}
@@ -78,7 +78,7 @@ function renderField(
       );
     case 'date':
       return (
-        <Form.Control
+        <CFormInput
           type="date"
           value={String(value || '')}
           onChange={(e) => onChange(field.key, e.target.value)}
@@ -89,7 +89,7 @@ function renderField(
     case 'text':
     default:
       return (
-        <Form.Control
+        <CFormInput
           type="text"
           value={String(value || '')}
           onChange={(e) => onChange(field.key, e.target.value)}

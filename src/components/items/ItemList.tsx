@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Table, Button, Form, ButtonGroup, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CButtonGroup, CBadge, CFormCheck, CTable } from '@coreui/react';
 import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase, FaThLarge, FaList } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
@@ -322,54 +322,56 @@ export default function ItemList() {
   const somePageItemsSelected = items.some((item) => selectedIds.has(item.id));
 
   return (
-    <Card>
-      <Card.Header>
+    <CCard>
+      <CCardHeader>
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <h4 className="mb-0">Inventory Items</h4>
           <div className="d-flex gap-2 flex-wrap">
-            <ButtonGroup size="sm">
-              <Button
-                variant={viewMode === 'table' ? 'primary' : 'outline-primary'}
+            <CButtonGroup size="sm">
+              <CButton
+                color={viewMode === 'table' ? 'primary' : 'primary'}
+                variant={viewMode === 'table' ? undefined : 'outline'}
                 onClick={() => handleViewModeChange('table')}
                 title="Table view"
               >
                 <FaList />
-              </Button>
-              <Button
-                variant={viewMode === 'card' ? 'primary' : 'outline-primary'}
+              </CButton>
+              <CButton
+                color={viewMode === 'card' ? 'primary' : 'primary'}
+                variant={viewMode === 'card' ? undefined : 'outline'}
                 onClick={() => handleViewModeChange('card')}
                 title="Card view"
               >
                 <FaThLarge />
-              </Button>
-            </ButtonGroup>
-            <ButtonGroup size="sm">
-              <Button variant="outline-success" onClick={handleExportCSV}>
+              </CButton>
+            </CButtonGroup>
+            <CButtonGroup size="sm">
+              <CButton color="success" variant="outline" onClick={handleExportCSV}>
                 <FaFileExcel className="me-1" />
                 CSV
-              </Button>
-              <Button variant="outline-danger" onClick={handleExportPDF}>
+              </CButton>
+              <CButton color="danger" variant="outline" onClick={handleExportPDF}>
                 <FaFilePdf className="me-1" />
                 PDF
-              </Button>
-            </ButtonGroup>
-            <ButtonGroup size="sm">
-              <Button variant="outline-secondary" onClick={handleBackupCSV} disabled={totalItems === 0} title="Backup all items as CSV">
+              </CButton>
+            </CButtonGroup>
+            <CButtonGroup size="sm">
+              <CButton color="secondary" variant="outline" onClick={handleBackupCSV} disabled={totalItems === 0} title="Backup all items as CSV">
                 <FaDatabase className="me-1" />
                 Backup CSV
-              </Button>
-              <Button variant="outline-info" onClick={handleBackupJSON} disabled={totalItems === 0} title="Backup all items as JSON">
+              </CButton>
+              <CButton color="info" variant="outline" onClick={handleBackupJSON} disabled={totalItems === 0} title="Backup all items as JSON">
                 <FaFileCode className="me-1" />
                 Backup JSON
-              </Button>
-            </ButtonGroup>
+              </CButton>
+            </CButtonGroup>
             <Link to="/items/new" className="btn btn-primary">
               New Item
             </Link>
           </div>
         </div>
-      </Card.Header>
-      <Card.Body>
+      </CCardHeader>
+      <CCardBody>
         {(lowStockCounts.lowStock > 0 || lowStockCounts.outOfStock > 0) && (
           <LowStockAlert
             items={[
@@ -396,9 +398,9 @@ export default function ItemList() {
         {showLowStockOnly && (
           <div className="mb-3">
             <span className="badge bg-warning text-dark me-2">Showing low stock items only</span>
-            <Button variant="link" size="sm" onClick={() => handleLowStockToggle(false)}>
+            <CButton color="link" size="sm" onClick={() => handleLowStockToggle(false)}>
               Clear
-            </Button>
+            </CButton>
           </div>
         )}
 
@@ -409,101 +411,102 @@ export default function ItemList() {
         />
 
         {viewMode === 'table' ? (
-          <Table hover responsive>
-            <thead>
-              <tr>
-                <th className="text-center" style={{ width: '40px' }}>
-                  <Form.Check
-                    type="checkbox"
-                    checked={allPageItemsSelected}
-                    ref={(el: HTMLInputElement | null) => {
-                      if (el) {
-                        el.indeterminate = somePageItemsSelected && !allPageItemsSelected;
-                      }
-                    }}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                    aria-label="Select all items on page"
-                  />
-                </th>
-                <SortHeader field="name" currentField={sortField} direction={sortDirection} onSort={handleSort}>Item Name</SortHeader>
-                <th className="text-center">Type</th>
-                <SortHeader field="quantity" currentField={sortField} direction={sortDirection} onSort={handleSort}>Quantity</SortHeader>
-                <SortHeader field="unitValue" currentField={sortField} direction={sortDirection} onSort={handleSort}>Unit Value</SortHeader>
-                <SortHeader field="value" currentField={sortField} direction={sortDirection} onSort={handleSort}>Total Value</SortHeader>
-                <SortHeader field="location" currentField={sortField} direction={sortDirection} onSort={handleSort}>Location</SortHeader>
-                <SortHeader field="category" currentField={sortField} direction={sortDirection} onSort={handleSort}>Category</SortHeader>
-                <th className="text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className={selectedIds.has(item.id) ? 'table-active' : ''}>
-                  <td className="text-center">
-                    <Form.Check
-                      type="checkbox"
-                      checked={selectedIds.has(item.id)}
-                      onChange={(e) => handleSelectItem(item.id, e.target.checked)}
-                      aria-label={`Select ${item.name}`}
+          <div className="table-responsive">
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th className="text-center" style={{ width: '40px' }}>
+                    <CFormCheck
+                      checked={allPageItemsSelected}
+                      ref={(el: HTMLInputElement | null) => {
+                        if (el) {
+                          el.indeterminate = somePageItemsSelected && !allPageItemsSelected;
+                        }
+                      }}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      aria-label="Select all items on page"
                     />
-                  </td>
-                  <td>
-                    <Link to={`/items/${item.id}`}>{item.name}</Link>
-                    {(item.childCount ?? 0) > 0 && (
-                      <Badge bg="info" className="ms-1" title={`${item.childCount} attached item(s)`}>
-                        {item.childCount}
-                      </Badge>
-                    )}
-                    {item.parentItemId && item.parentName && (
-                      <Link to={`/items/${item.parentItemId}`} className="ms-1">
-                        <Badge bg="dark" title={`Attached to ${item.parentName}`}>
-                          <FaLink size={10} className="me-1" />{item.parentName}
-                        </Badge>
-                      </Link>
-                    )}
-                  </td>
-                  <td className="text-center">
-                    <Badge bg="primary">
-                      {inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name || '-'}
-                    </Badge>
-                  </td>
-                  <td className={`text-center ${lowStockTypeIds.has(item.inventoryTypeId) ? (item.quantity === 0 ? 'text-danger fw-bold' : item.quantity <= LOW_STOCK_THRESHOLD ? 'text-warning fw-bold' : '') : ''}`}>
-                    {item.quantity}
-                  </td>
-                  <td className="text-center">{formatCurrency(item.unitValue)}</td>
-                  <td className="text-center">{formatCurrency(item.value)}</td>
-                  <td className="text-center">{item.location}</td>
-                  <td className="text-center">{item.category}</td>
-                  <td className="text-center">
-                    <Link
-                      to={`/items/${item.id}/edit`}
-                      className="btn btn-sm btn-outline-primary me-1"
-                      aria-label={`Edit ${item.name}`}
-                    >
-                      <FaEdit aria-hidden="true" />
-                    </Link>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => setDeleteModalItem(item)}
-                      aria-label={`Delete ${item.name}`}
-                    >
-                      <FaTrash aria-hidden="true" />
-                    </Button>
-                  </td>
+                  </th>
+                  <SortHeader field="name" currentField={sortField} direction={sortDirection} onSort={handleSort}>Item Name</SortHeader>
+                  <th className="text-center">Type</th>
+                  <SortHeader field="quantity" currentField={sortField} direction={sortDirection} onSort={handleSort}>Quantity</SortHeader>
+                  <SortHeader field="unitValue" currentField={sortField} direction={sortDirection} onSort={handleSort}>Unit Value</SortHeader>
+                  <SortHeader field="value" currentField={sortField} direction={sortDirection} onSort={handleSort}>Total Value</SortHeader>
+                  <SortHeader field="location" currentField={sortField} direction={sortDirection} onSort={handleSort}>Location</SortHeader>
+                  <SortHeader field="category" currentField={sortField} direction={sortDirection} onSort={handleSort}>Category</SortHeader>
+                  <th className="text-center">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="table-secondary">
-                <td></td>
-                <td colSpan={2}><strong>Totals ({totalItems} items)</strong></td>
-                <td className="text-center"><strong>{totalQuantity}</strong></td>
-                <td className="text-center"></td>
-                <td className="text-center"><strong>{formatCurrency(totalValue)}</strong></td>
-                <td colSpan={3}></td>
-              </tr>
-            </tfoot>
-          </Table>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.id} className={selectedIds.has(item.id) ? 'table-active' : ''}>
+                    <td className="text-center">
+                      <CFormCheck
+                        checked={selectedIds.has(item.id)}
+                        onChange={(e) => handleSelectItem(item.id, e.target.checked)}
+                        aria-label={`Select ${item.name}`}
+                      />
+                    </td>
+                    <td>
+                      <Link to={`/items/${item.id}`}>{item.name}</Link>
+                      {(item.childCount ?? 0) > 0 && (
+                        <CBadge color="info" className="ms-1" title={`${item.childCount} attached item(s)`}>
+                          {item.childCount}
+                        </CBadge>
+                      )}
+                      {item.parentItemId && item.parentName && (
+                        <Link to={`/items/${item.parentItemId}`} className="ms-1">
+                          <CBadge color="dark" title={`Attached to ${item.parentName}`}>
+                            <FaLink size={10} className="me-1" />{item.parentName}
+                          </CBadge>
+                        </Link>
+                      )}
+                    </td>
+                    <td className="text-center">
+                      <CBadge color="primary">
+                        {inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name || '-'}
+                      </CBadge>
+                    </td>
+                    <td className={`text-center ${lowStockTypeIds.has(item.inventoryTypeId) ? (item.quantity === 0 ? 'text-danger fw-bold' : item.quantity <= LOW_STOCK_THRESHOLD ? 'text-warning fw-bold' : '') : ''}`}>
+                      {item.quantity}
+                    </td>
+                    <td className="text-center">{formatCurrency(item.unitValue)}</td>
+                    <td className="text-center">{formatCurrency(item.value)}</td>
+                    <td className="text-center">{item.location}</td>
+                    <td className="text-center">{item.category}</td>
+                    <td className="text-center">
+                      <Link
+                        to={`/items/${item.id}/edit`}
+                        className="btn btn-sm btn-outline-primary me-1"
+                        aria-label={`Edit ${item.name}`}
+                      >
+                        <FaEdit aria-hidden="true" />
+                      </Link>
+                      <CButton
+                        color="danger"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDeleteModalItem(item)}
+                        aria-label={`Delete ${item.name}`}
+                      >
+                        <FaTrash aria-hidden="true" />
+                      </CButton>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="table-secondary">
+                  <td></td>
+                  <td colSpan={2}><strong>Totals ({totalItems} items)</strong></td>
+                  <td className="text-center"><strong>{totalQuantity}</strong></td>
+                  <td className="text-center"></td>
+                  <td className="text-center"><strong>{formatCurrency(totalValue)}</strong></td>
+                  <td colSpan={3}></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         ) : (
           <>
             <ItemCardGrid
@@ -544,7 +547,7 @@ export default function ItemList() {
             itemsPerPage={ITEMS_PER_PAGE}
           />
         )}
-      </Card.Body>
+      </CCardBody>
 
       <ConfirmModal
         show={!!deleteModalItem}
@@ -576,6 +579,6 @@ export default function ItemList() {
           setPendingCategory('');
         }}
       />
-    </Card>
+    </CCard>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Card, Badge, Row, Col } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CBadge, CRow, CCol } from '@coreui/react';
 import { FaArrowUp, FaArrowDown, FaMinus } from 'react-icons/fa';
 import * as costHistoryService from '../../services/costHistoryService';
 import { CostHistoryEntry, CostStats } from '../../types/CostHistory';
@@ -98,31 +98,31 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
     .join(' ');
 
   return (
-    <Card className="mt-3">
-      <Card.Header>
+    <CCard className="mt-3">
+      <CCardHeader>
         <h6 className="mb-0">
           Price History {getTrendIcon(stats.trend)}
         </h6>
-      </Card.Header>
-      <Card.Body>
-        <Row className="mb-3">
-          <Col xs={6} md={3} className="text-center">
+      </CCardHeader>
+      <CCardBody>
+        <CRow className="mb-3">
+          <CCol xs={6} md={3} className="text-center">
             <div className="text-muted small">Min</div>
             <strong>{formatCurrency(stats.min)}</strong>
-          </Col>
-          <Col xs={6} md={3} className="text-center">
+          </CCol>
+          <CCol xs={6} md={3} className="text-center">
             <div className="text-muted small">Max</div>
             <strong>{formatCurrency(stats.max)}</strong>
-          </Col>
-          <Col xs={6} md={3} className="text-center">
+          </CCol>
+          <CCol xs={6} md={3} className="text-center">
             <div className="text-muted small">Average</div>
             <strong>{formatCurrency(stats.avg)}</strong>
-          </Col>
-          <Col xs={6} md={3} className="text-center">
+          </CCol>
+          <CCol xs={6} md={3} className="text-center">
             <div className="text-muted small">Changes</div>
             <strong>{stats.changeCount}</strong>
-          </Col>
-        </Row>
+          </CCol>
+        </CRow>
 
         <svg
           viewBox={`0 0 ${chartWidth} ${chartHeight}`}
@@ -179,20 +179,20 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
                   <span className="text-muted">{formatCurrency(entry.oldValue)}</span>
                   <span className="mx-2">→</span>
                   <strong>{formatCurrency(entry.newValue)}</strong>
-                  <Badge
-                    bg={entry.newValue > entry.oldValue ? 'danger' : 'success'}
+                  <CBadge
+                    color={entry.newValue > entry.oldValue ? 'danger' : 'success'}
                     className="ms-2"
                   >
                     {entry.newValue > entry.oldValue ? '+' : ''}
                     {formatCurrency(entry.newValue - entry.oldValue)}
-                  </Badge>
+                  </CBadge>
                 </div>
-                <Badge bg="secondary">{entry.source}</Badge>
+                <CBadge color="secondary">{entry.source}</CBadge>
               </div>
             ))}
           </div>
         </div>
-      </Card.Body>
-    </Card>
+      </CCardBody>
+    </CCard>
   );
 }

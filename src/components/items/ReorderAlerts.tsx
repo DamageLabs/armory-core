@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Table, Button, Badge, Form, Row, Col, Alert } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CBadge, CFormSelect, CFormCheck, CFormLabel, CRow, CCol, CAlert } from '@coreui/react';
 import { FaExclamationTriangle, FaShoppingCart, FaExternalLinkAlt, FaCheck } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
@@ -160,12 +160,12 @@ export default function ReorderAlerts() {
   const getDeficitBadge = (item: Item) => {
     const deficit = item.reorderPoint - item.quantity;
     if (item.quantity === 0) {
-      return <Badge bg="danger">Out of Stock</Badge>;
+      return <CBadge color="danger">Out of Stock</CBadge>;
     }
     if (deficit > item.reorderPoint / 2) {
-      return <Badge bg="warning">Low</Badge>;
+      return <CBadge color="warning">Low</CBadge>;
     }
-    return <Badge bg="info">Reorder</Badge>;
+    return <CBadge color="info">Reorder</CBadge>;
   };
 
   const unacknowledgedCount = filteredAndSortedItems.filter(
@@ -179,25 +179,25 @@ export default function ReorderAlerts() {
           <FaExclamationTriangle className="me-2 text-warning" />
           Reorder Alerts
           {unacknowledgedCount > 0 && (
-            <Badge bg="danger" className="ms-2">{unacknowledgedCount}</Badge>
+            <CBadge color="danger" className="ms-2">{unacknowledgedCount}</CBadge>
           )}
         </h4>
       </div>
 
       {itemsNeedingReorder.length === 0 ? (
-        <Alert variant="success">
+        <CAlert color="success">
           <FaCheck className="me-2" />
           All items are above their reorder points. No action needed.
-        </Alert>
+        </CAlert>
       ) : (
         <>
-          <Card className="mb-4">
-            <Card.Body>
-              <Row className="g-3">
-                <Col md={4}>
-                  <Form.Group>
-                    <Form.Label>Filter by Category</Form.Label>
-                    <Form.Select
+          <CCard className="mb-4">
+            <CCardBody>
+              <CRow className="g-3">
+                <CCol md={4}>
+                  <div>
+                    <CFormLabel>Filter by Category</CFormLabel>
+                    <CFormSelect
                       value={categoryFilter}
                       onChange={(e) => setCategoryFilter(e.target.value)}
                     >
@@ -205,13 +205,13 @@ export default function ReorderAlerts() {
                       {categories.map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group>
-                    <Form.Label>Filter by Vendor</Form.Label>
-                    <Form.Select
+                    </CFormSelect>
+                  </div>
+                </CCol>
+                <CCol md={4}>
+                  <div>
+                    <CFormLabel>Filter by Vendor</CFormLabel>
+                    <CFormSelect
                       value={vendorFilter}
                       onChange={(e) => setVendorFilter(e.target.value)}
                     >
@@ -219,26 +219,26 @@ export default function ReorderAlerts() {
                       {vendors.map((vendor) => (
                         <option key={vendor} value={vendor}>{vendor}</option>
                       ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col md={4} className="d-flex align-items-end">
-                  <div>
-                    <Badge bg="danger" className="me-2">
-                      {filteredAndSortedItems.filter((i) => i.quantity === 0).length} Out of Stock
-                    </Badge>
-                    <Badge bg="warning">
-                      {filteredAndSortedItems.filter((i) => i.quantity > 0).length} Low Stock
-                    </Badge>
+                    </CFormSelect>
                   </div>
-                </Col>
-              </Row>
-            </Card.Body>
-          </Card>
+                </CCol>
+                <CCol md={4} className="d-flex align-items-end">
+                  <div>
+                    <CBadge color="danger" className="me-2">
+                      {filteredAndSortedItems.filter((i) => i.quantity === 0).length} Out of Stock
+                    </CBadge>
+                    <CBadge color="warning">
+                      {filteredAndSortedItems.filter((i) => i.quantity > 0).length} Low Stock
+                    </CBadge>
+                  </div>
+                </CCol>
+              </CRow>
+            </CCardBody>
+          </CCard>
 
-          <Card>
-            <Card.Body className="p-0">
-              <Table hover className="mb-0">
+          <CCard>
+            <CCardBody className="p-0">
+              <table className="table table-hover mb-0">
                 <thead>
                   <tr>
                     <th style={{ width: '40px' }}></th>
@@ -263,8 +263,7 @@ export default function ReorderAlerts() {
                         className={isAcknowledged ? 'table-secondary' : item.quantity === 0 ? 'table-danger' : ''}
                       >
                         <td className="text-center">
-                          <Form.Check
-                            type="checkbox"
+                          <CFormCheck
                             checked={isAcknowledged}
                             onChange={() => toggleAcknowledge(item.id)}
                             title="Mark as acknowledged"
@@ -320,16 +319,16 @@ export default function ReorderAlerts() {
                     </tr>
                   )}
                 </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
+              </table>
+            </CCardBody>
+          </CCard>
 
-          <Card className="mt-4">
-            <Card.Header>
+          <CCard className="mt-4">
+            <CCardHeader>
               <h6 className="mb-0">Reorder Summary by Vendor</h6>
-            </Card.Header>
-            <Card.Body>
-              <Table size="sm">
+            </CCardHeader>
+            <CCardBody>
+              <table className="table table-sm">
                 <thead>
                   <tr>
                     <th>Vendor</th>
@@ -371,9 +370,9 @@ export default function ReorderAlerts() {
                     );
                   })}
                 </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
+              </table>
+            </CCardBody>
+          </CCard>
         </>
       )}
     </div>

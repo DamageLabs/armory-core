@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Card, Row, Col, Button, ButtonGroup, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CRow, CCol, CButton, CButtonGroup, CBadge } from '@coreui/react';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { Item } from '../../types/Item';
@@ -84,33 +84,33 @@ export default function ItemDetail() {
   return (
     <>
       <Breadcrumbs items={breadcrumbItems} />
-      <Row>
+      <CRow>
         {/* Left Panel — Image, Key Stats, Actions */}
-        <Col md={4} className="mb-3">
+        <CCol md={4} className="mb-3">
           {item.picture && (
-            <Card className="mb-3">
-              <Card.Body className="text-center p-2">
+            <CCard className="mb-3">
+              <CCardBody className="text-center p-2">
                 <img
                   src={item.picture}
                   alt={item.name}
                   className="img-fluid rounded"
                   style={{ maxHeight: '300px', objectFit: 'contain' }}
                 />
-              </Card.Body>
-            </Card>
+              </CCardBody>
+            </CCard>
           )}
 
-          <Card className="mb-3">
-            <Card.Header>
+          <CCard className="mb-3">
+            <CCardHeader>
               <h5 className="mb-0">{item.name}</h5>
               {inventoryType && (
                 <div className="mt-1">
-                  {parentType && <Badge bg="primary" className="me-1">{parentType.name}</Badge>}
-                  <Badge bg={parentType ? 'secondary' : 'primary'}>{inventoryType.name}</Badge>
+                  {parentType && <CBadge color="primary" className="me-1">{parentType.name}</CBadge>}
+                  <CBadge color={parentType ? 'secondary' : 'primary'}>{inventoryType.name}</CBadge>
                 </div>
               )}
-            </Card.Header>
-            <Card.Body className="p-0">
+            </CCardHeader>
+            <CCardBody className="p-0">
               <table className="table table-sm mb-0">
                 <tbody>
                   <tr>
@@ -146,7 +146,7 @@ export default function ItemDetail() {
                         <>
                           {item.reorderPoint}
                           {item.quantity <= item.reorderPoint && (
-                            <Badge bg="warning" className="ms-2">Low</Badge>
+                            <CBadge color="warning" className="ms-2">Low</CBadge>
                           )}
                         </>
                       ) : (
@@ -156,46 +156,46 @@ export default function ItemDetail() {
                   </tr>
                 </tbody>
               </table>
-            </Card.Body>
-          </Card>
+            </CCardBody>
+          </CCard>
 
-          <ButtonGroup className="w-100">
+          <CButtonGroup className="w-100">
             <Link to={`/items/${item.id}/edit`} className="btn btn-primary">
               Edit
             </Link>
-            <Button variant="danger" onClick={() => setShowDeleteModal(true)}>
+            <CButton color="danger" onClick={() => setShowDeleteModal(true)}>
               Delete
-            </Button>
-            <Button variant="secondary" onClick={() => navigate('/items')}>
+            </CButton>
+            <CButton color="secondary" onClick={() => navigate('/items')}>
               Back
-            </Button>
-          </ButtonGroup>
-        </Col>
+            </CButton>
+          </CButtonGroup>
+        </CCol>
 
         {/* Right Panel — Details, Custom Fields, History */}
-        <Col md={8}>
+        <CCol md={8}>
           {parentItem && (
-            <Card className="mb-3">
-              <Card.Body className="py-2">
+            <CCard className="mb-3">
+              <CCardBody className="py-2">
                 <span className="text-muted me-2">Mounted On</span>
                 <Link to={`/items/${parentItem.id}`}>{parentItem.name}</Link>
-              </Card.Body>
-            </Card>
+              </CCardBody>
+            </CCard>
           )}
 
           {item.description && (
-            <Card className="mb-3">
-              <Card.Header><h6 className="mb-0">Description</h6></Card.Header>
-              <Card.Body>
+            <CCard className="mb-3">
+              <CCardHeader><h6 className="mb-0">Description</h6></CCardHeader>
+              <CCardBody>
                 <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>{item.description}</p>
-              </Card.Body>
-            </Card>
+              </CCardBody>
+            </CCard>
           )}
 
           {inventoryType && inventoryType.schema.length > 0 && item.customFields && (
-            <Card className="mb-3">
-              <Card.Header><h6 className="mb-0">{inventoryType.name} Details</h6></Card.Header>
-              <Card.Body className="p-0">
+            <CCard className="mb-3">
+              <CCardHeader><h6 className="mb-0">{inventoryType.name} Details</h6></CCardHeader>
+              <CCardBody className="p-0">
                 <table className="table table-sm mb-0">
                   <tbody>
                     {inventoryType.schema.map((field) => {
@@ -215,8 +215,8 @@ export default function ItemDetail() {
                     })}
                   </tbody>
                 </table>
-              </Card.Body>
-            </Card>
+              </CCardBody>
+            </CCard>
           )}
 
           <ReceiptList itemId={item.id} />
@@ -231,8 +231,8 @@ export default function ItemDetail() {
               unitValue={item.unitValue}
             />
           )}
-        </Col>
-      </Row>
+        </CCol>
+      </CRow>
 
       <ConfirmModal
         show={showDeleteModal}

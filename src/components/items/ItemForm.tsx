@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Card, Form, Button, Row, Col, ButtonGroup, Spinner, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CForm, CButton, CRow, CCol, CButtonGroup, CSpinner, CBadge, CFormLabel, CFormInput, CFormTextarea, CFormSelect, CFormText } from '@coreui/react';
 import * as itemService from '../../services/itemService';
 import * as itemTemplateService from '../../services/itemTemplateService';
 import * as categoryService from '../../services/categoryService';
@@ -246,35 +246,35 @@ export default function ItemForm() {
   return (
     <>
       <Breadcrumbs items={breadcrumbItems} />
-      <Card>
-        <Card.Header>
+      <CCard>
+        <CCardHeader>
           <h4 className="mb-0">{isEditing ? 'Edit Item' : 'New Item'}</h4>
-        </Card.Header>
-      <Card.Body>
-        <Form onSubmit={handleSubmit}>
+        </CCardHeader>
+      <CCardBody>
+        <CForm onSubmit={handleSubmit}>
           {!isEditing && templates.length > 0 && (
-            <Row className="mb-4">
-              <Form.Label column sm={3}>Use Template</Form.Label>
-              <Col sm={5}>
-                <Form.Select onChange={handleTemplateSelect} defaultValue="">
+            <CRow className="mb-4">
+              <CFormLabel className="col-sm-3 col-form-label">Use Template</CFormLabel>
+              <CCol sm={5}>
+                <CFormSelect onChange={handleTemplateSelect} defaultValue="">
                   <option value="">-- Select a template --</option>
                   {templates.map((template) => (
                     <option key={template.id} value={template.id}>
                       {template.name} ({template.category})
                     </option>
                   ))}
-                </Form.Select>
-              </Col>
-            </Row>
+                </CFormSelect>
+              </CCol>
+            </CRow>
           )}
 
           {/* Basic Information Section */}
           <fieldset className="mb-4">
             <legend className="h6 text-muted border-bottom pb-2 mb-3">Basic Information</legend>
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Inventory Type</Form.Label>
-              <Col sm={5}>
-                <Form.Select
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Inventory Type</CFormLabel>
+              <CCol sm={5}>
+                <CFormSelect
                   name="inventoryTypeId"
                   value={formData.inventoryTypeId}
                   onChange={handleTypeChange}
@@ -282,40 +282,39 @@ export default function ItemForm() {
                   {inventoryTypes.map((type) => (
                     <option key={type.id} value={type.id}>{type.name}</option>
                   ))}
-                </Form.Select>
-              </Col>
-            </Row>
+                </CFormSelect>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Name <span className="text-danger">*</span></Form.Label>
-              <Col sm={5}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Name <span className="text-danger">*</span></CFormLabel>
+              <CCol sm={5}>
+                <CFormInput
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   required
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Description</Form.Label>
-              <Col sm={5}>
-                <Form.Control
-                  as="textarea"
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Description</CFormLabel>
+              <CCol sm={5}>
+                <CFormTextarea
                   rows={5}
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Category</Form.Label>
-              <Col sm={5}>
-                <Form.Select
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Category</CFormLabel>
+              <CCol sm={5}>
+                <CFormSelect
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
@@ -324,22 +323,22 @@ export default function ItemForm() {
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
-                </Form.Select>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Parent Item</Form.Label>
-              <Col sm={5}>
+                </CFormSelect>
+              </CCol>
+            </CRow>
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Parent Item</CFormLabel>
+              <CCol sm={5}>
                 <ParentItemSelector
                   value={formData.parentItemId}
                   onChange={(parentId) => setFormData((prev) => ({ ...prev, parentItemId: parentId }))}
                   currentItemId={id ? parseInt(id) : undefined}
                 />
-                <Form.Text className="text-muted">
+                <CFormText className="text-muted">
                   Attach this item to a parent (e.g., optic mounted on a firearm)
-                </Form.Text>
-              </Col>
-            </Row>
+                </CFormText>
+              </CCol>
+            </CRow>
           </fieldset>
 
           {/* Dynamic Custom Fields */}
@@ -354,23 +353,23 @@ export default function ItemForm() {
           {/* Inventory Details Section */}
           <fieldset className="mb-4">
             <legend className="h6 text-muted border-bottom pb-2 mb-3">Inventory Details</legend>
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Quantity</Form.Label>
-              <Col sm={5}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Quantity</CFormLabel>
+              <CCol sm={5}>
+                <CFormInput
                   type="number"
                   name="quantity"
                   value={formData.quantity}
                   onChange={handleChange}
                   min={0}
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Unit Value ($)</Form.Label>
-              <Col sm={5}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Unit Value ($)</CFormLabel>
+              <CCol sm={5}>
+                <CFormInput
                   type="number"
                   name="unitValue"
                   value={formData.unitValue}
@@ -378,59 +377,59 @@ export default function ItemForm() {
                   min={0}
                   step={0.01}
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Location</Form.Label>
-              <Col sm={5}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Location</CFormLabel>
+              <CCol sm={5}>
+                <CFormInput
                   type="text"
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
                   placeholder="e.g., Shelf A3, Bin 12"
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Barcode</Form.Label>
-              <Col sm={5}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Barcode</CFormLabel>
+              <CCol sm={5}>
+                <CFormInput
                   type="text"
                   name="barcode"
                   value={formData.barcode}
                   onChange={handleChange}
                   placeholder="e.g., AC-0001 or UPC"
                 />
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
 
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Reorder Point</Form.Label>
-              <Col sm={5}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Reorder Point</CFormLabel>
+              <CCol sm={5}>
+                <CFormInput
                   type="number"
                   name="reorderPoint"
                   value={formData.reorderPoint}
                   onChange={handleChange}
                   min={0}
                 />
-                <Form.Text className="text-muted">
+                <CFormText className="text-muted">
                   Alert when quantity falls to or below this level
-                </Form.Text>
-              </Col>
-            </Row>
+                </CFormText>
+              </CCol>
+            </CRow>
           </fieldset>
 
           {/* Media Section */}
           <fieldset className="mb-4">
             <legend className="h6 text-muted border-bottom pb-2 mb-3">Media</legend>
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Picture</Form.Label>
-              <Col sm={5}>
-                <Form.Control
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Picture</CFormLabel>
+              <CCol sm={5}>
+                <CFormInput
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
@@ -438,7 +437,7 @@ export default function ItemForm() {
                 />
                 {isCompressing && (
                   <div className="mt-2">
-                    <Spinner size="sm" animation="border" className="me-2" />
+                    <CSpinner size="sm" className="me-2" />
                     Compressing image...
                   </div>
                 )}
@@ -450,50 +449,51 @@ export default function ItemForm() {
                       style={{ maxWidth: '250px', maxHeight: '200px' }}
                       className="img-thumbnail"
                     />
-                    <Button
-                      variant="outline-danger"
+                    <CButton
+                      color="danger"
+                      variant="outline"
                       size="sm"
                       className="ms-2"
                       onClick={handleRemoveImage}
                       aria-label="Remove image"
                     >
                       Remove
-                    </Button>
+                    </CButton>
                     {imageCompression && (
                       <div className="mt-1">
                         {imageCompression.wasCompressed ? (
-                          <Badge bg="success">
+                          <CBadge color="success">
                             Compressed: {formatBytes(imageCompression.originalSize)} → {formatBytes(imageCompression.compressedSize)}
                             ({compressionPercent(imageCompression.originalSize, imageCompression.compressedSize)}% saved)
-                          </Badge>
+                          </CBadge>
                         ) : (
-                          <Badge bg="secondary">
+                          <CBadge color="secondary">
                             Size: {formatBytes(imageCompression.originalSize)} (no compression needed)
-                          </Badge>
+                          </CBadge>
                         )}
                       </div>
                     )}
                   </div>
                 )}
-              </Col>
-            </Row>
+              </CCol>
+            </CRow>
           </fieldset>
 
-          <Row>
-            <Col sm={{ span: 5, offset: 3 }}>
-              <ButtonGroup>
-                <Button variant="primary" type="submit">
+          <CRow>
+            <CCol sm={{ span: 5, offset: 3 }}>
+              <CButtonGroup>
+                <CButton color="primary" type="submit">
                   {isEditing ? 'Update Item' : 'Create Item'}
-                </Button>
-                <Button variant="secondary" onClick={() => navigate('/items')}>
+                </CButton>
+                <CButton color="secondary" onClick={() => navigate('/items')}>
                   Cancel
-                </Button>
-              </ButtonGroup>
-            </Col>
-          </Row>
-        </Form>
-      </Card.Body>
-      </Card>
+                </CButton>
+              </CButtonGroup>
+            </CCol>
+          </CRow>
+        </CForm>
+      </CCardBody>
+      </CCard>
     </>
   );
 }
