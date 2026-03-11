@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Card, Form, Button, Row, Col, Alert } from 'react-bootstrap';
+import { CRow, CCol, CCard, CCardHeader, CCardBody, CForm, CFormLabel, CFormInput, CButton, CAlert } from '@coreui/react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAlert } from '../../contexts/AlertContext';
 
@@ -28,16 +28,16 @@ export default function Login() {
   };
 
   return (
-    <Row className="justify-content-center">
-      <Col md={6} lg={4}>
-        <Card className="border-primary">
-          <Card.Header className="bg-primary text-white">
+    <CRow className="justify-content-center">
+      <CCol md={6} lg={4}>
+        <CCard className="border-primary">
+          <CCardHeader className="bg-primary text-white">
             <h4 className="mb-0">Sign In</h4>
-          </Card.Header>
-          <Card.Body>
+          </CCardHeader>
+          <CCardBody>
             {showVerificationError && (
-              <Alert variant="warning">
-                <Alert.Heading>Email Not Verified</Alert.Heading>
+              <CAlert color="warning">
+                <h4 className="alert-heading">Email Not Verified</h4>
                 <p>
                   Your email address has not been verified yet. Please check your inbox for a verification email.
                 </p>
@@ -47,45 +47,47 @@ export default function Login() {
                     Resend verification email
                   </Link>
                 </p>
-              </Alert>
+              </CAlert>
             )}
-            <Form onSubmit={handleSubmit}>
-              <Form.Group className="mb-3" controlId="email">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
+            <CForm onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <CFormLabel htmlFor="email">Email</CFormLabel>
+                <CFormInput
                   type="email"
+                  id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
                 />
-              </Form.Group>
+              </div>
 
-              <Form.Group className="mb-3" controlId="password">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
+              <div className="mb-3">
+                <CFormLabel htmlFor="password">Password</CFormLabel>
+                <CFormInput
                   type="password"
+                  id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="off"
                 />
-              </Form.Group>
+              </div>
 
               <div className="d-grid gap-2">
-                <Button variant="primary" type="submit">
+                <CButton color="primary" type="submit">
                   Sign In
-                </Button>
+                </CButton>
               </div>
-            </Form>
+            </CForm>
             <div className="mt-3 text-center">
               <Link to="/register" className="btn btn-link">
                 Don't have an account? Register
               </Link>
             </div>
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
+          </CCardBody>
+        </CCard>
+      </CCol>
+    </CRow>
   );
 }

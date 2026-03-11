@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Form, Button, Row, Col, Alert } from 'react-bootstrap';
+import { CRow, CCol, CCard, CCardHeader, CCardBody, CForm, CFormLabel, CFormInput, CFormText, CButton, CAlert } from '@coreui/react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAlert } from '../../contexts/AlertContext';
 
@@ -31,22 +31,22 @@ export default function Register() {
 
   if (registrationComplete) {
     return (
-      <Row className="justify-content-center">
-        <Col md={6} lg={4}>
-          <Card className="border-success">
-            <Card.Header className="bg-success text-white">
+      <CRow className="justify-content-center">
+        <CCol md={6} lg={4}>
+          <CCard className="border-success">
+            <CCardHeader className="bg-success text-white">
               <h4 className="mb-0">Check Your Email</h4>
-            </Card.Header>
-            <Card.Body>
-              <Alert variant="success">
-                <Alert.Heading>Registration Successful!</Alert.Heading>
+            </CCardHeader>
+            <CCardBody>
+              <CAlert color="success">
+                <h4 className="alert-heading">Registration Successful!</h4>
                 <p>
                   We've sent a verification email to <strong>{email}</strong>.
                 </p>
                 <p className="mb-0">
                   Please click the link in the email to verify your account before signing in.
                 </p>
-              </Alert>
+              </CAlert>
               <hr />
               <p className="text-muted small">
                 Didn't receive the email? Check your spam folder or{' '}
@@ -59,74 +59,77 @@ export default function Register() {
                   Go to Sign In
                 </Link>
               </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
     );
   }
 
   return (
-    <Row className="justify-content-center">
-      <Col md={6} lg={4}>
-        <Card className="border-primary">
-          <Card.Header className="bg-primary text-white">
+    <CRow className="justify-content-center">
+      <CCol md={6} lg={4}>
+        <CCard className="border-primary">
+          <CCardHeader className="bg-primary text-white">
             <h4 className="mb-0">Register an Account</h4>
-          </Card.Header>
-          <Card.Body>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group className="mb-3" controlId="email">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
+          </CCardHeader>
+          <CCardBody>
+            <CForm onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <CFormLabel htmlFor="email">Email</CFormLabel>
+                <CFormInput
                   type="email"
+                  id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
                   disabled={isLoading}
                 />
-              </Form.Group>
+              </div>
 
-              <Form.Group className="mb-3" controlId="password">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
+              <div className="mb-3">
+                <CFormLabel htmlFor="password">Password</CFormLabel>
+                <CFormInput
                   type="password"
+                  id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
                   disabled={isLoading}
                 />
-                <Form.Text className="text-muted">
+                <CFormText className="text-muted">
                   Minimum 8 characters
-                </Form.Text>
-              </Form.Group>
+                </CFormText>
+              </div>
 
-              <Form.Group className="mb-3" controlId="passwordConfirmation">
-                <Form.Label>Password Confirmation</Form.Label>
-                <Form.Control
+              <div className="mb-3">
+                <CFormLabel htmlFor="passwordConfirmation">Password Confirmation</CFormLabel>
+                <CFormInput
                   type="password"
+                  id="passwordConfirmation"
                   value={passwordConfirmation}
                   onChange={(e) => setPasswordConfirmation(e.target.value)}
                   required
                   disabled={isLoading}
                 />
-              </Form.Group>
+              </div>
 
               <div className="d-grid gap-2">
-                <Button variant="primary" type="submit" disabled={isLoading}>
+                <CButton color="primary" type="submit" disabled={isLoading}>
                   {isLoading ? 'Registering...' : 'Register'}
-                </Button>
+                </CButton>
               </div>
-            </Form>
+            </CForm>
             <div className="mt-3 text-center">
               <Link to="/login" className="btn btn-link">
                 Already have an account? Sign in
               </Link>
             </div>
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
+          </CCardBody>
+        </CCard>
+      </CCol>
+    </CRow>
   );
 }
