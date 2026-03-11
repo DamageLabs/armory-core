@@ -4,6 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { CREATE_TABLES_SQL } from './schema';
 import { mapRowToEntity, mapRowsToEntities, buildInsertSQL, buildUpdateSQL } from './mapper';
+import { validateTable } from './columns';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, '../../data/armory.db');
@@ -47,6 +48,7 @@ export function run(sql: string, params: unknown[] = []): Database.RunResult {
 }
 
 export function insert<T>(table: string, data: Record<string, unknown>, jsonFields: string[] = []): T {
+  validateTable(table);
   const { sql, params } = buildInsertSQL(table, data, jsonFields);
   const result = getDatabase().prepare(sql).run(...params);
   const row = getDatabase().prepare(`SELECT * FROM ${table} WHERE id = ?`).get(result.lastInsertRowid) as Record<string, unknown>;
@@ -54,6 +56,7 @@ export function insert<T>(table: string, data: Record<string, unknown>, jsonFiel
 }
 
 export function update<T>(table: string, id: number, data: Record<string, unknown>, jsonFields: string[] = []): T | null {
+  validateTable(table);
   const { sql, params } = buildUpdateSQL(table, data, 'id = ?', [id], jsonFields);
   getDatabase().prepare(sql).run(...params);
   const row = getDatabase().prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id) as Record<string, unknown> | undefined;
@@ -61,11 +64,13 @@ export function update<T>(table: string, id: number, data: Record<string, unknow
 }
 
 export function deleteById(table: string, id: number): boolean {
+  validateTable(table);
   const result = getDatabase().prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
   return result.changes > 0;
 }
 
 export function count(table: string, where?: string, params: unknown[] = []): number {
+  validateTable(table);
   const sql = where ? `SELECT COUNT(*) as count FROM ${table} WHERE ${where}` : `SELECT COUNT(*) as count FROM ${table}`;
   const row = getDatabase().prepare(sql).get(...params) as { count: number };
   return row.count;

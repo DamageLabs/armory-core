@@ -1,3 +1,5 @@
+import { validateColumns } from './columns';
+
 export function toSnakeCase(str: string): string {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 }
@@ -56,6 +58,7 @@ export function buildInsertSQL(
 ): { sql: string; params: unknown[] } {
   const row = mapEntityToRow(data, jsonFields);
   const columns = Object.keys(row);
+  validateColumns(tableName, columns);
   const placeholders = columns.map(() => '?').join(', ');
   const params = Object.values(row);
   const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
@@ -70,7 +73,9 @@ export function buildUpdateSQL(
   jsonFields: string[] = []
 ): { sql: string; params: unknown[] } {
   const row = mapEntityToRow(data, jsonFields);
-  const setClause = Object.keys(row).map((col) => `${col} = ?`).join(', ');
+  const columns = Object.keys(row);
+  validateColumns(tableName, columns);
+  const setClause = columns.map((col) => `${col} = ?`).join(', ');
   const params = [...Object.values(row), ...whereParams];
   const sql = `UPDATE ${tableName} SET ${setClause} WHERE ${whereClause}`;
   return { sql, params };
