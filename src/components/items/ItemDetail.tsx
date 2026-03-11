@@ -14,7 +14,7 @@ import Breadcrumbs from '../common/Breadcrumbs';
 import { SkeletonDetailPage } from '../common/Skeleton';
 import Markdown from 'react-markdown';
 import ReceiptList from './ReceiptList';
-import { LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME } from '../../constants/config';
+import { LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME, AMMUNITION_TYPE_NAME } from '../../constants/config';
 import { ItemFormData } from '../../types/Item';
 
 export default function ItemDetail() {
@@ -140,10 +140,27 @@ export default function ItemDetail() {
             <CCardBody className="p-0">
               <table className="table table-sm mb-0">
                 <tbody>
-                  <tr>
-                    <td className="text-muted ps-3">Quantity</td>
-                    <td className="pe-3 text-end fw-bold">{item.quantity}</td>
-                  </tr>
+                  {inventoryType?.name === AMMUNITION_TYPE_NAME && item.customFields.roundCount ? (
+                    <>
+                      <tr>
+                        <td className="text-muted ps-3">Boxes</td>
+                        <td className="pe-3 text-end fw-bold">{item.quantity}</td>
+                      </tr>
+                      <tr>
+                        <td className="text-muted ps-3">Rounds/Box</td>
+                        <td className="pe-3 text-end">{Number(item.customFields.roundCount)}</td>
+                      </tr>
+                      <tr>
+                        <td className="text-muted ps-3">Total Rounds</td>
+                        <td className="pe-3 text-end fw-bold">{item.quantity * Number(item.customFields.roundCount)}</td>
+                      </tr>
+                    </>
+                  ) : (
+                    <tr>
+                      <td className="text-muted ps-3">Quantity</td>
+                      <td className="pe-3 text-end fw-bold">{item.quantity}</td>
+                    </tr>
+                  )}
                   <tr>
                     <td className="text-muted ps-3">Unit Value</td>
                     <td className="pe-3 text-end">{formatCurrency(item.unitValue)}</td>
