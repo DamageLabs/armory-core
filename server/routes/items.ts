@@ -105,6 +105,26 @@ router.get('/low-stock', (req: Request, res: Response) => {
   }
 });
 
+// GET /low-stock-counts — Per-item reorder point based counts
+router.get('/low-stock-counts', (_req: Request, res: Response) => {
+  try {
+    const db = getDatabase();
+    const row = db.prepare(
+      `SELECT
+         COALESCE(SUM(CASE WHEN items.quantity <= items.reorder_point AND items.quantity > 0 THEN 1 ELSE 0 END), 0) as lowStock,
+         COALESCE(SUM(CASE WHEN items.quantity = 0 THEN 1 ELSE 0 END), 0) as outOfStock
+       FROM items
+       JOIN inventory_types ON items.inventory_type_id = inventory_types.id
+       WHERE items.reorder_point > 0
+         AND inventory_types.name IN ('Ammunition')`
+    ).get() as { lowStock: number; outOfStock: number };
+    res.json(row);
+  } catch (error) {
+    console.error('Error fetching low stock counts:', error);
+    res.status(500).json({ error: 'Failed to fetch low stock counts' });
+  }
+});
+
 // POST /bulk-create — Create multiple items with parent-child remapping
 router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Response) => {
   try {

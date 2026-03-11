@@ -17,7 +17,7 @@ import ItemCardGrid from './ItemCardGrid';
 import SavedFilterChips from './SavedFilterChips';
 import { exportToCSV, exportToPDF, backupItemsToCSV, backupItemsToJSON } from '../../utils/export';
 import { formatCurrency } from '../../utils/formatters';
-import { ITEMS_PER_PAGE, LOW_STOCK_THRESHOLD, LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME } from '../../constants/config';
+import { ITEMS_PER_PAGE, LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME } from '../../constants/config';
 import { ItemFormData } from '../../types/Item';
 import { FilterCriterion, SavedFilter } from '../../types/SavedFilter';
 import * as savedFilterService from '../../services/savedFilterService';
@@ -101,7 +101,6 @@ export default function ItemList() {
     sortBy: sortField,
     sortDir: sortDirection,
     lowStock: showLowStockOnly || undefined,
-    lowStockThreshold: LOW_STOCK_THRESHOLD,
     filters: activeAdvancedFilters.length > 0 ? activeAdvancedFilters : undefined,
   }), [currentPage, searchTerm, typeFilter, categoryFilter, sortField, sortDirection, showLowStockOnly, activeAdvancedFilters]);
 
@@ -151,18 +150,12 @@ export default function ItemList() {
     loadItems();
   }, [loadItems]);
 
-  // Load low stock counts once for alert banner
+  // Load low stock counts once for alert banner (per-item reorder points)
   useEffect(() => {
     async function loadLowStockCounts() {
       try {
-        const [lowResult, outResult] = await Promise.all([
-          itemService.getFilteredStats({ lowStock: true, lowStockThreshold: LOW_STOCK_THRESHOLD }),
-          itemService.getFilteredStats({ lowStock: true, lowStockThreshold: 0 }),
-        ]);
-        setLowStockCounts({
-          lowStock: lowResult.totalItems - outResult.totalItems,
-          outOfStock: outResult.totalItems,
-        });
+        const counts = await itemService.getLowStockCounts();
+        setLowStockCounts(counts);
       } catch {
         // Non-critical — alert just won't show
       }
@@ -468,18 +461,11 @@ export default function ItemList() {
         </div>
       </CCardHeader>
       <CCardBody>
-        {(lowStockCounts.lowStock > 0 || lowStockCounts.outOfStock > 0) && (
-          <LowStockAlert
-            items={[
-              // Synthetic items to satisfy LowStockAlert's counting interface
-              ...Array.from({ length: lowStockCounts.lowStock }, () => ({ quantity: 1, inventoryTypeId: [...lowStockTypeIds][0] || 0 }) as Item),
-              ...Array.from({ length: lowStockCounts.outOfStock }, () => ({ quantity: 0, inventoryTypeId: [...lowStockTypeIds][0] || 0 }) as Item),
-            ]}
-            onFilterLowStock={handleFilterLowStock}
-            threshold={LOW_STOCK_THRESHOLD}
-            applicableTypeIds={lowStockTypeIds}
-          />
-        )}
+        <LowStockAlert
+          lowStockCount={lowStockCounts.lowStock}
+          outOfStockCount={lowStockCounts.outOfStock}
+          onFilterLowStock={handleFilterLowStock}
+        />
 
         <ItemFilters
           searchTerm={searchTerm}
@@ -576,7 +562,7 @@ export default function ItemList() {
                         {inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name || '-'}
                       </CBadge>
                     </td>
-                    <td className={`text-center ${lowStockTypeIds.has(item.inventoryTypeId) ? (item.quantity === 0 ? 'text-danger fw-bold' : item.quantity <= LOW_STOCK_THRESHOLD ? 'text-warning fw-bold' : '') : ''}`}>
+                    <td className={`text-center ${lowStockTypeIds.has(item.inventoryTypeId) && item.reorderPoint > 0 ? (item.quantity === 0 ? 'text-danger fw-bold' : item.quantity <= item.reorderPoint ? 'text-warning fw-bold' : '') : ''}`}>
                       {item.quantity}
                     </td>
                     <td className="text-center">{formatCurrency(item.unitValue)}</td>

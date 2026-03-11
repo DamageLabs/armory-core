@@ -116,6 +116,10 @@ export async function getLowStockItems(threshold: number): Promise<Item[]> {
   return api.get<Item[]>(`/items/low-stock?threshold=${threshold}`);
 }
 
+export async function getLowStockCounts(): Promise<{ lowStock: number; outOfStock: number }> {
+  return api.get('/items/low-stock-counts');
+}
+
 export async function getItemsNeedingReorder(): Promise<Item[]> {
   return api.get<Item[]>('/items/reorder');
 }

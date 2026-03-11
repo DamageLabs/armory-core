@@ -140,9 +140,8 @@ export function buildItemWhereClause(params: PaginationParams): { where: string;
 
   if (params.lowStock) {
     conditions.push(
-      `items.inventory_type_id IN (SELECT id FROM inventory_types WHERE name IN ('Ammunition')) AND items.quantity <= ?`
+      `items.inventory_type_id IN (SELECT id FROM inventory_types WHERE name IN ('Ammunition')) AND items.reorder_point > 0 AND items.quantity <= items.reorder_point`
     );
-    values.push(params.lowStockThreshold!);
   }
 
   if (params.filters && params.filters.length > 0) {
