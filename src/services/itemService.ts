@@ -1,4 +1,5 @@
 import { Item, ItemFormData } from '../types/Item';
+import { FilterCriterion } from '../types/SavedFilter';
 import { api } from './api';
 
 export interface ItemQueryParams {
@@ -11,6 +12,7 @@ export interface ItemQueryParams {
   sortDir?: 'asc' | 'desc';
   lowStock?: boolean;
   lowStockThreshold?: number;
+  filters?: FilterCriterion[];
 }
 
 export interface PaginatedResponse<T> {
@@ -40,6 +42,7 @@ function buildQueryString(params: ItemQueryParams): string {
   if (params.sortDir) parts.push(`sortDir=${params.sortDir}`);
   if (params.lowStock) parts.push('lowStock=true');
   if (params.lowStockThreshold) parts.push(`lowStockThreshold=${params.lowStockThreshold}`);
+  if (params.filters && params.filters.length > 0) parts.push(`filters=${encodeURIComponent(JSON.stringify(params.filters))}`);
   return parts.length > 0 ? `?${parts.join('&')}` : '';
 }
 
