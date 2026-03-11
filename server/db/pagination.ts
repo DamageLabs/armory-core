@@ -1,3 +1,47 @@
+const STANDARD_FILTER_FIELDS: Record<string, string> = {
+  name: 'items.name',
+  location: 'items.location',
+  category: 'items.category',
+  quantity: 'items.quantity',
+  unitValue: 'items.unit_value',
+  value: 'items.value',
+  barcode: 'items.barcode',
+};
+
+function buildFilterCondition(
+  col: string,
+  operator: string,
+  value: string,
+  valueTo: string | undefined,
+  conditions: string[],
+  values: unknown[],
+): void {
+  switch (operator) {
+    case 'eq':
+      conditions.push(`${col} = ?`);
+      values.push(value);
+      break;
+    case 'contains':
+      conditions.push(`${col} LIKE ?`);
+      values.push(`%${value}%`);
+      break;
+    case 'gt':
+      conditions.push(`${col} > ?`);
+      values.push(value);
+      break;
+    case 'lt':
+      conditions.push(`${col} < ?`);
+      values.push(value);
+      break;
+    case 'between':
+      if (valueTo !== undefined && valueTo !== '') {
+        conditions.push(`${col} >= ? AND ${col} <= ?`);
+        values.push(value, valueTo);
+      }
+      break;
+  }
+}
+
 const ALLOWED_SORT_FIELDS: Record<string, string> = {
   name: 'items.name',
   quantity: 'items.quantity',
@@ -9,6 +53,15 @@ const ALLOWED_SORT_FIELDS: Record<string, string> = {
   updatedAt: 'items.updated_at',
 };
 
+export interface FilterCriterion {
+  field: string;
+  operator: 'eq' | 'contains' | 'gt' | 'lt' | 'between';
+  value: string;
+  valueTo?: string;
+  isCustomField: boolean;
+  fieldType?: string;
+}
+
 export interface PaginationParams {
   page: number;
   pageSize: number;
@@ -19,6 +72,7 @@ export interface PaginationParams {
   sortDir: 'asc' | 'desc';
   lowStock?: boolean;
   lowStockThreshold?: number;
+  filters?: FilterCriterion[];
 }
 
 export interface PaginationMeta {
@@ -34,6 +88,16 @@ export function parsePaginationParams(query: Record<string, unknown>): Paginatio
   const sortBy = ALLOWED_SORT_FIELDS[String(query.sortBy || 'name')] ? String(query.sortBy) : 'name';
   const sortDir = String(query.sortDir || 'asc').toLowerCase() === 'desc' ? 'desc' : 'asc';
 
+  let filters: FilterCriterion[] | undefined;
+  if (query.filters) {
+    try {
+      const parsed = JSON.parse(String(query.filters));
+      if (Array.isArray(parsed)) filters = parsed;
+    } catch {
+      // ignore invalid JSON
+    }
+  }
+
   return {
     page,
     pageSize,
@@ -44,6 +108,7 @@ export function parsePaginationParams(query: Record<string, unknown>): Paginatio
     sortDir,
     lowStock: query.lowStock === 'true',
     lowStockThreshold: query.lowStockThreshold ? parseInt(String(query.lowStockThreshold), 10) || 10 : 10,
+    filters,
   };
 }
 
@@ -72,6 +137,22 @@ export function buildItemWhereClause(params: PaginationParams): { where: string;
       `items.inventory_type_id IN (SELECT id FROM inventory_types WHERE name IN ('Ammunition')) AND items.quantity <= ?`
     );
     values.push(params.lowStockThreshold!);
+  }
+
+  if (params.filters && params.filters.length > 0) {
+    for (const filter of params.filters) {
+      const { field, operator, value, valueTo, isCustomField } = filter;
+      if (!field || value === undefined || value === '') continue;
+
+      if (isCustomField) {
+        const jsonPath = `json_extract(items.custom_fields, '$.${field}')`;
+        buildFilterCondition(jsonPath, operator, value, valueTo, conditions, values);
+      } else {
+        const col = STANDARD_FILTER_FIELDS[field];
+        if (!col) continue;
+        buildFilterCondition(col, operator, value, valueTo, conditions, values);
+      }
+    }
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
