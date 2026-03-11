@@ -15,6 +15,7 @@ async function main() {
   const templateRoutes = (await import('./routes/templates')).default;
   const bomRoutes = (await import('./routes/boms')).default;
   const userRoutes = (await import('./routes/users')).default;
+  const receiptRoutes = (await import('./routes/receipts')).default;
 
   // Seed database on startup
   await seedDatabase();
@@ -38,6 +39,7 @@ async function main() {
   app.use('/api/cost-history', requireAuth, costHistoryRoutes);
   app.use('/api/templates', requireAuth, templateRoutes);
   app.use('/api/boms', requireAuth, bomRoutes);
+  app.use('/api/receipts', requireAuth, receiptRoutes);
   app.use('/api/users', requireAuth, requireAdmin, userRoutes);
 
   // Health check

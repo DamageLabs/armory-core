@@ -1,4 +1,7 @@
 import { Router, Request, Response } from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { queryAll, queryOne, run, insert, update, deleteById, getDatabase } from '../db/index';
 import { parsePaginationParams, buildItemWhereClause, getSortColumn, buildPaginationMeta } from '../db/pagination';
 import { validate } from '../middleware/validate';
@@ -6,6 +9,16 @@ import { createItemSchema, updateItemSchema, bulkCreateSchema, bulkDeleteSchema,
 
 const router = Router();
 const JSON_FIELDS = ['customFields'];
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const RECEIPTS_DIR = process.env.RECEIPTS_PATH || path.join(__dirname, '../../data/receipts');
+
+function cleanupReceiptFiles(itemId: number): void {
+  const receipts = queryAll<{ filename: string }>('SELECT filename FROM receipts WHERE item_id = ?', [itemId]);
+  for (const r of receipts) {
+    fs.unlink(path.join(RECEIPTS_DIR, r.filename), () => {});
+  }
+}
 
 // GET / — Get items (paginated)
 router.get('/', (req: Request, res: Response) => {
@@ -184,7 +197,20 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
 router.delete('/all', (_req: Request, res: Response) => {
   try {
     const db = getDatabase();
+    // Clean up all receipt files before deleting
+    try {
+      const allReceipts = queryAll<{ filename: string }>('SELECT filename FROM receipts', []);
+      for (const r of allReceipts) {
+        if (r.filename) {
+          fs.unlink(path.join(RECEIPTS_DIR, r.filename), () => {});
+        }
+      }
+    } catch {
+      // receipts table may not exist yet during tests
+    }
+
     const txn = db.transaction(() => {
+      try { run('DELETE FROM receipts'); } catch { /* table may not exist */ }
       run('DELETE FROM stock_history');
       run('DELETE FROM cost_history');
       run('DELETE FROM items');
@@ -214,6 +240,7 @@ router.post('/bulk-delete', validate(bulkDeleteSchema), (req: Request, res: Resp
             'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [id, existing.name, 'deleted', existing.quantity, 0, existing.value, 0, existing.category, null, 'Bulk delete', null, null, now]
           );
+          cleanupReceiptFiles(id);
           deleteById('items', id);
         }
       }
@@ -384,6 +411,7 @@ router.delete('/:id', (req: Request, res: Response) => {
       [id, existing.name, 'deleted', existing.quantity, 0, existing.value, 0, existing.category, null, 'Item deleted', null, null, now]
     );
 
+    cleanupReceiptFiles(id);
     deleteById('items', id);
     res.json({ message: 'Item deleted' });
   } catch (error) {
