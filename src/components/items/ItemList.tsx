@@ -14,10 +14,13 @@ import BulkActions from './BulkActions';
 import LowStockAlert from '../common/LowStockAlert';
 import EmptyState from '../common/EmptyState';
 import ItemCardGrid from './ItemCardGrid';
+import SavedFilterChips from './SavedFilterChips';
 import { exportToCSV, exportToPDF, backupItemsToCSV, backupItemsToJSON } from '../../utils/export';
 import { formatCurrency } from '../../utils/formatters';
 import { ITEMS_PER_PAGE, LOW_STOCK_THRESHOLD, LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME } from '../../constants/config';
 import { ItemFormData } from '../../types/Item';
+import { FilterCriterion, SavedFilter } from '../../types/SavedFilter';
+import * as savedFilterService from '../../services/savedFilterService';
 
 type ViewMode = 'table' | 'card';
 const VIEW_MODE_KEY = 'armory-view-mode';
@@ -67,6 +70,9 @@ export default function ItemList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<FilterCriterion[]>([]);
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
+  const [activeFilterId, setActiveFilterId] = useState<number | null>(null);
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -80,6 +86,12 @@ export default function ItemList() {
   // Debounce search
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
+  // Only include filters that have a field and value set
+  const activeAdvancedFilters = useMemo(
+    () => advancedFilters.filter((f) => f.field && f.value),
+    [advancedFilters],
+  );
+
   const buildQueryParams = useCallback((): itemService.ItemQueryParams => ({
     page: currentPage,
     pageSize: ITEMS_PER_PAGE,
@@ -90,7 +102,8 @@ export default function ItemList() {
     sortDir: sortDirection,
     lowStock: showLowStockOnly || undefined,
     lowStockThreshold: LOW_STOCK_THRESHOLD,
-  }), [currentPage, searchTerm, typeFilter, categoryFilter, sortField, sortDirection, showLowStockOnly]);
+    filters: activeAdvancedFilters.length > 0 ? activeAdvancedFilters : undefined,
+  }), [currentPage, searchTerm, typeFilter, categoryFilter, sortField, sortDirection, showLowStockOnly, activeAdvancedFilters]);
 
   const loadItems = useCallback(async () => {
     try {
@@ -120,6 +133,19 @@ export default function ItemList() {
     }
     loadTypes();
   }, [showError]);
+
+  const loadSavedFilters = useCallback(async () => {
+    try {
+      const filters = await savedFilterService.getSavedFilters();
+      setSavedFilters(filters);
+    } catch {
+      // Non-critical
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSavedFilters();
+  }, [loadSavedFilters]);
 
   useEffect(() => {
     loadItems();
@@ -276,9 +302,54 @@ export default function ItemList() {
     setCategoryFilter('');
     setTypeFilter('');
     setShowLowStockOnly(false);
+    setAdvancedFilters([]);
+    setActiveFilterId(null);
     setCurrentPage(1);
     setSelectedIds(new Set());
   };
+
+  const handleAdvancedFiltersChange = useCallback((filters: FilterCriterion[]) => {
+    setAdvancedFilters(filters);
+    setActiveFilterId(null);
+    setCurrentPage(1);
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleApplySavedFilter = useCallback((sf: SavedFilter) => {
+    const config = sf.filterConfig;
+    setSearchTerm(config.search || '');
+    setTypeFilter(config.typeId ? String(config.typeId) : '');
+    setCategoryFilter(config.category || '');
+    setAdvancedFilters(config.filters || []);
+    setActiveFilterId(sf.id);
+    setCurrentPage(1);
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleSaveFilter = useCallback(async (name: string) => {
+    try {
+      await savedFilterService.createSavedFilter(name, {
+        search: searchTerm || undefined,
+        typeId: typeFilter ? parseInt(typeFilter) : undefined,
+        category: categoryFilter || undefined,
+        filters: advancedFilters,
+      });
+      showSuccess(`Filter "${name}" saved.`);
+      await loadSavedFilters();
+    } catch {
+      showError('Failed to save filter.');
+    }
+  }, [searchTerm, typeFilter, categoryFilter, advancedFilters, showSuccess, showError, loadSavedFilters]);
+
+  const handleDeleteSavedFilter = useCallback(async (id: number) => {
+    try {
+      await savedFilterService.deleteSavedFilter(id);
+      if (activeFilterId === id) setActiveFilterId(null);
+      await loadSavedFilters();
+    } catch {
+      showError('Failed to delete filter.');
+    }
+  }, [activeFilterId, showError, loadSavedFilters]);
 
   const handleClone = (item: Item) => {
     const customFields = { ...item.customFields };
@@ -418,7 +489,20 @@ export default function ItemList() {
           typeFilter={typeFilter}
           onTypeChange={(v) => { setTypeFilter(v); setCurrentPage(1); setSelectedIds(new Set()); }}
           onReset={handleResetFilters}
+          advancedFilters={advancedFilters}
+          onAdvancedFiltersChange={handleAdvancedFiltersChange}
         />
+
+        {savedFilters.length > 0 || searchTerm || categoryFilter || typeFilter || advancedFilters.length > 0 ? (
+          <SavedFilterChips
+            savedFilters={savedFilters}
+            activeFilterId={activeFilterId}
+            onApply={handleApplySavedFilter}
+            onSave={handleSaveFilter}
+            onDelete={handleDeleteSavedFilter}
+            canSave={!!(searchTerm || categoryFilter || typeFilter || advancedFilters.length > 0)}
+          />
+        ) : null}
 
         {showLowStockOnly && (
           <div className="mb-3">
@@ -557,7 +641,7 @@ export default function ItemList() {
           </>
         )}
 
-        {totalItems === 0 && !searchTerm && !categoryFilter && !typeFilter && !showLowStockOnly ? (
+        {totalItems === 0 && !searchTerm && !categoryFilter && !typeFilter && !showLowStockOnly && advancedFilters.length === 0 ? (
           <EmptyState
             icon={FaBoxOpen}
             title="No items in inventory"
