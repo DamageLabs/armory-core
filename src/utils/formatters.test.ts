@@ -19,12 +19,13 @@ describe('formatCurrency', () => {
     expect(formatCurrency(1.994)).toBe('$1.99');
   });
 
-  it('formats large numbers', () => {
-    expect(formatCurrency(12345.67)).toBe('$12345.67');
+  it('formats large numbers with comma separators', () => {
+    expect(formatCurrency(12345.67)).toBe('$12,345.67');
+    expect(formatCurrency(1234567.89)).toBe('$1,234,567.89');
   });
 
   it('formats negative numbers', () => {
-    expect(formatCurrency(-5.50)).toBe('$-5.50');
+    expect(formatCurrency(-5.50)).toBe('-$5.50');
   });
 });
 
