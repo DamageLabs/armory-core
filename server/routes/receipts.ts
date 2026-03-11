@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { queryAll, queryOne, run, getDatabase, mapRowToEntity } from '../db/index';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '../schemas/receipts';
+import { logAudit } from '../services/auditService';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RECEIPTS_DIR = process.env.RECEIPTS_PATH || path.join(__dirname, '../../data/receipts');
@@ -76,6 +77,7 @@ router.post('/:itemId/receipts', (req: Request, res: Response) => {
       ).run(itemId, req.file.filename, req.file.originalname, req.file.mimetype, req.file.size, now);
 
       const row = db.prepare('SELECT * FROM receipts WHERE id = ?').get(result.lastInsertRowid) as Record<string, unknown>;
+      logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'receipt.uploaded', resourceType: 'receipt', resourceId: result.lastInsertRowid as number, details: { itemId, originalName: req.file!.originalname } });
       res.status(201).json(mapRowToEntity(row));
     } catch (error) {
       // Clean up uploaded file on DB failure
@@ -153,6 +155,7 @@ router.delete('/:receiptId', (req: Request, res: Response) => {
     const filePath = path.join(RECEIPTS_DIR, receipt.filename);
     fs.unlink(filePath, () => {});
 
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'receipt.deleted', resourceType: 'receipt', resourceId: receiptId });
     res.json({ message: 'Receipt deleted' });
   } catch (error) {
     console.error('Error deleting receipt:', error);

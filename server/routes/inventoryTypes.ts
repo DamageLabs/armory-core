@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById, count } from '../db/index';
 import { validate } from '../middleware/validate';
 import { createInventoryTypeSchema, updateInventoryTypeSchema } from '../schemas/inventoryTypes';
+import { logAudit } from '../services/auditService';
 
 const router = Router();
 const JSON_FIELDS = ['schema'];
@@ -44,7 +45,8 @@ router.post('/', validate(createInventoryTypeSchema), (req: Request, res: Respon
     }
 
     const now = new Date().toISOString();
-    const type = insert('inventory_types', { name, icon, schema, createdAt: now, updatedAt: now }, JSON_FIELDS);
+    const type = insert('inventory_types', { name, icon, schema, createdAt: now, updatedAt: now }, JSON_FIELDS) as Record<string, unknown>;
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'type.created', resourceType: 'inventory_type', resourceId: type.id as number, details: { name } });
     res.status(201).json(type);
   } catch (error) {
     console.error('Error creating inventory type:', error);
@@ -79,6 +81,7 @@ router.put('/:id', validate(updateInventoryTypeSchema), (req: Request, res: Resp
       res.status(404).json({ error: 'Inventory type not found' });
       return;
     }
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'type.updated', resourceType: 'inventory_type', resourceId: id, details: { name } });
     res.json(type);
   } catch (error) {
     console.error('Error updating inventory type:', error);
@@ -101,6 +104,7 @@ router.delete('/:id', (req: Request, res: Response) => {
       res.status(404).json({ error: 'Inventory type not found' });
       return;
     }
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'type.deleted', resourceType: 'inventory_type', resourceId: id });
     res.json({ message: 'Inventory type deleted' });
   } catch (error) {
     console.error('Error deleting inventory type:', error);
