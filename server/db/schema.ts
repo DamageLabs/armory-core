@@ -142,7 +142,6 @@ CREATE TABLE IF NOT EXISTS receipts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_receipts_item_id ON receipts(item_id);
-CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category);
 
 CREATE TABLE IF NOT EXISTS audit_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

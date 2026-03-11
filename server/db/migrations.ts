@@ -88,9 +88,29 @@ function migrateCategoriesTable(db: Database.Database): void {
 }
 
 /**
+ * Check if a column exists in a table.
+ */
+function hasColumn(db: Database.Database, table: string, column: string): boolean {
+  const cols = db.pragma(`table_info(${table})`) as { name: string }[];
+  return cols.some((c) => c.name === column);
+}
+
+/**
+ * Add category column to receipts table for existing databases.
+ */
+function migrateReceiptsCategory(db: Database.Database): void {
+  if (hasColumn(db, 'receipts', 'category')) return;
+  db.exec("ALTER TABLE receipts ADD COLUMN category TEXT NOT NULL DEFAULT 'receipt'");
+}
+
+/**
  * Run all pending migrations. Idempotent — skips tables that already have FK constraints.
  */
 export function runMigrations(db: Database.Database): void {
+  // Column migrations that must run before schema indexes
+  migrateReceiptsCategory(db);
+  db.exec('CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category)');
+
   const needsItems = !hasForeignKey(db, 'items', 'inventory_type_id');
   const needsCategories = !hasForeignKey(db, 'categories', 'inventory_type_id');
 

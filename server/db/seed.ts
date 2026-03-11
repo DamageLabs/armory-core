@@ -180,19 +180,8 @@ async function migrateUnhashedPasswords(): Promise<void> {
   }
 }
 
-function ensureReceiptsCategoryColumn(): void {
-  const db = getDatabase();
-  try {
-    db.exec("ALTER TABLE receipts ADD COLUMN category TEXT NOT NULL DEFAULT 'receipt'");
-    db.exec('CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category)');
-  } catch {
-    // Column already exists — ignore
-  }
-}
-
 export async function seedDatabase(): Promise<void> {
   ensureParentItemIdColumn();
-  ensureReceiptsCategoryColumn();
   ensureInventoryTypes();
   migrateOpticsAndLights();
   fixOrphanedItems();
