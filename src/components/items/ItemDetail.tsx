@@ -12,6 +12,7 @@ import ChildItemsList from './ChildItemsList';
 import VendorPriceCard from './VendorPriceCard';
 import Breadcrumbs from '../common/Breadcrumbs';
 import { SkeletonDetailPage } from '../common/Skeleton';
+import ReceiptList from './ReceiptList';
 
 export default function ItemDetail() {
   const { id } = useParams<{ id: string }>();
@@ -217,6 +218,8 @@ export default function ItemDetail() {
               </Card.Body>
             </Card>
           )}
+
+          <ReceiptList itemId={item.id} />
 
           <CostHistoryChart itemId={item.id} currentValue={item.unitValue} />
 

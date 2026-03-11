@@ -129,4 +129,16 @@ CREATE INDEX IF NOT EXISTS idx_stock_history_timestamp ON stock_history(timestam
 CREATE INDEX IF NOT EXISTS idx_cost_history_item_id ON cost_history(item_id);
 CREATE INDEX IF NOT EXISTS idx_vendor_cache_key ON vendor_price_cache(cache_key);
 CREATE INDEX IF NOT EXISTS idx_item_templates_category ON item_templates(category);
+
+CREATE TABLE IF NOT EXISTS receipts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+  filename TEXT NOT NULL,
+  original_name TEXT NOT NULL,
+  mime_type TEXT NOT NULL,
+  size_bytes INTEGER NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_receipts_item_id ON receipts(item_id);
 `;
