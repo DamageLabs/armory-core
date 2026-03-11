@@ -30,10 +30,37 @@ describe('receipt schemas', () => {
       expect(result.success).toBe(true);
     });
 
+    it('accepts valid TXT metadata', () => {
+      const result = uploadReceiptMeta.safeParse({
+        originalName: 'notes.txt',
+        mimeType: 'text/plain',
+        sizeBytes: 100_000,
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('accepts valid DOC metadata', () => {
+      const result = uploadReceiptMeta.safeParse({
+        originalName: 'manual.doc',
+        mimeType: 'application/msword',
+        sizeBytes: 100_000,
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('accepts valid DOCX metadata', () => {
+      const result = uploadReceiptMeta.safeParse({
+        originalName: 'manual.docx',
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        sizeBytes: 100_000,
+      });
+      expect(result.success).toBe(true);
+    });
+
     it('rejects unsupported MIME type', () => {
       const result = uploadReceiptMeta.safeParse({
-        originalName: 'doc.docx',
-        mimeType: 'application/msword',
+        originalName: 'archive.zip',
+        mimeType: 'application/zip',
         sizeBytes: 100_000,
       });
       expect(result.success).toBe(false);
