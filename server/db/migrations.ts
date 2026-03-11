@@ -98,7 +98,13 @@ function hasColumn(db: Database.Database, table: string, column: string): boolea
 /**
  * Add category column to receipts table for existing databases.
  */
+function tableExists(db: Database.Database, table: string): boolean {
+  const row = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(table) as { name: string } | undefined;
+  return !!row;
+}
+
 function migrateReceiptsCategory(db: Database.Database): void {
+  if (!tableExists(db, 'receipts')) return;
   if (hasColumn(db, 'receipts', 'category')) return;
   db.exec("ALTER TABLE receipts ADD COLUMN category TEXT NOT NULL DEFAULT 'receipt'");
 }
@@ -109,7 +115,9 @@ function migrateReceiptsCategory(db: Database.Database): void {
 export function runMigrations(db: Database.Database): void {
   // Column migrations that must run before schema indexes
   migrateReceiptsCategory(db);
-  db.exec('CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category)');
+  if (tableExists(db, 'receipts') && hasColumn(db, 'receipts', 'category')) {
+    db.exec('CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category)');
+  }
 
   const needsItems = !hasForeignKey(db, 'items', 'inventory_type_id');
   const needsCategories = !hasForeignKey(db, 'categories', 'inventory_type_id');

@@ -169,4 +169,17 @@ CREATE TABLE IF NOT EXISTS saved_filters (
 );
 
 CREATE INDEX IF NOT EXISTS idx_saved_filters_user_id ON saved_filters(user_id);
+
+CREATE TABLE IF NOT EXISTS item_notes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL,
+  user_email TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_item_notes_item_id ON item_notes(item_id);
+CREATE INDEX IF NOT EXISTS idx_item_notes_created_at ON item_notes(created_at);
 `;
