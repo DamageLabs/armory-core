@@ -76,7 +76,7 @@ export default function ItemList() {
   const [lowStockCounts, setLowStockCounts] = useState<{ lowStock: number; outOfStock: number }>({ lowStock: 0, outOfStock: 0 });
 
   // Debounce search
-  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const buildQueryParams = useCallback((): itemService.ItemQueryParams => ({
     page: currentPage,
@@ -374,8 +374,8 @@ export default function ItemList() {
           <LowStockAlert
             items={[
               // Synthetic items to satisfy LowStockAlert's counting interface
-              ...Array.from({ length: lowStockCounts.lowStock }, (_, i) => ({ quantity: 1, inventoryTypeId: [...lowStockTypeIds][0] || 0 }) as Item),
-              ...Array.from({ length: lowStockCounts.outOfStock }, (_, i) => ({ quantity: 0, inventoryTypeId: [...lowStockTypeIds][0] || 0 }) as Item),
+              ...Array.from({ length: lowStockCounts.lowStock }, () => ({ quantity: 1, inventoryTypeId: [...lowStockTypeIds][0] || 0 }) as Item),
+              ...Array.from({ length: lowStockCounts.outOfStock }, () => ({ quantity: 0, inventoryTypeId: [...lowStockTypeIds][0] || 0 }) as Item),
             ]}
             onFilterLowStock={handleFilterLowStock}
             threshold={LOW_STOCK_THRESHOLD}
