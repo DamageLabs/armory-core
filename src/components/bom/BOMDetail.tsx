@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Card, Table, Button, Badge, ButtonGroup, Row, Col, ProgressBar } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CBadge, CButtonGroup, CRow, CCol, CProgress } from '@coreui/react';
 import { FaEdit, FaCopy, FaTrash } from 'react-icons/fa';
 import * as bomService from '../../services/bomService';
 import { BOM, BOMCostBreakdown } from '../../types/BOM';
@@ -78,51 +78,51 @@ export default function BOMDetail() {
   return (
     <>
       <Breadcrumbs items={breadcrumbItems} />
-      <Card>
-      <Card.Header className="d-flex justify-content-between align-items-center">
+      <CCard>
+      <CCardHeader className="d-flex justify-content-between align-items-center">
         <h4 className="mb-0">{bom.name}</h4>
-        <Badge bg={availability.canBuild ? 'success' : 'warning'}>
+        <CBadge color={availability.canBuild ? 'success' : 'warning'}>
           {availability.canBuild ? 'Ready to Build' : 'Missing Parts'}
-        </Badge>
-      </Card.Header>
-      <Card.Body>
+        </CBadge>
+      </CCardHeader>
+      <CCardBody>
         {bom.description && (
-          <Row className="mb-4">
-            <Col>
+          <CRow className="mb-4">
+            <CCol>
               <p className="text-muted">{bom.description}</p>
-            </Col>
-          </Row>
+            </CCol>
+          </CRow>
         )}
 
-        <Row className="mb-4">
-          <Col md={4}>
-            <Card className="text-center">
-              <Card.Body>
+        <CRow className="mb-4">
+          <CCol md={4}>
+            <CCard className="text-center">
+              <CCardBody>
                 <h2 className="text-primary">${breakdown.totalCost.toFixed(2)}</h2>
                 <small className="text-muted">Total Cost</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4}>
-            <Card className="text-center">
-              <Card.Body>
+              </CCardBody>
+            </CCard>
+          </CCol>
+          <CCol md={4}>
+            <CCard className="text-center">
+              <CCardBody>
                 <h2>{breakdown.itemCosts.length}</h2>
                 <small className="text-muted">Components</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4}>
-            <Card className="text-center">
-              <Card.Body>
+              </CCardBody>
+            </CCard>
+          </CCol>
+          <CCol md={4}>
+            <CCard className="text-center">
+              <CCardBody>
                 <h2>{breakdown.canBuildQuantity}</h2>
                 <small className="text-muted">Can Build</small>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
 
         <h5>Component List</h5>
-        <Table striped bordered responsive>
+        <table className="table table-striped table-bordered table-responsive">
           <thead>
             <tr>
               <th>Item</th>
@@ -149,9 +149,9 @@ export default function BOMDetail() {
                   <td className="text-center">{item.quantity}</td>
                   <td className="text-center">
                     {item.available}
-                    <ProgressBar
-                      now={percentAvailable}
-                      variant={item.canBuild ? 'success' : 'danger'}
+                    <CProgress
+                      value={percentAvailable}
+                      color={item.canBuild ? 'success' : 'danger'}
                       style={{ height: '4px', marginTop: '4px' }}
                     />
                   </td>
@@ -159,11 +159,11 @@ export default function BOMDetail() {
                   <td className="text-end">${item.lineCost.toFixed(2)}</td>
                   <td className="text-center">
                     {item.canBuild ? (
-                      <Badge bg="success">OK</Badge>
+                      <CBadge color="success">OK</CBadge>
                     ) : (
-                      <Badge bg="danger">
+                      <CBadge color="danger">
                         Need {item.quantity - item.available}
-                      </Badge>
+                      </CBadge>
                     )}
                   </td>
                 </tr>
@@ -177,7 +177,7 @@ export default function BOMDetail() {
               <th></th>
             </tr>
           </tfoot>
-        </Table>
+        </table>
 
         {!availability.canBuild && (
           <div className="alert alert-warning">
@@ -192,21 +192,21 @@ export default function BOMDetail() {
 
         <hr />
 
-        <ButtonGroup>
+        <CButtonGroup>
           <Link to={`/bom/${bom.id}/edit`} className="btn btn-primary">
             <FaEdit className="me-1" aria-hidden="true" /> Edit
           </Link>
-          <Button variant="secondary" onClick={handleDuplicate} aria-label="Duplicate BOM">
+          <CButton color="secondary" onClick={handleDuplicate} aria-label="Duplicate BOM">
             <FaCopy className="me-1" aria-hidden="true" /> Duplicate
-          </Button>
-          <Button variant="danger" onClick={() => setShowDeleteModal(true)} aria-label="Delete BOM">
+          </CButton>
+          <CButton color="danger" onClick={() => setShowDeleteModal(true)} aria-label="Delete BOM">
             <FaTrash className="me-1" aria-hidden="true" /> Delete
-          </Button>
-          <Button variant="outline-secondary" onClick={() => navigate('/bom')}>
+          </CButton>
+          <CButton color="secondary" variant="outline" onClick={() => navigate('/bom')}>
             Back to List
-          </Button>
-        </ButtonGroup>
-      </Card.Body>
+          </CButton>
+        </CButtonGroup>
+      </CCardBody>
 
         <ConfirmModal
           show={showDeleteModal}
@@ -216,7 +216,7 @@ export default function BOMDetail() {
           onConfirm={handleDelete}
           onCancel={() => setShowDeleteModal(false)}
         />
-      </Card>
+      </CCard>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Container } from 'react-bootstrap';
+import { CContainer } from '@coreui/react';
 
 function Logo({ width = 280, height = 48 }: { width?: number; height?: number }) {
   return (
@@ -25,7 +25,7 @@ function Logo({ width = 280, height = 48 }: { width?: number; height?: number })
 export default function Welcome() {
   return (
     <div className="bg-light p-5 rounded">
-      <Container>
+      <CContainer>
         <div className="mb-4">
           <Logo width={350} height={60} />
         </div>
@@ -57,7 +57,7 @@ export default function Welcome() {
             View on GitHub
           </a>
         </p>
-      </Container>
+      </CContainer>
     </div>
   );
 }

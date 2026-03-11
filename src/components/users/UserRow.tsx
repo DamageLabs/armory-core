@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Form, Button, ButtonGroup } from 'react-bootstrap';
+import { CFormSelect, CButton, CButtonGroup } from '@coreui/react';
 import { UserWithoutPassword, UserRole } from '../../types/User';
 
 interface UserRowProps {
@@ -20,7 +20,7 @@ export default function UserRow({ user, currentUserId, onRoleChange, onDelete }:
         <Link to={`/users/${user.id}`}>{user.email}</Link>
       </td>
       <td>
-        <Form.Select
+        <CFormSelect
           size="sm"
           value={user.role}
           onChange={(e) => onRoleChange(user.id, e.target.value as UserRole)}
@@ -31,22 +31,22 @@ export default function UserRow({ user, currentUserId, onRoleChange, onDelete }:
               {role.charAt(0).toUpperCase() + role.slice(1)}
             </option>
           ))}
-        </Form.Select>
+        </CFormSelect>
       </td>
       <td>
-        <ButtonGroup size="sm">
-          <Button
-            variant="primary"
+        <CButtonGroup size="sm">
+          <CButton
+            color="primary"
             onClick={() => onRoleChange(user.id, user.role)}
           >
             Change Role
-          </Button>
+          </CButton>
           {!isCurrentUser && (
-            <Button variant="danger" onClick={onDelete}>
+            <CButton color="danger" onClick={onDelete}>
               Delete
-            </Button>
+            </CButton>
           )}
-        </ButtonGroup>
+        </CButtonGroup>
       </td>
     </tr>
   );

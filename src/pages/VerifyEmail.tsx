@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Card, Row, Col, Alert, Spinner } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CRow, CCol, CAlert, CSpinner } from '@coreui/react';
 import { verifyEmail } from '../services/authService';
 
 type VerificationStatus = 'loading' | 'success' | 'error';
@@ -30,51 +30,51 @@ export default function VerifyEmail() {
   }, [searchParams]);
 
   return (
-    <Row className="justify-content-center">
-      <Col md={6} lg={4}>
+    <CRow className="justify-content-center">
+      <CCol md={6} lg={4}>
         {status === 'loading' && (
-          <Card className="border-primary">
-            <Card.Header className="bg-primary text-white">
+          <CCard className="border-primary">
+            <CCardHeader className="bg-primary text-white">
               <h4 className="mb-0">Verifying Email</h4>
-            </Card.Header>
-            <Card.Body className="text-center py-5">
-              <Spinner animation="border" variant="primary" className="mb-3" />
+            </CCardHeader>
+            <CCardBody className="text-center py-5">
+              <CSpinner color="primary" className="mb-3" />
               <p className="text-muted">Please wait while we verify your email address...</p>
-            </Card.Body>
-          </Card>
+            </CCardBody>
+          </CCard>
         )}
 
         {status === 'success' && (
-          <Card className="border-success">
-            <Card.Header className="bg-success text-white">
+          <CCard className="border-success">
+            <CCardHeader className="bg-success text-white">
               <h4 className="mb-0">Email Verified</h4>
-            </Card.Header>
-            <Card.Body>
-              <Alert variant="success">
-                <Alert.Heading>Success!</Alert.Heading>
+            </CCardHeader>
+            <CCardBody>
+              <CAlert color="success">
+                <h4 className="alert-heading">Success!</h4>
                 <p className="mb-0">
                   Your email address has been verified. You can now sign in to your account.
                 </p>
-              </Alert>
+              </CAlert>
               <div className="d-grid gap-2 mt-3">
                 <Link to="/login" className="btn btn-success">
                   Sign In
                 </Link>
               </div>
-            </Card.Body>
-          </Card>
+            </CCardBody>
+          </CCard>
         )}
 
         {status === 'error' && (
-          <Card className="border-danger">
-            <Card.Header className="bg-danger text-white">
+          <CCard className="border-danger">
+            <CCardHeader className="bg-danger text-white">
               <h4 className="mb-0">Verification Failed</h4>
-            </Card.Header>
-            <Card.Body>
-              <Alert variant="danger">
-                <Alert.Heading>Unable to Verify Email</Alert.Heading>
+            </CCardHeader>
+            <CCardBody>
+              <CAlert color="danger">
+                <h4 className="alert-heading">Unable to Verify Email</h4>
                 <p className="mb-0">{errorMessage}</p>
-              </Alert>
+              </CAlert>
               <hr />
               <p className="text-muted">
                 The verification link may have expired or already been used. You can request a new verification email.
@@ -87,10 +87,10 @@ export default function VerifyEmail() {
                   Back to Sign In
                 </Link>
               </div>
-            </Card.Body>
-          </Card>
+            </CCardBody>
+          </CCard>
         )}
-      </Col>
-    </Row>
+      </CCol>
+    </CRow>
   );
 }

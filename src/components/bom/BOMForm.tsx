@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Form, Button, Row, Col, Table, ButtonGroup } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CForm, CButton, CRow, CCol, CButtonGroup, CFormLabel, CFormInput, CFormTextarea, CFormSelect } from '@coreui/react';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import * as bomService from '../../services/bomService';
 import * as itemService from '../../services/itemService';
@@ -166,16 +166,16 @@ export default function BOMForm() {
   return (
     <>
       <Breadcrumbs items={breadcrumbItems} />
-      <Card>
-        <Card.Header>
+      <CCard>
+        <CCardHeader>
           <h4 className="mb-0">{isEditing ? 'Edit BOM' : 'New BOM'}</h4>
-        </Card.Header>
-      <Card.Body>
-        <Form onSubmit={handleSubmit}>
-          <Row className="mb-3">
-            <Form.Label column sm={3}>Name</Form.Label>
-            <Col sm={6}>
-              <Form.Control
+        </CCardHeader>
+      <CCardBody>
+        <CForm onSubmit={handleSubmit}>
+          <CRow className="mb-3">
+            <CFormLabel className="col-sm-3 col-form-label">Name</CFormLabel>
+            <CCol sm={6}>
+              <CFormInput
                 type="text"
                 name="name"
                 value={formData.name}
@@ -183,31 +183,30 @@ export default function BOMForm() {
                 required
                 placeholder="e.g., AR-15 Build Kit"
               />
-            </Col>
-          </Row>
+            </CCol>
+          </CRow>
 
-          <Row className="mb-3">
-            <Form.Label column sm={3}>Description</Form.Label>
-            <Col sm={6}>
-              <Form.Control
-                as="textarea"
+          <CRow className="mb-3">
+            <CFormLabel className="col-sm-3 col-form-label">Description</CFormLabel>
+            <CCol sm={6}>
+              <CFormTextarea
                 rows={3}
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Describe this project or assembly..."
               />
-            </Col>
-          </Row>
+            </CCol>
+          </CRow>
 
           <hr />
 
           <h5>Components</h5>
 
-          <Row className="mb-3 align-items-end">
-            <Col sm={5}>
-              <Form.Label>Select Item</Form.Label>
-              <Form.Select
+          <CRow className="mb-3 align-items-end">
+            <CCol sm={5}>
+              <CFormLabel>Select Item</CFormLabel>
+              <CFormSelect
                 value={selectedItemId}
                 onChange={(e) => setSelectedItemId(e.target.value)}
               >
@@ -217,30 +216,31 @@ export default function BOMForm() {
                     {item.name} (${item.unitValue.toFixed(2)})
                   </option>
                 ))}
-              </Form.Select>
-            </Col>
-            <Col sm={2}>
-              <Form.Label>Quantity</Form.Label>
-              <Form.Control
+              </CFormSelect>
+            </CCol>
+            <CCol sm={2}>
+              <CFormLabel>Quantity</CFormLabel>
+              <CFormInput
                 type="number"
                 min={1}
                 value={selectedQuantity}
                 onChange={(e) => setSelectedQuantity(parseInt(e.target.value) || 1)}
               />
-            </Col>
-            <Col sm={2}>
-              <Button
-                variant="outline-primary"
+            </CCol>
+            <CCol sm={2}>
+              <CButton
+                color="primary"
+                variant="outline"
                 onClick={handleAddItem}
                 disabled={!selectedItemId}
               >
                 <FaPlus className="me-1" /> Add
-              </Button>
-            </Col>
-          </Row>
+              </CButton>
+            </CCol>
+          </CRow>
 
           {formData.items.length > 0 && (
-            <Table striped bordered size="sm">
+            <table className="table table-striped table-bordered table-sm">
               <thead>
                 <tr>
                   <th>Item</th>
@@ -256,7 +256,7 @@ export default function BOMForm() {
                   <tr key={bomItem.itemId}>
                     <td>{getItemName(bomItem.itemId)}</td>
                     <td>
-                      <Form.Control
+                      <CFormInput
                         type="number"
                         size="sm"
                         min={1}
@@ -271,7 +271,7 @@ export default function BOMForm() {
                       ${(getItemPrice(bomItem.itemId) * bomItem.quantity).toFixed(2)}
                     </td>
                     <td>
-                      <Form.Control
+                      <CFormInput
                         type="text"
                         size="sm"
                         value={bomItem.notes}
@@ -280,14 +280,15 @@ export default function BOMForm() {
                       />
                     </td>
                     <td>
-                      <Button
-                        variant="outline-danger"
+                      <CButton
+                        color="danger"
+                        variant="outline"
                         size="sm"
                         onClick={() => handleRemoveItem(bomItem.itemId)}
                         aria-label={`Remove ${getItemName(bomItem.itemId)}`}
                       >
                         <FaTrash aria-hidden="true" />
-                      </Button>
+                      </CButton>
                     </td>
                   </tr>
                 ))}
@@ -299,7 +300,7 @@ export default function BOMForm() {
                   <th colSpan={2}></th>
                 </tr>
               </tfoot>
-            </Table>
+            </table>
           )}
 
           {formData.items.length === 0 && (
@@ -310,17 +311,17 @@ export default function BOMForm() {
 
           <hr />
 
-          <ButtonGroup>
-            <Button variant="primary" type="submit">
+          <CButtonGroup>
+            <CButton color="primary" type="submit">
               {isEditing ? 'Update BOM' : 'Create BOM'}
-            </Button>
-            <Button variant="secondary" onClick={() => navigate('/bom')}>
+            </CButton>
+            <CButton color="secondary" onClick={() => navigate('/bom')}>
               Cancel
-            </Button>
-          </ButtonGroup>
-        </Form>
-      </Card.Body>
-      </Card>
+            </CButton>
+          </CButtonGroup>
+        </CForm>
+      </CCardBody>
+      </CCard>
     </>
   );
 }

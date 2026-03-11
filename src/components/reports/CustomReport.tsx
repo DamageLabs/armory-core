@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Card, Table, Row, Col, Form, Button, ButtonGroup, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CCardFooter, CRow, CCol, CButton, CButtonGroup, CBadge, CFormSelect, CFormInput, CFormLabel } from '@coreui/react';
 import { FaFileExcel, FaFilePdf, FaPlus, FaTimes, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as categoryService from '../../services/categoryService';
@@ -231,77 +231,77 @@ export default function CustomReport() {
           <h4 className="mb-1">Custom Report Builder</h4>
           <p className="text-muted mb-0">Build custom reports with filters and grouping</p>
         </div>
-        <ButtonGroup size="sm">
-          <Button variant="outline-success" onClick={handleExportCSV}>
+        <CButtonGroup size="sm">
+          <CButton color="success" variant="outline" onClick={handleExportCSV}>
             <FaFileExcel className="me-1" /> CSV
-          </Button>
-          <Button variant="outline-danger" onClick={handleExportPDF}>
+          </CButton>
+          <CButton color="danger" variant="outline" onClick={handleExportPDF}>
             <FaFilePdf className="me-1" /> PDF
-          </Button>
-        </ButtonGroup>
+          </CButton>
+        </CButtonGroup>
       </div>
 
       {/* Configuration */}
-      <Row className="g-3 mb-4">
+      <CRow className="g-3 mb-4">
         {/* Columns */}
-        <Col md={6}>
-          <Card className="h-100">
-            <Card.Header>
+        <CCol md={6}>
+          <CCard className="h-100">
+            <CCardHeader>
               <h6 className="mb-0">Columns</h6>
-            </Card.Header>
-            <Card.Body>
+            </CCardHeader>
+            <CCardBody>
               <div className="d-flex flex-wrap gap-2">
                 {columns.map((col) => (
-                  <Badge
+                  <CBadge
                     key={col.key}
-                    bg={col.visible ? 'primary' : 'secondary'}
+                    color={col.visible ? 'primary' : 'secondary'}
                     style={{ cursor: 'pointer' }}
                     onClick={() => toggleColumn(col.key)}
                   >
                     {col.visible ? '✓' : ''} {col.label}
-                  </Badge>
+                  </CBadge>
                 ))}
               </div>
-            </Card.Body>
-          </Card>
-        </Col>
+            </CCardBody>
+          </CCard>
+        </CCol>
 
         {/* Grouping */}
-        <Col md={6}>
-          <Card className="h-100">
-            <Card.Header>
+        <CCol md={6}>
+          <CCard className="h-100">
+            <CCardHeader>
               <h6 className="mb-0">Group By</h6>
-            </Card.Header>
-            <Card.Body>
-              <Form.Select
+            </CCardHeader>
+            <CCardBody>
+              <CFormSelect
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value as keyof Item | '')}
               >
                 <option value="">No Grouping</option>
                 <option value="category">Category</option>
                 <option value="location">Location</option>
-              </Form.Select>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+              </CFormSelect>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
 
       {/* Filters */}
-      <Card className="mb-4">
-        <Card.Header className="d-flex justify-content-between align-items-center">
+      <CCard className="mb-4">
+        <CCardHeader className="d-flex justify-content-between align-items-center">
           <h6 className="mb-0">Filters</h6>
-          <Button variant="outline-primary" size="sm" onClick={addFilter}>
+          <CButton color="primary" variant="outline" size="sm" onClick={addFilter}>
             <FaPlus className="me-1" /> Add Filter
-          </Button>
-        </Card.Header>
+          </CButton>
+        </CCardHeader>
         {filters.length > 0 && (
-          <Card.Body>
+          <CCardBody>
             {filters.map((filter) => {
               const fieldConfig = FILTER_FIELDS.find((f) => f.key === filter.field);
               return (
-                <Row key={filter.id} className="g-2 mb-2 align-items-center">
-                  <Col md={3}>
-                    <Form.Select
+                <CRow key={filter.id} className="g-2 mb-2 align-items-center">
+                  <CCol md={3}>
+                    <CFormSelect
                       size="sm"
                       value={filter.field}
                       onChange={(e) => updateFilter(filter.id, { field: e.target.value as keyof Item })}
@@ -309,10 +309,10 @@ export default function CustomReport() {
                       {FILTER_FIELDS.map((f) => (
                         <option key={f.key} value={f.key}>{f.label}</option>
                       ))}
-                    </Form.Select>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Select
+                    </CFormSelect>
+                  </CCol>
+                  <CCol md={3}>
+                    <CFormSelect
                       size="sm"
                       value={filter.operator}
                       onChange={(e) => updateFilter(filter.id, { operator: e.target.value as FilterConfig['operator'] })}
@@ -320,11 +320,11 @@ export default function CustomReport() {
                       {getOperatorsForField(filter.field).map((op) => (
                         <option key={op.value} value={op.value}>{op.label}</option>
                       ))}
-                    </Form.Select>
-                  </Col>
-                  <Col md={5}>
+                    </CFormSelect>
+                  </CCol>
+                  <CCol md={5}>
                     {fieldConfig?.type === 'select' && filter.field === 'category' ? (
-                      <Form.Select
+                      <CFormSelect
                         size="sm"
                         value={filter.value}
                         onChange={(e) => updateFilter(filter.id, { value: e.target.value })}
@@ -333,9 +333,9 @@ export default function CustomReport() {
                         {categories.map((cat) => (
                           <option key={cat} value={cat}>{cat}</option>
                         ))}
-                      </Form.Select>
+                      </CFormSelect>
                     ) : (
-                      <Form.Control
+                      <CFormInput
                         size="sm"
                         type={fieldConfig?.type === 'number' ? 'number' : 'text'}
                         value={filter.value}
@@ -343,31 +343,32 @@ export default function CustomReport() {
                         placeholder="Value..."
                       />
                     )}
-                  </Col>
-                  <Col md={1}>
-                    <Button
-                      variant="outline-danger"
+                  </CCol>
+                  <CCol md={1}>
+                    <CButton
+                      color="danger"
+                      variant="outline"
                       size="sm"
                       onClick={() => removeFilter(filter.id)}
                     >
                       <FaTimes />
-                    </Button>
-                  </Col>
-                </Row>
+                    </CButton>
+                  </CCol>
+                </CRow>
               );
             })}
-          </Card.Body>
+          </CCardBody>
         )}
-      </Card>
+      </CCard>
 
       {/* Results Summary */}
-      <Card className="mb-3">
-        <Card.Body className="py-2">
+      <CCard className="mb-3">
+        <CCardBody className="py-2">
           <div className="d-flex justify-content-between align-items-center">
             <span>
               Showing <strong>{filteredItems.length}</strong> of {allItems.length} items
               {filters.length > 0 && (
-                <Badge bg="info" className="ms-2">{filters.length} filter(s)</Badge>
+                <CBadge color="info" className="ms-2">{filters.length} filter(s)</CBadge>
               )}
             </span>
             <span>
@@ -376,12 +377,12 @@ export default function CustomReport() {
               Total Value: <strong className="text-success">{formatCurrency(totals.value)}</strong>
             </span>
           </div>
-        </Card.Body>
-      </Card>
+        </CCardBody>
+      </CCard>
 
       {/* Results Table */}
-      <Card>
-        <Card.Body className="p-0">
+      <CCard>
+        <CCardBody className="p-0">
           {groupBy && groupedItems ? (
             // Grouped view
             groupedItems.map((group) => (
@@ -392,7 +393,7 @@ export default function CustomReport() {
                     {group.items.length} items | Qty: {group.totalQuantity} | Value: {formatCurrency(group.totalValue)}
                   </span>
                 </div>
-                <Table hover className="mb-0">
+                <table className="table table-hover mb-0">
                   <thead>
                     <tr>
                       {visibleColumns.map((col) => (
@@ -424,12 +425,12 @@ export default function CustomReport() {
                       </tr>
                     ))}
                   </tbody>
-                </Table>
+                </table>
               </div>
             ))
           ) : (
             // Flat view
-            <Table hover className="mb-0">
+            <table className="table table-hover mb-0">
               <thead>
                 <tr>
                   {visibleColumns.map((col) => (
@@ -479,11 +480,11 @@ export default function CustomReport() {
                   ))}
                 </tr>
               </tfoot>
-            </Table>
+            </table>
           )}
-        </Card.Body>
+        </CCardBody>
         {!groupBy && totalPages > 1 && (
-          <Card.Footer>
+          <CCardFooter>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -491,9 +492,9 @@ export default function CustomReport() {
               totalItems={sortedItems.length}
               itemsPerPage={ITEMS_PER_PAGE}
             />
-          </Card.Footer>
+          </CCardFooter>
         )}
-      </Card>
+      </CCard>
     </div>
   );
 }
