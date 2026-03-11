@@ -1,29 +1,48 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, run, insert, update, deleteById, getDatabase } from '../db/index';
+import { parsePaginationParams, buildItemWhereClause, getSortColumn, buildPaginationMeta } from '../db/pagination';
 
 const router = Router();
 const JSON_FIELDS = ['customFields'];
 
-// GET / — Get all items
-router.get('/', (_req: Request, res: Response) => {
+// GET / — Get items (paginated)
+router.get('/', (req: Request, res: Response) => {
   try {
-    const items = queryAll(
-      'SELECT items.*, (SELECT COUNT(*) FROM items c WHERE c.parent_item_id = items.id) AS child_count FROM items ORDER BY name',
-      [],
+    const params = parsePaginationParams(req.query as Record<string, unknown>);
+    const { where, values } = buildItemWhereClause(params);
+    const sortCol = getSortColumn(params.sortBy);
+    const sortDir = params.sortDir.toUpperCase();
+
+    const db = getDatabase();
+    const countRow = db.prepare(`SELECT COUNT(*) as count FROM items ${where}`).get(...values) as { count: number };
+    const totalItems = countRow.count;
+
+    const offset = (params.page - 1) * params.pageSize;
+    const rows = queryAll(
+      `SELECT items.*, (SELECT COUNT(*) FROM items c WHERE c.parent_item_id = items.id) AS child_count, (SELECT p.name FROM items p WHERE p.id = items.parent_item_id) AS parent_name FROM items ${where} ORDER BY ${sortCol} ${sortDir} LIMIT ? OFFSET ?`,
+      [...values, params.pageSize, offset],
       JSON_FIELDS
     );
-    res.json(items);
+
+    res.json({
+      data: rows,
+      pagination: buildPaginationMeta(totalItems, params.page, params.pageSize),
+    });
   } catch (error) {
     console.error('Error fetching items:', error);
     res.status(500).json({ error: 'Failed to fetch items' });
   }
 });
 
-// GET /stats — Return totalQuantity and totalValue
-router.get('/stats', (_req: Request, res: Response) => {
+// GET /stats — Return totalQuantity and totalValue (with optional filters)
+router.get('/stats', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
-    const row = db.prepare('SELECT COALESCE(SUM(quantity), 0) as totalQuantity, COALESCE(SUM(value), 0) as totalValue FROM items').get() as { totalQuantity: number; totalValue: number };
+    const params = parsePaginationParams(req.query as Record<string, unknown>);
+    const { where, values } = buildItemWhereClause(params);
+    const row = db.prepare(
+      `SELECT COALESCE(SUM(quantity), 0) as totalQuantity, COALESCE(SUM(value), 0) as totalValue, COUNT(*) as totalItems FROM items ${where}`
+    ).get(...values) as { totalQuantity: number; totalValue: number; totalItems: number };
     res.json(row);
   } catch (error) {
     console.error('Error fetching stats:', error);

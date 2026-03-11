@@ -48,13 +48,13 @@ describe('itemService', () => {
   });
 
   describe('getAllItems', () => {
-    it('returns all items from API', async () => {
+    it('returns all items from paginated API', async () => {
       const items = [mockItem, { ...mockItem, id: 2, name: 'Item 2' }];
-      vi.mocked(api.get).mockResolvedValue(items);
+      vi.mocked(api.get).mockResolvedValue({ data: items, pagination: { page: 1, pageSize: 100000, totalItems: 2, totalPages: 1 } });
 
       const result = await getAllItems();
 
-      expect(api.get).toHaveBeenCalledWith('/items');
+      expect(api.get).toHaveBeenCalledWith('/items?pageSize=100000');
       expect(result).toEqual(items);
     });
   });

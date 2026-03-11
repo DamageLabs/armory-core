@@ -11,7 +11,7 @@ vi.mock('../../db/index', () => ({
   deleteById: vi.fn(),
   run: vi.fn(),
   getDatabase: vi.fn(() => ({
-    prepare: vi.fn(() => ({ get: vi.fn(), all: vi.fn(), run: vi.fn() })),
+    prepare: vi.fn(() => ({ get: vi.fn(() => ({ count: 0 })), all: vi.fn(), run: vi.fn() })),
   })),
 }));
 
@@ -32,21 +32,83 @@ describe('items routes', () => {
   beforeEach(() => vi.clearAllMocks());
 
   describe('GET /api/items', () => {
-    it('returns all items', async () => {
+    it('returns paginated items with metadata', async () => {
+      const mockDb = { prepare: vi.fn(() => ({ get: vi.fn(() => ({ count: 1 })), all: vi.fn(), run: vi.fn() })) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
       vi.mocked(db.queryAll).mockReturnValue([mockItem]);
       const res = await request(app).get('/api/items');
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([mockItem]);
+      expect(res.body.data).toEqual([mockItem]);
+      expect(res.body.pagination).toEqual({ page: 1, pageSize: 25, totalItems: 1, totalPages: 1 });
+    });
+
+    it('respects page and pageSize params', async () => {
+      const mockDb = { prepare: vi.fn(() => ({ get: vi.fn(() => ({ count: 50 })), all: vi.fn(), run: vi.fn() })) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
+      vi.mocked(db.queryAll).mockReturnValue([]);
+      const res = await request(app).get('/api/items?page=2&pageSize=10');
+      expect(res.status).toBe(200);
+      expect(res.body.pagination).toEqual({ page: 2, pageSize: 10, totalItems: 50, totalPages: 5 });
+    });
+
+    it('applies search filter', async () => {
+      const mockDb = { prepare: vi.fn(() => ({ get: vi.fn(() => ({ count: 1 })), all: vi.fn(), run: vi.fn() })) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
+      vi.mocked(db.queryAll).mockReturnValue([mockItem]);
+      const res = await request(app).get('/api/items?search=resistor');
+      expect(res.status).toBe(200);
+      expect(db.queryAll).toHaveBeenCalledWith(
+        expect.stringContaining('LIKE'),
+        expect.arrayContaining(['%resistor%']),
+        expect.any(Array)
+      );
+    });
+
+    it('applies typeId filter', async () => {
+      const mockDb = { prepare: vi.fn(() => ({ get: vi.fn(() => ({ count: 1 })), all: vi.fn(), run: vi.fn() })) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
+      vi.mocked(db.queryAll).mockReturnValue([mockItem]);
+      const res = await request(app).get('/api/items?typeId=2');
+      expect(res.status).toBe(200);
+      expect(db.queryAll).toHaveBeenCalledWith(
+        expect.stringContaining('inventory_type_id'),
+        expect.arrayContaining([2]),
+        expect.any(Array)
+      );
+    });
+
+    it('defaults to sorting by name asc', async () => {
+      const mockDb = { prepare: vi.fn(() => ({ get: vi.fn(() => ({ count: 0 })), all: vi.fn(), run: vi.fn() })) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
+      vi.mocked(db.queryAll).mockReturnValue([]);
+      await request(app).get('/api/items');
+      expect(db.queryAll).toHaveBeenCalledWith(
+        expect.stringContaining('items.name ASC'),
+        expect.any(Array),
+        expect.any(Array)
+      );
+    });
+
+    it('rejects invalid sort field by defaulting to name', async () => {
+      const mockDb = { prepare: vi.fn(() => ({ get: vi.fn(() => ({ count: 0 })), all: vi.fn(), run: vi.fn() })) };
+      vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
+      vi.mocked(db.queryAll).mockReturnValue([]);
+      await request(app).get('/api/items?sortBy=DROP_TABLE');
+      expect(db.queryAll).toHaveBeenCalledWith(
+        expect.stringContaining('items.name'),
+        expect.any(Array),
+        expect.any(Array)
+      );
     });
   });
 
   describe('GET /api/items/stats', () => {
     it('returns stats', async () => {
-      const mockDb = { prepare: vi.fn(() => ({ get: vi.fn(() => ({ totalQuantity: 100, totalValue: 500 })) })) };
+      const mockDb = { prepare: vi.fn(() => ({ get: vi.fn(() => ({ totalQuantity: 100, totalValue: 500, totalItems: 10 })) })) };
       vi.mocked(db.getDatabase).mockReturnValue(mockDb as never);
       const res = await request(app).get('/api/items/stats');
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ totalQuantity: 100, totalValue: 500 });
+      expect(res.body).toEqual({ totalQuantity: 100, totalValue: 500, totalItems: 10 });
     });
   });
 
