@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { UserWithoutPassword, LoginCredentials, RegisterData } from '../types/User';
 import * as authService from '../services/authService';
 import { LoginResult, RegisterResult } from '../services/authService';
+import { ApiError } from '../services/api';
 
 export interface AuthContextType {
   user: UserWithoutPassword | null;
@@ -40,10 +41,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     authService.logout();
     setUser(null);
-  };
+  }, []);
+
+  // Global listener: auto-logout on 401 from any API call
+  useEffect(() => {
+    const handleUnauthorized = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.status === 401) {
+        logout();
+      }
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [logout]);
 
   const register = async (data: RegisterData): Promise<RegisterResult> => {
     return authService.register(data);

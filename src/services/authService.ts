@@ -24,6 +24,9 @@ export async function login(credentials: LoginCredentials): Promise<LoginResult>
 
   const user = result.user as UserWithoutPassword;
   saveToStorage(STORAGE_KEYS.CURRENT_USER, user);
+  if (result.token) {
+    saveToStorage(STORAGE_KEYS.AUTH_TOKEN, result.token);
+  }
   return { user };
 }
 
@@ -34,6 +37,7 @@ export function isEmailVerified(_email: string): boolean {
 
 export function logout(): void {
   removeFromStorage(STORAGE_KEYS.CURRENT_USER);
+  removeFromStorage(STORAGE_KEYS.AUTH_TOKEN);
 }
 
 export function getCurrentUser(): UserWithoutPassword | null {
@@ -106,13 +110,22 @@ export async function verifyEmail(token: string): Promise<{ success: boolean; me
   return { success: true, message: result.message };
 }
 
+function authHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const token = getFromStorage<string>(STORAGE_KEYS.AUTH_TOKEN);
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 export async function updateProfile(
   userId: number,
   data: { email?: string; password?: string; currentPassword?: string }
 ): Promise<UserWithoutPassword | null> {
   const response = await fetch(`/api/auth/profile/${userId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(data),
   });
 
@@ -130,6 +143,7 @@ export async function updateProfile(
 export async function deleteAccount(userId: number): Promise<boolean> {
   const response = await fetch(`/api/auth/profile/${userId}`, {
     method: 'DELETE',
+    headers: authHeaders(),
   });
 
   if (!response.ok) {
@@ -137,5 +151,6 @@ export async function deleteAccount(userId: number): Promise<boolean> {
   }
 
   removeFromStorage(STORAGE_KEYS.CURRENT_USER);
+  removeFromStorage(STORAGE_KEYS.AUTH_TOKEN);
   return true;
 }
