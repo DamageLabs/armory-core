@@ -81,7 +81,7 @@ describe('Pagination', () => {
     const onPageChange = vi.fn();
     render(<Pagination {...defaultProps} onPageChange={onPageChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: '3' }));
+    fireEvent.click(screen.getByText('3'));
 
     expect(onPageChange).toHaveBeenCalledWith(3);
   });
@@ -90,7 +90,7 @@ describe('Pagination', () => {
     const onPageChange = vi.fn();
     render(<Pagination {...defaultProps} currentPage={3} onPageChange={onPageChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /first/i }));
+    fireEvent.click(screen.getByLabelText(/first/i));
 
     expect(onPageChange).toHaveBeenCalledWith(1);
   });
@@ -99,7 +99,7 @@ describe('Pagination', () => {
     const onPageChange = vi.fn();
     render(<Pagination {...defaultProps} currentPage={3} onPageChange={onPageChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /previous/i }));
+    fireEvent.click(screen.getByLabelText(/previous/i));
 
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
@@ -108,7 +108,7 @@ describe('Pagination', () => {
     const onPageChange = vi.fn();
     render(<Pagination {...defaultProps} currentPage={3} onPageChange={onPageChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /next/i }));
+    fireEvent.click(screen.getByLabelText(/next/i));
 
     expect(onPageChange).toHaveBeenCalledWith(4);
   });
@@ -117,7 +117,7 @@ describe('Pagination', () => {
     const onPageChange = vi.fn();
     render(<Pagination {...defaultProps} currentPage={3} onPageChange={onPageChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /last/i }));
+    fireEvent.click(screen.getByLabelText(/last/i));
 
     expect(onPageChange).toHaveBeenCalledWith(5);
   });
