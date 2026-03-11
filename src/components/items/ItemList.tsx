@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CCard, CCardHeader, CCardBody, CButton, CButtonGroup, CBadge, CFormCheck, CTable } from '@coreui/react';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase, FaThLarge, FaList } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaCopy, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase, FaThLarge, FaList } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { Item } from '../../types/Item';
@@ -16,7 +16,8 @@ import EmptyState from '../common/EmptyState';
 import ItemCardGrid from './ItemCardGrid';
 import { exportToCSV, exportToPDF, backupItemsToCSV, backupItemsToJSON } from '../../utils/export';
 import { formatCurrency } from '../../utils/formatters';
-import { ITEMS_PER_PAGE, LOW_STOCK_THRESHOLD, LOW_STOCK_TYPE_NAMES } from '../../constants/config';
+import { ITEMS_PER_PAGE, LOW_STOCK_THRESHOLD, LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME } from '../../constants/config';
+import { ItemFormData } from '../../types/Item';
 
 type ViewMode = 'table' | 'card';
 const VIEW_MODE_KEY = 'armory-view-mode';
@@ -55,6 +56,7 @@ export default function ItemList() {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [viewMode, setViewMode] = useState<ViewMode>(() => (localStorage.getItem(VIEW_MODE_KEY) as ViewMode) || 'table');
+  const navigate = useNavigate();
   const [deleteModalItem, setDeleteModalItem] = useState<Item | null>(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [showBulkCategoryModal, setShowBulkCategoryModal] = useState(false);
@@ -278,6 +280,29 @@ export default function ItemList() {
     setSelectedIds(new Set());
   };
 
+  const handleClone = (item: Item) => {
+    const customFields = { ...item.customFields };
+    const typeName = inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name;
+    if (typeName === FIREARMS_TYPE_NAME) {
+      delete customFields.serialNumber;
+    }
+    const cloneData: ItemFormData = {
+      name: `${item.name} (Copy)`,
+      description: item.description,
+      quantity: item.quantity,
+      unitValue: item.unitValue,
+      picture: item.picture,
+      category: item.category,
+      location: item.location,
+      barcode: '',
+      reorderPoint: item.reorderPoint,
+      inventoryTypeId: item.inventoryTypeId,
+      customFields,
+      parentItemId: item.parentItemId,
+    };
+    navigate('/items/new', { state: { cloneData } });
+  };
+
   const handleFilterLowStock = () => {
     handleLowStockToggle(true);
   };
@@ -482,6 +507,16 @@ export default function ItemList() {
                       >
                         <FaEdit aria-hidden="true" />
                       </Link>
+                      <CButton
+                        color="info"
+                        variant="outline"
+                        size="sm"
+                        className="me-1"
+                        onClick={() => handleClone(item)}
+                        aria-label={`Clone ${item.name}`}
+                      >
+                        <FaCopy aria-hidden="true" />
+                      </CButton>
                       <CButton
                         color="danger"
                         variant="outline"

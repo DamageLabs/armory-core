@@ -14,7 +14,8 @@ import Breadcrumbs from '../common/Breadcrumbs';
 import { SkeletonDetailPage } from '../common/Skeleton';
 import Markdown from 'react-markdown';
 import ReceiptList from './ReceiptList';
-import { LOW_STOCK_TYPE_NAMES } from '../../constants/config';
+import { LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME } from '../../constants/config';
+import { ItemFormData } from '../../types/Item';
 
 export default function ItemDetail() {
   const { id } = useParams<{ id: string }>();
@@ -70,6 +71,30 @@ export default function ItemDetail() {
       showError('Failed to delete item.');
     }
     setShowDeleteModal(false);
+  };
+
+  const handleClone = () => {
+    if (!item) return;
+    const customFields = { ...item.customFields };
+    // Clear serial number for Firearms to prevent duplicate unique identifiers
+    if (inventoryType?.name === FIREARMS_TYPE_NAME) {
+      delete customFields.serialNumber;
+    }
+    const cloneData: ItemFormData = {
+      name: `${item.name} (Copy)`,
+      description: item.description,
+      quantity: item.quantity,
+      unitValue: item.unitValue,
+      picture: item.picture,
+      category: item.category,
+      location: item.location,
+      barcode: '',
+      reorderPoint: item.reorderPoint,
+      inventoryTypeId: item.inventoryTypeId,
+      customFields,
+      parentItemId: item.parentItemId,
+    };
+    navigate('/items/new', { state: { cloneData } });
   };
 
   const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
@@ -167,6 +192,9 @@ export default function ItemDetail() {
             <Link to={`/items/${item.id}/edit`} className="btn btn-primary">
               Edit
             </Link>
+            <CButton color="info" onClick={handleClone}>
+              Clone
+            </CButton>
             <CButton color="danger" onClick={() => setShowDeleteModal(true)}>
               Delete
             </CButton>
