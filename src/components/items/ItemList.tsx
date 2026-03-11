@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Table, Button, Form, ButtonGroup, Badge } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase, FaThLarge, FaList } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { Item } from '../../types/Item';
@@ -13,9 +13,13 @@ import ItemFilters from './ItemFilters';
 import BulkActions from './BulkActions';
 import LowStockAlert from '../common/LowStockAlert';
 import EmptyState from '../common/EmptyState';
+import ItemCardGrid from './ItemCardGrid';
 import { exportToCSV, exportToPDF, backupItemsToCSV, backupItemsToJSON } from '../../utils/export';
 import { formatCurrency } from '../../utils/formatters';
 import { ITEMS_PER_PAGE, LOW_STOCK_THRESHOLD, LOW_STOCK_TYPE_NAMES } from '../../constants/config';
+
+type ViewMode = 'table' | 'card';
+const VIEW_MODE_KEY = 'armory-view-mode';
 
 type SortField = 'name' | 'quantity' | 'unitValue' | 'value' | 'location' | 'category';
 type SortDirection = 'asc' | 'desc';
@@ -46,6 +50,7 @@ export default function ItemList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => (localStorage.getItem(VIEW_MODE_KEY) as ViewMode) || 'table');
   const [deleteModalItem, setDeleteModalItem] = useState<Item | null>(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [showBulkCategoryModal, setShowBulkCategoryModal] = useState(false);
@@ -268,6 +273,11 @@ export default function ItemList() {
     });
   };
 
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem(VIEW_MODE_KEY, mode);
+  };
+
   const handleResetFilters = () => {
     setSearchTerm('');
     setCategoryFilter('');
@@ -290,6 +300,22 @@ export default function ItemList() {
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <h4 className="mb-0">Inventory Items</h4>
           <div className="d-flex gap-2 flex-wrap">
+            <ButtonGroup size="sm">
+              <Button
+                variant={viewMode === 'table' ? 'primary' : 'outline-primary'}
+                onClick={() => handleViewModeChange('table')}
+                title="Table view"
+              >
+                <FaList />
+              </Button>
+              <Button
+                variant={viewMode === 'card' ? 'primary' : 'outline-primary'}
+                onClick={() => handleViewModeChange('card')}
+                title="Card view"
+              >
+                <FaThLarge />
+              </Button>
+            </ButtonGroup>
             <ButtonGroup size="sm">
               <Button variant="outline-success" onClick={() => exportToCSV(filteredItems)}>
                 <FaFileExcel className="me-1" />
@@ -349,109 +375,124 @@ export default function ItemList() {
           onCategoryChange={handleBulkCategoryChange}
         />
 
-        <Table hover responsive>
-          <thead>
-            <tr>
-              <th className="text-center" style={{ width: '40px' }}>
-                <Form.Check
-                  type="checkbox"
-                  checked={allPageItemsSelected}
-                  ref={(el: HTMLInputElement | null) => {
-                    if (el) {
-                      el.indeterminate = somePageItemsSelected && !allPageItemsSelected;
-                    }
-                  }}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  aria-label="Select all items on page"
-                />
-              </th>
-              <SortHeader field="name" currentField={sortField} direction={sortDirection} onSort={handleSort}>Item Name</SortHeader>
-              <th className="text-center">Type</th>
-              <SortHeader field="quantity" currentField={sortField} direction={sortDirection} onSort={handleSort}>Quantity</SortHeader>
-              <SortHeader field="unitValue" currentField={sortField} direction={sortDirection} onSort={handleSort}>Unit Value</SortHeader>
-              <SortHeader field="value" currentField={sortField} direction={sortDirection} onSort={handleSort}>Total Value</SortHeader>
-              <SortHeader field="location" currentField={sortField} direction={sortDirection} onSort={handleSort}>Location</SortHeader>
-              <SortHeader field="category" currentField={sortField} direction={sortDirection} onSort={handleSort}>Category</SortHeader>
-              <th className="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedItems.map((item) => (
-              <tr key={item.id} className={selectedIds.has(item.id) ? 'table-active' : ''}>
-                <td className="text-center">
+        {viewMode === 'table' ? (
+          <Table hover responsive>
+            <thead>
+              <tr>
+                <th className="text-center" style={{ width: '40px' }}>
                   <Form.Check
                     type="checkbox"
-                    checked={selectedIds.has(item.id)}
-                    onChange={(e) => handleSelectItem(item.id, e.target.checked)}
-                    aria-label={`Select ${item.name}`}
+                    checked={allPageItemsSelected}
+                    ref={(el: HTMLInputElement | null) => {
+                      if (el) {
+                        el.indeterminate = somePageItemsSelected && !allPageItemsSelected;
+                      }
+                    }}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    aria-label="Select all items on page"
                   />
-                </td>
-                <td>
-                  <Link to={`/items/${item.id}`}>{item.name}</Link>
-                  {(item.childCount ?? 0) > 0 && (
-                    <Badge bg="info" className="ms-1" title={`${item.childCount} attached item(s)`}>
-                      {item.childCount}
-                    </Badge>
-                  )}
-                  {item.parentItemId && (() => {
-                    const parent = items.find((p) => p.id === item.parentItemId);
-                    return parent ? (
-                      <Link to={`/items/${parent.id}`} className="ms-1">
-                        <Badge bg="dark" title={`Attached to ${parent.name}`}>
-                          <FaLink size={10} className="me-1" />{parent.name}
-                        </Badge>
-                      </Link>
-                    ) : null;
-                  })()}
-                </td>
-                <td className="text-center">
-                  {item.parentItemId && (() => {
-                    const parent = items.find((p) => p.id === item.parentItemId);
-                    const parentType = parent ? inventoryTypes.find((t) => t.id === parent.inventoryTypeId) : null;
-                    return parentType ? <Badge bg="primary" className="me-1">{parentType.name}</Badge> : null;
-                  })()}
-                  <Badge bg={item.parentItemId ? 'secondary' : 'primary'}>
-                    {inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name || '-'}
-                  </Badge>
-                </td>
-                <td className={`text-center ${lowStockTypeIds.has(item.inventoryTypeId) ? (item.quantity === 0 ? 'text-danger fw-bold' : item.quantity <= LOW_STOCK_THRESHOLD ? 'text-warning fw-bold' : '') : ''}`}>
-                  {item.quantity}
-                </td>
-                <td className="text-center">{formatCurrency(item.unitValue)}</td>
-                <td className="text-center">{formatCurrency(item.value)}</td>
-                <td className="text-center">{item.location}</td>
-                <td className="text-center">{item.category}</td>
-                <td className="text-center">
-                  <Link
-                    to={`/items/${item.id}/edit`}
-                    className="btn btn-sm btn-outline-primary me-1"
-                    aria-label={`Edit ${item.name}`}
-                  >
-                    <FaEdit aria-hidden="true" />
-                  </Link>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={() => setDeleteModalItem(item)}
-                    aria-label={`Delete ${item.name}`}
-                  >
-                    <FaTrash aria-hidden="true" />
-                  </Button>
-                </td>
+                </th>
+                <SortHeader field="name" currentField={sortField} direction={sortDirection} onSort={handleSort}>Item Name</SortHeader>
+                <th className="text-center">Type</th>
+                <SortHeader field="quantity" currentField={sortField} direction={sortDirection} onSort={handleSort}>Quantity</SortHeader>
+                <SortHeader field="unitValue" currentField={sortField} direction={sortDirection} onSort={handleSort}>Unit Value</SortHeader>
+                <SortHeader field="value" currentField={sortField} direction={sortDirection} onSort={handleSort}>Total Value</SortHeader>
+                <SortHeader field="location" currentField={sortField} direction={sortDirection} onSort={handleSort}>Location</SortHeader>
+                <SortHeader field="category" currentField={sortField} direction={sortDirection} onSort={handleSort}>Category</SortHeader>
+                <th className="text-center">Actions</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="table-secondary">
-              <td></td>
-              <td colSpan={2}><strong>Totals ({filteredItems.length} items)</strong></td>
-              <td className="text-center"><strong>{totalQuantity}</strong></td>
-              <td className="text-center"></td>
-              <td className="text-center"><strong>{formatCurrency(totalValue)}</strong></td>
-              <td colSpan={3}></td>
-            </tr>
-          </tfoot>
-        </Table>
+            </thead>
+            <tbody>
+              {paginatedItems.map((item) => (
+                <tr key={item.id} className={selectedIds.has(item.id) ? 'table-active' : ''}>
+                  <td className="text-center">
+                    <Form.Check
+                      type="checkbox"
+                      checked={selectedIds.has(item.id)}
+                      onChange={(e) => handleSelectItem(item.id, e.target.checked)}
+                      aria-label={`Select ${item.name}`}
+                    />
+                  </td>
+                  <td>
+                    <Link to={`/items/${item.id}`}>{item.name}</Link>
+                    {(item.childCount ?? 0) > 0 && (
+                      <Badge bg="info" className="ms-1" title={`${item.childCount} attached item(s)`}>
+                        {item.childCount}
+                      </Badge>
+                    )}
+                    {item.parentItemId && (() => {
+                      const parent = items.find((p) => p.id === item.parentItemId);
+                      return parent ? (
+                        <Link to={`/items/${parent.id}`} className="ms-1">
+                          <Badge bg="dark" title={`Attached to ${parent.name}`}>
+                            <FaLink size={10} className="me-1" />{parent.name}
+                          </Badge>
+                        </Link>
+                      ) : null;
+                    })()}
+                  </td>
+                  <td className="text-center">
+                    {item.parentItemId && (() => {
+                      const parent = items.find((p) => p.id === item.parentItemId);
+                      const parentType = parent ? inventoryTypes.find((t) => t.id === parent.inventoryTypeId) : null;
+                      return parentType ? <Badge bg="primary" className="me-1">{parentType.name}</Badge> : null;
+                    })()}
+                    <Badge bg={item.parentItemId ? 'secondary' : 'primary'}>
+                      {inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name || '-'}
+                    </Badge>
+                  </td>
+                  <td className={`text-center ${lowStockTypeIds.has(item.inventoryTypeId) ? (item.quantity === 0 ? 'text-danger fw-bold' : item.quantity <= LOW_STOCK_THRESHOLD ? 'text-warning fw-bold' : '') : ''}`}>
+                    {item.quantity}
+                  </td>
+                  <td className="text-center">{formatCurrency(item.unitValue)}</td>
+                  <td className="text-center">{formatCurrency(item.value)}</td>
+                  <td className="text-center">{item.location}</td>
+                  <td className="text-center">{item.category}</td>
+                  <td className="text-center">
+                    <Link
+                      to={`/items/${item.id}/edit`}
+                      className="btn btn-sm btn-outline-primary me-1"
+                      aria-label={`Edit ${item.name}`}
+                    >
+                      <FaEdit aria-hidden="true" />
+                    </Link>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      onClick={() => setDeleteModalItem(item)}
+                      aria-label={`Delete ${item.name}`}
+                    >
+                      <FaTrash aria-hidden="true" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="table-secondary">
+                <td></td>
+                <td colSpan={2}><strong>Totals ({filteredItems.length} items)</strong></td>
+                <td className="text-center"><strong>{totalQuantity}</strong></td>
+                <td className="text-center"></td>
+                <td className="text-center"><strong>{formatCurrency(totalValue)}</strong></td>
+                <td colSpan={3}></td>
+              </tr>
+            </tfoot>
+          </Table>
+        ) : (
+          <>
+            <ItemCardGrid
+              items={paginatedItems}
+              allItems={items}
+              inventoryTypes={inventoryTypes}
+              lowStockTypeIds={lowStockTypeIds}
+              onDelete={setDeleteModalItem}
+            />
+            <div className="text-muted text-center mt-3 small">
+              <strong>{filteredItems.length}</strong> items &middot; <strong>{totalQuantity}</strong> total qty &middot; <strong>{formatCurrency(totalValue)}</strong> total value
+            </div>
+          </>
+        )}
 
         {items.length === 0 ? (
           <EmptyState
