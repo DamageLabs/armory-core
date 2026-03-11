@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Table, Button, Form, ButtonGroup, Badge } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase, FaThLarge, FaList } from 'react-icons/fa';
@@ -47,6 +47,10 @@ function SortHeader({ field, currentField, direction, onSort, children }: SortHe
 
 export default function ItemList() {
   const [items, setItems] = useState<Item[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalQuantity, setTotalQuantity] = useState(0);
+  const [totalValue, setTotalValue] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -68,14 +72,40 @@ export default function ItemList() {
   const [inventoryTypes, setInventoryTypes] = useState<InventoryType[]>([]);
   const [typeFilter, setTypeFilter] = useState('');
 
+  // Low stock alert needs all items — fetch separately
+  const [lowStockCounts, setLowStockCounts] = useState<{ lowStock: number; outOfStock: number }>({ lowStock: 0, outOfStock: 0 });
+
+  // Debounce search
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const buildQueryParams = useCallback((): itemService.ItemQueryParams => ({
+    page: currentPage,
+    pageSize: ITEMS_PER_PAGE,
+    search: searchTerm || undefined,
+    typeId: typeFilter ? parseInt(typeFilter) : undefined,
+    category: categoryFilter || undefined,
+    sortBy: sortField,
+    sortDir: sortDirection,
+    lowStock: showLowStockOnly || undefined,
+    lowStockThreshold: LOW_STOCK_THRESHOLD,
+  }), [currentPage, searchTerm, typeFilter, categoryFilter, sortField, sortDirection, showLowStockOnly]);
+
   const loadItems = useCallback(async () => {
     try {
-      const allItems = await itemService.getAllItems();
-      setItems(allItems);
+      const params = buildQueryParams();
+      const [result, stats] = await Promise.all([
+        itemService.getItems(params),
+        itemService.getFilteredStats(params),
+      ]);
+      setItems(result.data);
+      setTotalItems(result.pagination.totalItems);
+      setTotalPages(result.pagination.totalPages);
+      setTotalQuantity(stats.totalQuantity);
+      setTotalValue(stats.totalValue);
     } catch {
       showError('Failed to load items.');
     }
-  }, [showError]);
+  }, [buildQueryParams, showError]);
 
   useEffect(() => {
     async function loadTypes() {
@@ -93,6 +123,25 @@ export default function ItemList() {
     loadItems();
   }, [loadItems]);
 
+  // Load low stock counts once for alert banner
+  useEffect(() => {
+    async function loadLowStockCounts() {
+      try {
+        const [lowResult, outResult] = await Promise.all([
+          itemService.getFilteredStats({ lowStock: true, lowStockThreshold: LOW_STOCK_THRESHOLD }),
+          itemService.getFilteredStats({ lowStock: true, lowStockThreshold: 0 }),
+        ]);
+        setLowStockCounts({
+          lowStock: lowResult.totalItems - outResult.totalItems,
+          outOfStock: outResult.totalItems,
+        });
+      } catch {
+        // Non-critical — alert just won't show
+      }
+    }
+    loadLowStockCounts();
+  }, []);
+
   const lowStockTypeIds = useMemo(() => {
     return new Set(
       inventoryTypes
@@ -101,86 +150,27 @@ export default function ItemList() {
     );
   }, [inventoryTypes]);
 
-  // Reset page and selection when filters change
-  const resetFiltersState = useCallback(() => {
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+    // Debounce API calls for search
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setCurrentPage(1);
+      setSelectedIds(new Set());
+    }, 300);
+  }, []);
+
+  const handleCategoryChange = useCallback((value: string) => {
+    setCategoryFilter(value);
     setCurrentPage(1);
     setSelectedIds(new Set());
   }, []);
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchTerm(value);
-    resetFiltersState();
-  }, [resetFiltersState]);
-
-  const handleCategoryChange = useCallback((value: string) => {
-    setCategoryFilter(value);
-    resetFiltersState();
-  }, [resetFiltersState]);
-
   const handleLowStockToggle = useCallback((value: boolean) => {
     setShowLowStockOnly(value);
-    resetFiltersState();
-  }, [resetFiltersState]);
-
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      // Search filter
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
-        const customFieldValues = Object.values(item.customFields || {}).map((v) => String(v || '').toLowerCase());
-        const matchesSearch =
-          item.name.toLowerCase().includes(search) ||
-          item.description.toLowerCase().includes(search) ||
-          item.location.toLowerCase().includes(search) ||
-          customFieldValues.some((v) => v.includes(search));
-        if (!matchesSearch) return false;
-      }
-
-      // Type filter
-      if (typeFilter && item.inventoryTypeId !== parseInt(typeFilter)) {
-        return false;
-      }
-
-      // Category filter
-      if (categoryFilter && item.category !== categoryFilter) {
-        return false;
-      }
-
-      // Low stock filter (only applies to Ammunition)
-      if (showLowStockOnly) {
-        if (!lowStockTypeIds.has(item.inventoryTypeId) || item.quantity > LOW_STOCK_THRESHOLD) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [items, searchTerm, typeFilter, categoryFilter, showLowStockOnly, lowStockTypeIds]);
-
-  const sortedItems = useMemo(() => {
-    return [...filteredItems].sort((a, b) => {
-      let aVal = a[sortField];
-      let bVal = b[sortField];
-
-      if (typeof aVal === 'string') {
-        aVal = aVal.toLowerCase();
-        bVal = (bVal as string).toLowerCase();
-      }
-
-      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [filteredItems, sortField, sortDirection]);
-
-  const paginatedItems = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return sortedItems.slice(start, start + ITEMS_PER_PAGE);
-  }, [sortedItems, currentPage]);
-
-  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
-  const totalQuantity = filteredItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalValue = filteredItems.reduce((sum, item) => sum + item.value, 0);
+    setCurrentPage(1);
+    setSelectedIds(new Set());
+  }, []);
 
   const handleSort = useCallback((field: SortField) => {
     if (field === sortField) {
@@ -189,6 +179,7 @@ export default function ItemList() {
       setSortField(field);
       setSortDirection('asc');
     }
+    setCurrentPage(1);
   }, [sortField]);
 
   const handleDelete = async () => {
@@ -255,7 +246,7 @@ export default function ItemList() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIds(new Set(paginatedItems.map((item) => item.id)));
+      setSelectedIds(new Set(items.map((item) => item.id)));
     } else {
       setSelectedIds(new Set());
     }
@@ -291,8 +282,44 @@ export default function ItemList() {
     handleLowStockToggle(true);
   };
 
-  const allPageItemsSelected = paginatedItems.length > 0 && paginatedItems.every((item) => selectedIds.has(item.id));
-  const somePageItemsSelected = paginatedItems.some((item) => selectedIds.has(item.id));
+  const handleExportCSV = async () => {
+    try {
+      const allItems = await itemService.getAllItems();
+      exportToCSV(allItems);
+    } catch {
+      showError('Failed to export items.');
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const allItems = await itemService.getAllItems();
+      exportToPDF(allItems);
+    } catch {
+      showError('Failed to export items.');
+    }
+  };
+
+  const handleBackupCSV = async () => {
+    try {
+      const allItems = await itemService.getAllItems();
+      backupItemsToCSV(allItems);
+    } catch {
+      showError('Failed to backup items.');
+    }
+  };
+
+  const handleBackupJSON = async () => {
+    try {
+      const allItems = await itemService.getAllItems();
+      backupItemsToJSON(allItems);
+    } catch {
+      showError('Failed to backup items.');
+    }
+  };
+
+  const allPageItemsSelected = items.length > 0 && items.every((item) => selectedIds.has(item.id));
+  const somePageItemsSelected = items.some((item) => selectedIds.has(item.id));
 
   return (
     <Card>
@@ -317,21 +344,21 @@ export default function ItemList() {
               </Button>
             </ButtonGroup>
             <ButtonGroup size="sm">
-              <Button variant="outline-success" onClick={() => exportToCSV(filteredItems)}>
+              <Button variant="outline-success" onClick={handleExportCSV}>
                 <FaFileExcel className="me-1" />
                 CSV
               </Button>
-              <Button variant="outline-danger" onClick={() => exportToPDF(filteredItems)}>
+              <Button variant="outline-danger" onClick={handleExportPDF}>
                 <FaFilePdf className="me-1" />
                 PDF
               </Button>
             </ButtonGroup>
             <ButtonGroup size="sm">
-              <Button variant="outline-secondary" onClick={() => backupItemsToCSV(items)} disabled={items.length === 0} title="Backup all items as CSV">
+              <Button variant="outline-secondary" onClick={handleBackupCSV} disabled={totalItems === 0} title="Backup all items as CSV">
                 <FaDatabase className="me-1" />
                 Backup CSV
               </Button>
-              <Button variant="outline-info" onClick={() => backupItemsToJSON(items)} disabled={items.length === 0} title="Backup all items as JSON">
+              <Button variant="outline-info" onClick={handleBackupJSON} disabled={totalItems === 0} title="Backup all items as JSON">
                 <FaFileCode className="me-1" />
                 Backup JSON
               </Button>
@@ -343,12 +370,18 @@ export default function ItemList() {
         </div>
       </Card.Header>
       <Card.Body>
-        <LowStockAlert
-          items={items}
-          onFilterLowStock={handleFilterLowStock}
-          threshold={LOW_STOCK_THRESHOLD}
-          applicableTypeIds={lowStockTypeIds}
-        />
+        {(lowStockCounts.lowStock > 0 || lowStockCounts.outOfStock > 0) && (
+          <LowStockAlert
+            items={[
+              // Synthetic items to satisfy LowStockAlert's counting interface
+              ...Array.from({ length: lowStockCounts.lowStock }, (_, i) => ({ quantity: 1, inventoryTypeId: [...lowStockTypeIds][0] || 0 }) as Item),
+              ...Array.from({ length: lowStockCounts.outOfStock }, (_, i) => ({ quantity: 0, inventoryTypeId: [...lowStockTypeIds][0] || 0 }) as Item),
+            ]}
+            onFilterLowStock={handleFilterLowStock}
+            threshold={LOW_STOCK_THRESHOLD}
+            applicableTypeIds={lowStockTypeIds}
+          />
+        )}
 
         <ItemFilters
           searchTerm={searchTerm}
@@ -356,7 +389,7 @@ export default function ItemList() {
           categoryFilter={categoryFilter}
           onCategoryChange={handleCategoryChange}
           typeFilter={typeFilter}
-          onTypeChange={(v) => { setTypeFilter(v); resetFiltersState(); }}
+          onTypeChange={(v) => { setTypeFilter(v); setCurrentPage(1); setSelectedIds(new Set()); }}
           onReset={handleResetFilters}
         />
 
@@ -403,7 +436,7 @@ export default function ItemList() {
               </tr>
             </thead>
             <tbody>
-              {paginatedItems.map((item) => (
+              {items.map((item) => (
                 <tr key={item.id} className={selectedIds.has(item.id) ? 'table-active' : ''}>
                   <td className="text-center">
                     <Form.Check
@@ -420,24 +453,16 @@ export default function ItemList() {
                         {item.childCount}
                       </Badge>
                     )}
-                    {item.parentItemId && (() => {
-                      const parent = items.find((p) => p.id === item.parentItemId);
-                      return parent ? (
-                        <Link to={`/items/${parent.id}`} className="ms-1">
-                          <Badge bg="dark" title={`Attached to ${parent.name}`}>
-                            <FaLink size={10} className="me-1" />{parent.name}
-                          </Badge>
-                        </Link>
-                      ) : null;
-                    })()}
+                    {item.parentItemId && item.parentName && (
+                      <Link to={`/items/${item.parentItemId}`} className="ms-1">
+                        <Badge bg="dark" title={`Attached to ${item.parentName}`}>
+                          <FaLink size={10} className="me-1" />{item.parentName}
+                        </Badge>
+                      </Link>
+                    )}
                   </td>
                   <td className="text-center">
-                    {item.parentItemId && (() => {
-                      const parent = items.find((p) => p.id === item.parentItemId);
-                      const parentType = parent ? inventoryTypes.find((t) => t.id === parent.inventoryTypeId) : null;
-                      return parentType ? <Badge bg="primary" className="me-1">{parentType.name}</Badge> : null;
-                    })()}
-                    <Badge bg={item.parentItemId ? 'secondary' : 'primary'}>
+                    <Badge bg="primary">
                       {inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name || '-'}
                     </Badge>
                   </td>
@@ -471,7 +496,7 @@ export default function ItemList() {
             <tfoot>
               <tr className="table-secondary">
                 <td></td>
-                <td colSpan={2}><strong>Totals ({filteredItems.length} items)</strong></td>
+                <td colSpan={2}><strong>Totals ({totalItems} items)</strong></td>
                 <td className="text-center"><strong>{totalQuantity}</strong></td>
                 <td className="text-center"></td>
                 <td className="text-center"><strong>{formatCurrency(totalValue)}</strong></td>
@@ -482,19 +507,19 @@ export default function ItemList() {
         ) : (
           <>
             <ItemCardGrid
-              items={paginatedItems}
+              items={items}
               allItems={items}
               inventoryTypes={inventoryTypes}
               lowStockTypeIds={lowStockTypeIds}
               onDelete={setDeleteModalItem}
             />
             <div className="text-muted text-center mt-3 small">
-              <strong>{filteredItems.length}</strong> items &middot; <strong>{totalQuantity}</strong> total qty &middot; <strong>{formatCurrency(totalValue)}</strong> total value
+              <strong>{totalItems}</strong> items &middot; <strong>{totalQuantity}</strong> total qty &middot; <strong>{formatCurrency(totalValue)}</strong> total value
             </div>
           </>
         )}
 
-        {items.length === 0 ? (
+        {totalItems === 0 && !searchTerm && !categoryFilter && !typeFilter && !showLowStockOnly ? (
           <EmptyState
             icon={FaBoxOpen}
             title="No items in inventory"
@@ -502,7 +527,7 @@ export default function ItemList() {
             actionLabel="Add First Item"
             actionPath="/items/new"
           />
-        ) : filteredItems.length === 0 ? (
+        ) : totalItems === 0 ? (
           <EmptyState
             icon={FaBoxOpen}
             title="No items match your filters"
@@ -515,7 +540,7 @@ export default function ItemList() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
-            totalItems={filteredItems.length}
+            totalItems={totalItems}
             itemsPerPage={ITEMS_PER_PAGE}
           />
         )}

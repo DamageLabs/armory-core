@@ -1,8 +1,59 @@
 import { Item, ItemFormData } from '../types/Item';
 import { api } from './api';
 
+export interface ItemQueryParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  typeId?: number;
+  category?: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+  lowStock?: boolean;
+  lowStockThreshold?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
+}
+
+export interface ItemStats {
+  totalQuantity: number;
+  totalValue: number;
+  totalItems: number;
+}
+
+function buildQueryString(params: ItemQueryParams): string {
+  const parts: string[] = [];
+  if (params.page) parts.push(`page=${params.page}`);
+  if (params.pageSize) parts.push(`pageSize=${params.pageSize}`);
+  if (params.search) parts.push(`search=${encodeURIComponent(params.search)}`);
+  if (params.typeId) parts.push(`typeId=${params.typeId}`);
+  if (params.category) parts.push(`category=${encodeURIComponent(params.category)}`);
+  if (params.sortBy) parts.push(`sortBy=${params.sortBy}`);
+  if (params.sortDir) parts.push(`sortDir=${params.sortDir}`);
+  if (params.lowStock) parts.push('lowStock=true');
+  if (params.lowStockThreshold) parts.push(`lowStockThreshold=${params.lowStockThreshold}`);
+  return parts.length > 0 ? `?${parts.join('&')}` : '';
+}
+
+export async function getItems(params: ItemQueryParams = {}): Promise<PaginatedResponse<Item>> {
+  return api.get<PaginatedResponse<Item>>(`/items${buildQueryString(params)}`);
+}
+
+export async function getFilteredStats(params: ItemQueryParams = {}): Promise<ItemStats> {
+  return api.get<ItemStats>(`/items/stats${buildQueryString(params)}`);
+}
+
 export async function getAllItems(): Promise<Item[]> {
-  return api.get<Item[]>('/items');
+  const result = await api.get<PaginatedResponse<Item>>('/items?pageSize=100000');
+  return result.data;
 }
 
 export async function getItemById(id: number): Promise<Item | null> {
