@@ -5,7 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { queryAll, queryOne, run, getDatabase, mapRowToEntity } from '../db/index';
-import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '../schemas/receipts';
+import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE, ATTACHMENT_CATEGORIES } from '../schemas/receipts';
 import { logAudit } from '../services/auditService';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,7 +35,7 @@ const upload = multer({
     if ((ALLOWED_MIME_TYPES as readonly string[]).includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('File must be PNG, JPEG, or PDF'));
+      cb(new Error('Unsupported file type. Allowed: PNG, JPEG, PDF, TXT, DOC, DOCX'));
     }
   },
 });
@@ -71,13 +71,16 @@ router.post('/:itemId/receipts', (req: Request, res: Response) => {
 
     try {
       const now = new Date().toISOString();
+      const category = (ATTACHMENT_CATEGORIES as readonly string[]).includes(req.body?.category)
+        ? req.body.category
+        : 'receipt';
       const db = getDatabase();
       const result = db.prepare(
-        'INSERT INTO receipts (item_id, filename, original_name, mime_type, size_bytes, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-      ).run(itemId, req.file.filename, req.file.originalname, req.file.mimetype, req.file.size, now);
+        'INSERT INTO receipts (item_id, filename, original_name, mime_type, size_bytes, category, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).run(itemId, req.file.filename, req.file.originalname, req.file.mimetype, req.file.size, category, now);
 
       const row = db.prepare('SELECT * FROM receipts WHERE id = ?').get(result.lastInsertRowid) as Record<string, unknown>;
-      logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'receipt.uploaded', resourceType: 'receipt', resourceId: result.lastInsertRowid as number, details: { itemId, originalName: req.file!.originalname } });
+      logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'attachment.uploaded', resourceType: 'attachment', resourceId: result.lastInsertRowid as number, details: { itemId, originalName: req.file!.originalname, category } });
       res.status(201).json(mapRowToEntity(row));
     } catch (error) {
       // Clean up uploaded file on DB failure
@@ -98,10 +101,15 @@ router.get('/:itemId/receipts', (req: Request, res: Response) => {
       return;
     }
 
-    const receipts = queryAll(
-      'SELECT * FROM receipts WHERE item_id = ? ORDER BY created_at DESC',
-      [itemId]
-    );
+    const category = req.query.category ? String(req.query.category) : undefined;
+    let sql = 'SELECT * FROM receipts WHERE item_id = ?';
+    const params: unknown[] = [itemId];
+    if (category && (ATTACHMENT_CATEGORIES as readonly string[]).includes(category)) {
+      sql += ' AND category = ?';
+      params.push(category);
+    }
+    sql += ' ORDER BY created_at DESC';
+    const receipts = queryAll(sql, params);
     res.json(receipts);
   } catch (error) {
     console.error('Error fetching receipts:', error);
@@ -155,7 +163,7 @@ router.delete('/:receiptId', (req: Request, res: Response) => {
     const filePath = path.join(RECEIPTS_DIR, receipt.filename);
     fs.unlink(filePath, () => {});
 
-    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'receipt.deleted', resourceType: 'receipt', resourceId: receiptId });
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'attachment.deleted', resourceType: 'attachment', resourceId: receiptId });
     res.json({ message: 'Receipt deleted' });
   } catch (error) {
     console.error('Error deleting receipt:', error);

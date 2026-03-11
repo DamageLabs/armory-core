@@ -137,10 +137,12 @@ CREATE TABLE IF NOT EXISTS receipts (
   original_name TEXT NOT NULL,
   mime_type TEXT NOT NULL,
   size_bytes INTEGER NOT NULL,
+  category TEXT NOT NULL DEFAULT 'receipt',
   created_at TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_receipts_item_id ON receipts(item_id);
+CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category);
 
 CREATE TABLE IF NOT EXISTS audit_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

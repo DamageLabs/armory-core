@@ -1,14 +1,16 @@
 import { api } from './api';
-import { Receipt } from '../types/Receipt';
+import { Receipt, AttachmentCategory } from '../types/Receipt';
 import { STORAGE_KEYS, getFromStorage } from './storage';
 
-export async function getReceipts(itemId: number): Promise<Receipt[]> {
-  return api.get<Receipt[]>(`/receipts/${itemId}/receipts`);
+export async function getReceipts(itemId: number, category?: AttachmentCategory): Promise<Receipt[]> {
+  const query = category ? `?category=${category}` : '';
+  return api.get<Receipt[]>(`/receipts/${itemId}/receipts${query}`);
 }
 
-export async function uploadReceipt(itemId: number, file: File): Promise<Receipt> {
+export async function uploadReceipt(itemId: number, file: File, category: AttachmentCategory = 'receipt'): Promise<Receipt> {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('category', category);
   return api.upload<Receipt>(`/receipts/${itemId}/receipts`, formData);
 }
 
@@ -21,7 +23,7 @@ export async function getReceiptBlobUrl(receiptId: number): Promise<string> {
   const res = await fetch(`/api/receipts/download/${receiptId}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
-  if (!res.ok) throw new Error('Failed to download receipt');
+  if (!res.ok) throw new Error('Failed to download attachment');
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }
