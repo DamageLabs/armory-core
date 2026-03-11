@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { CREATE_TABLES_SQL } from './schema';
 import { mapRowToEntity, mapRowsToEntities, buildInsertSQL, buildUpdateSQL } from './mapper';
 import { validateTable } from './columns';
+import { runMigrations } from './migrations';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, '../../data/armory.db');
@@ -21,6 +22,7 @@ export function getDatabase(): Database.Database {
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
     db.exec(CREATE_TABLES_SQL);
+    runMigrations(db);
   }
   return db;
 }
