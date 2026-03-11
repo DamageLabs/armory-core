@@ -2,6 +2,7 @@ const STORAGE_KEYS = {
   USERS: 'armory_users',
   ITEMS: 'armory_items',
   CURRENT_USER: 'armory_current_user',
+  AUTH_TOKEN: 'armory_auth_token',
   INITIALIZED: 'armory_initialized',
   STOCK_HISTORY: 'armory_stock_history',
   ITEM_TEMPLATES: 'armory_item_templates',
