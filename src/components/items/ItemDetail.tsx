@@ -13,7 +13,7 @@ import VendorPriceCard from './VendorPriceCard';
 import Breadcrumbs from '../common/Breadcrumbs';
 import { SkeletonDetailPage } from '../common/Skeleton';
 import Markdown from 'react-markdown';
-import ReceiptList from './ReceiptList';
+import AttachmentList from './AttachmentList';
 import { LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME, AMMUNITION_TYPE_NAME } from '../../constants/config';
 import { ItemFormData } from '../../types/Item';
 
@@ -272,7 +272,7 @@ export default function ItemDetail() {
             </CCard>
           )}
 
-          <ReceiptList itemId={item.id} />
+          <AttachmentList itemId={item.id} />
 
           <CostHistoryChart itemId={item.id} currentValue={item.unitValue} />
 
