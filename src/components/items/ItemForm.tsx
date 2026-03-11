@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { CCard, CCardHeader, CCardBody, CForm, CButton, CRow, CCol, CButtonGroup, CSpinner, CBadge, CFormLabel, CFormInput, CFormTextarea, CFormSelect, CFormText } from '@coreui/react';
 import * as itemService from '../../services/itemService';
 import * as itemTemplateService from '../../services/itemTemplateService';
@@ -19,9 +19,11 @@ import MarkdownToolbar from '../common/MarkdownToolbar';
 export default function ItemForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { showSuccess, showError } = useAlert();
   const isEditing = !!id;
+  const cloneData = (location.state as { cloneData?: ItemFormData } | null)?.cloneData;
 
   const initialBarcode = searchParams.get('barcode') || '';
 
@@ -121,6 +123,16 @@ export default function ItemForm() {
     }
     loadItem();
   }, [id, navigate, showError]);
+
+  // Apply clone data if navigated from a clone action
+  useEffect(() => {
+    if (cloneData && !isEditing) {
+      setFormData(cloneData);
+      if (cloneData.picture) {
+        setPreviewImage(cloneData.picture);
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     async function loadTemplates() {
@@ -243,7 +255,7 @@ export default function ItemForm() {
       ]
     : [
         { label: 'Inventory', path: '/items' },
-        { label: 'New Item' },
+        { label: cloneData ? 'Clone Item' : 'New Item' },
       ];
 
   return (
@@ -251,7 +263,7 @@ export default function ItemForm() {
       <Breadcrumbs items={breadcrumbItems} />
       <CCard>
         <CCardHeader>
-          <h4 className="mb-0">{isEditing ? 'Edit Item' : 'New Item'}</h4>
+          <h4 className="mb-0">{isEditing ? 'Edit Item' : cloneData ? 'Clone Item' : 'New Item'}</h4>
         </CCardHeader>
       <CCardBody>
         <CForm onSubmit={handleSubmit}>
