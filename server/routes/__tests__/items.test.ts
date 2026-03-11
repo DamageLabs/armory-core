@@ -259,7 +259,7 @@ describe('items routes', () => {
       const res = await request(app).delete('/api/items/all');
       expect(res.status).toBe(200);
       expect(res.body.message).toContain('cleared');
-      expect(db.run).toHaveBeenCalledTimes(3);
+      expect(db.run).toHaveBeenCalledTimes(4);
     });
   });
 });
