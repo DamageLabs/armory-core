@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Card, Row, Col, Button, ButtonGroup, Spinner, Badge } from 'react-bootstrap';
+import { Card, Row, Col, Button, ButtonGroup, Badge } from 'react-bootstrap';
 import * as itemService from '../../services/itemService';
-import * as vendorService from '../../services/vendorService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { Item } from '../../types/Item';
 import { InventoryType } from '../../types/InventoryType';
-import { VendorPriceResult } from '../../types/Vendor';
 import { useAlert } from '../../contexts/AlertContext';
 import ConfirmModal from '../common/ConfirmModal';
 import CostHistoryChart from './CostHistoryChart';
 import ChildItemsList from './ChildItemsList';
+import VendorPriceCard from './VendorPriceCard';
 import Breadcrumbs from '../common/Breadcrumbs';
 import { SkeletonDetailPage } from '../common/Skeleton';
 
@@ -23,8 +22,6 @@ export default function ItemDetail() {
   const [parentType, setParentType] = useState<InventoryType | null>(null);
   const [inventoryType, setInventoryType] = useState<InventoryType | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [vendorPrices, setVendorPrices] = useState<VendorPriceResult[]>([]);
-  const [isLoadingPrices, setIsLoadingPrices] = useState(false);
 
   useEffect(() => {
     async function loadItem() {
@@ -58,7 +55,6 @@ export default function ItemDetail() {
 
   const handleDelete = async () => {
     if (!item) return;
-
     try {
       const success = await itemService.deleteItem(item.id);
       if (success) {
@@ -73,24 +69,7 @@ export default function ItemDetail() {
     setShowDeleteModal(false);
   };
 
-  const formatCurrency = (value: number) => {
-    return `$${value.toFixed(2)}`;
-  };
-
-  const handleCompareVendorPrices = async () => {
-    const partNumber = item?.customFields?.partNumber as string;
-    if (!partNumber) return;
-
-    setIsLoadingPrices(true);
-    try {
-      const prices = await vendorService.compareVendorPrices(partNumber);
-      setVendorPrices(prices);
-    } catch {
-      showError('Failed to fetch vendor prices.');
-    } finally {
-      setIsLoadingPrices(false);
-    }
-  };
+  const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
 
   if (!item) {
     return <SkeletonDetailPage />;
@@ -104,218 +83,162 @@ export default function ItemDetail() {
   return (
     <>
       <Breadcrumbs items={breadcrumbItems} />
-      <Card>
-        <Card.Header>
-          <h4 className="mb-0">{item.name}</h4>
-        </Card.Header>
-      <Card.Body>
-        {item.picture && (
-          <Row className="mb-4">
-            <Col md={12}>
-              <img
-                src={item.picture}
-                alt={item.name}
-                style={{ maxWidth: '65%' }}
-                className="img-fluid"
-              />
-            </Col>
-          </Row>
-        )}
-
-        {inventoryType && (
-          <Row className="mb-2">
-            <Col md={3} className="text-muted">Inventory Type</Col>
-            <Col md={9}>
-              {parentType && <Badge bg="primary" className="me-1">{parentType.name}</Badge>}
-              <Badge bg={parentType ? 'secondary' : 'primary'}>{inventoryType.name}</Badge>
-            </Col>
-          </Row>
-        )}
-
-        {parentItem && (
-          <Row className="mb-2">
-            <Col md={3} className="text-muted">Mounted On</Col>
-            <Col md={9}>
-              <Link to={`/items/${parentItem.id}`}>{parentItem.name}</Link>
-            </Col>
-          </Row>
-        )}
-
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Description</Col>
-          <Col md={9}>
-            <p style={{ whiteSpace: 'pre-wrap' }}>{item.description}</p>
-          </Col>
-        </Row>
-
-        {/* Dynamic custom fields from inventory type schema */}
-        {inventoryType && inventoryType.schema.length > 0 && item.customFields && (
-          <>
-            {inventoryType.schema.map((field) => {
-              const value = item.customFields[field.key];
-              if (value === undefined || value === null || value === '') return null;
-              return (
-                <Row className="mb-2" key={field.key}>
-                  <Col md={3} className="text-muted">{field.label}</Col>
-                  <Col md={9}>
-                    {field.type === 'boolean' ? (value ? 'Yes' : 'No') :
-                     field.key === 'vendorUrl' || (typeof value === 'string' && value.startsWith('http')) ? (
-                       <a href={String(value)} target="_blank" rel="noopener noreferrer">{String(value)}</a>
-                     ) : String(value)}
-                  </Col>
-                </Row>
-              );
-            })}
-          </>
-        )}
-
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Quantity</Col>
-          <Col md={9}>{item.quantity}</Col>
-        </Row>
-
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Unit Value</Col>
-          <Col md={9}>{formatCurrency(item.unitValue)}</Col>
-        </Row>
-
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Total Value</Col>
-          <Col md={9}>{formatCurrency(item.value)}</Col>
-        </Row>
-
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Location</Col>
-          <Col md={9}>{item.location}</Col>
-        </Row>
-
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Category</Col>
-          <Col md={9}>{item.category}</Col>
-        </Row>
-
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Barcode</Col>
-          <Col md={9}>{item.barcode || <span className="text-muted">Not set</span>}</Col>
-        </Row>
-
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Reorder Point</Col>
-          <Col md={9}>
-            {item.reorderPoint > 0 ? (
-              <>
-                {item.reorderPoint}
-                {item.quantity <= item.reorderPoint && (
-                  <span className="badge bg-warning ms-2">Below threshold</span>
-                )}
-              </>
-            ) : (
-              <span className="text-muted">Not set</span>
-            )}
-          </Col>
-        </Row>
-
-        {/* Cost History Chart */}
-        <CostHistoryChart itemId={item.id} currentValue={item.unitValue} />
-
-        {/* Child Items */}
-        <ChildItemsList parentId={item.id} parentTypeName={inventoryType?.name} />
-
-        {/* Vendor Price Comparison */}
-        {!!(item.customFields?.partNumber) && (
-          <Card className="mt-3">
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              <h6 className="mb-0">Vendor Price Comparison</h6>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={handleCompareVendorPrices}
-                disabled={isLoadingPrices}
-              >
-                {isLoadingPrices ? (
-                  <>
-                    <Spinner size="sm" animation="border" className="me-1" />
-                    Loading...
-                  </>
-                ) : (
-                  'Compare Prices'
-                )}
-              </Button>
-            </Card.Header>
-            {vendorPrices.length > 0 && (
-              <Card.Body>
-                <div className="table-responsive">
-                  <table className="table table-sm">
-                    <thead>
-                      <tr>
-                        <th>Vendor</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th>vs. Current</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {vendorPrices.map((vp, i) => {
-                        const diff = vp.price - item.unitValue;
-                        return (
-                          <tr key={i}>
-                            <td>
-                              {vp.vendorUrl ? (
-                                <a href={vp.vendorUrl} target="_blank" rel="noopener noreferrer">
-                                  {vp.vendor}
-                                </a>
-                              ) : (
-                                vp.vendor
-                              )}
-                            </td>
-                            <td>{formatCurrency(vp.price)}</td>
-                            <td>
-                              {vp.inStock ? (
-                                <Badge bg="success">{vp.stockQuantity} in stock</Badge>
-                              ) : (
-                                <Badge bg="danger">Out of Stock</Badge>
-                              )}
-                            </td>
-                            <td>
-                              <Badge bg={diff < 0 ? 'success' : diff > 0 ? 'danger' : 'secondary'}>
-                                {diff > 0 ? '+' : ''}{formatCurrency(diff)}
-                              </Badge>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+      <Row>
+        {/* Left Panel — Image, Key Stats, Actions */}
+        <Col md={4} className="mb-3">
+          {item.picture && (
+            <Card className="mb-3">
+              <Card.Body className="text-center p-2">
+                <img
+                  src={item.picture}
+                  alt={item.name}
+                  className="img-fluid rounded"
+                  style={{ maxHeight: '300px', objectFit: 'contain' }}
+                />
               </Card.Body>
-            )}
+            </Card>
+          )}
+
+          <Card className="mb-3">
+            <Card.Header>
+              <h5 className="mb-0">{item.name}</h5>
+              {inventoryType && (
+                <div className="mt-1">
+                  {parentType && <Badge bg="primary" className="me-1">{parentType.name}</Badge>}
+                  <Badge bg={parentType ? 'secondary' : 'primary'}>{inventoryType.name}</Badge>
+                </div>
+              )}
+            </Card.Header>
+            <Card.Body className="p-0">
+              <table className="table table-sm mb-0">
+                <tbody>
+                  <tr>
+                    <td className="text-muted ps-3">Quantity</td>
+                    <td className="pe-3 text-end fw-bold">{item.quantity}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted ps-3">Unit Value</td>
+                    <td className="pe-3 text-end">{formatCurrency(item.unitValue)}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted ps-3">Total Value</td>
+                    <td className="pe-3 text-end fw-bold">{formatCurrency(item.value)}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted ps-3">Category</td>
+                    <td className="pe-3 text-end">{item.category}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted ps-3">Location</td>
+                    <td className="pe-3 text-end">{item.location}</td>
+                  </tr>
+                  {item.barcode && (
+                    <tr>
+                      <td className="text-muted ps-3">Barcode</td>
+                      <td className="pe-3 text-end">{item.barcode}</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="text-muted ps-3">Reorder Point</td>
+                    <td className="pe-3 text-end">
+                      {item.reorderPoint > 0 ? (
+                        <>
+                          {item.reorderPoint}
+                          {item.quantity <= item.reorderPoint && (
+                            <Badge bg="warning" className="ms-2">Low</Badge>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-muted">Not set</span>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </Card.Body>
           </Card>
-        )}
 
-        <hr />
+          <ButtonGroup className="w-100">
+            <Link to={`/items/${item.id}/edit`} className="btn btn-primary">
+              Edit
+            </Link>
+            <Button variant="danger" onClick={() => setShowDeleteModal(true)}>
+              Delete
+            </Button>
+            <Button variant="secondary" onClick={() => navigate('/items')}>
+              Back
+            </Button>
+          </ButtonGroup>
+        </Col>
 
-        <ButtonGroup>
-          <Link to={`/items/${item.id}/edit`} className="btn btn-primary">
-            Edit
-          </Link>
-          <Button variant="danger" onClick={() => setShowDeleteModal(true)}>
-            Delete
-          </Button>
-          <Button variant="secondary" onClick={() => navigate('/items')}>
-            Back to List
-          </Button>
-        </ButtonGroup>
-      </Card.Body>
+        {/* Right Panel — Details, Custom Fields, History */}
+        <Col md={8}>
+          {parentItem && (
+            <Card className="mb-3">
+              <Card.Body className="py-2">
+                <span className="text-muted me-2">Mounted On</span>
+                <Link to={`/items/${parentItem.id}`}>{parentItem.name}</Link>
+              </Card.Body>
+            </Card>
+          )}
 
-        <ConfirmModal
-          show={showDeleteModal}
-          title="Delete Item"
-          message={`Are you sure you want to delete "${item.name}"?`}
-          confirmLabel="Delete"
-          onConfirm={handleDelete}
-          onCancel={() => setShowDeleteModal(false)}
-        />
-      </Card>
+          {item.description && (
+            <Card className="mb-3">
+              <Card.Header><h6 className="mb-0">Description</h6></Card.Header>
+              <Card.Body>
+                <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>{item.description}</p>
+              </Card.Body>
+            </Card>
+          )}
+
+          {inventoryType && inventoryType.schema.length > 0 && item.customFields && (
+            <Card className="mb-3">
+              <Card.Header><h6 className="mb-0">{inventoryType.name} Details</h6></Card.Header>
+              <Card.Body className="p-0">
+                <table className="table table-sm mb-0">
+                  <tbody>
+                    {inventoryType.schema.map((field) => {
+                      const value = item.customFields[field.key];
+                      if (value === undefined || value === null || value === '') return null;
+                      return (
+                        <tr key={field.key}>
+                          <td className="text-muted ps-3" style={{ width: '40%' }}>{field.label}</td>
+                          <td className="pe-3">
+                            {field.type === 'boolean' ? (value ? 'Yes' : 'No') :
+                             field.key === 'vendorUrl' || (typeof value === 'string' && value.startsWith('http')) ? (
+                               <a href={String(value)} target="_blank" rel="noopener noreferrer">{String(value)}</a>
+                             ) : String(value)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </Card.Body>
+            </Card>
+          )}
+
+          <CostHistoryChart itemId={item.id} currentValue={item.unitValue} />
+
+          <ChildItemsList parentId={item.id} parentTypeName={inventoryType?.name} />
+
+          {!!(item.customFields?.partNumber) && (
+            <VendorPriceCard
+              partNumber={item.customFields.partNumber as string}
+              unitValue={item.unitValue}
+            />
+          )}
+        </Col>
+      </Row>
+
+      <ConfirmModal
+        show={showDeleteModal}
+        title="Delete Item"
+        message={`Are you sure you want to delete "${item.name}"?`}
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </>
   );
 }
