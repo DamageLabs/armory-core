@@ -30,6 +30,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import ResendVerification from './components/auth/ResendVerification';
 import CategoryManager from './components/settings/CategoryManager';
 import InventoryTypeManager from './components/settings/InventoryTypeManager';
+import AuditLogDashboard from './components/admin/AuditLogDashboard';
 
 import '@coreui/coreui/dist/css/coreui.min.css';
 import './index.css';
@@ -180,6 +181,14 @@ function App() {
                   element={
                     <ProtectedRoute requireAdmin>
                       <InventoryTypeManager />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="admin/audit-log"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AuditLogDashboard />
                     </ProtectedRoute>
                   }
                 />

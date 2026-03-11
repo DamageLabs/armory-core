@@ -6,6 +6,7 @@ import { hashPassword, verifyPassword } from '../utils/password';
 import { signToken } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { registerSchema, loginSchema, verifyEmailSchema, emailSchema, updateProfileSchema } from '../schemas/auth';
+import { logAudit } from '../services/auditService';
 
 const router = Router();
 
@@ -55,6 +56,8 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
       console.error('Failed to send verification email:', emailError);
       // Don't fail registration if email fails - user can resend
     }
+
+    logAudit({ userId: user.id, userEmail: email, action: 'user.registered', resourceType: 'user', resourceId: user.id, details: { email } });
 
     res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
@@ -177,6 +180,7 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response)
 
     const user = userQueries.findByEmail(email);
     if (!user || !(await verifyPassword(password, user.password))) {
+      logAudit({ userEmail: email, action: 'user.login_failed', resourceType: 'user', details: { email } });
       res.status(401).json({ error: 'invalid_credentials' });
       return;
     }
@@ -193,6 +197,8 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response)
     ).run(now, '127.0.0.1', now, user.id);
 
     const token = signToken({ userId: user.id, email: user.email, role: user.role });
+
+    logAudit({ userId: user.id, userEmail: user.email, action: 'user.login', resourceType: 'user', resourceId: user.id });
 
     res.json({
       token,
@@ -248,6 +254,8 @@ router.put('/profile/:id', validate(updateProfileSchema), async (req: Request, r
       db.prepare('UPDATE users SET password = ?, updated_at = ? WHERE id = ?').run(hashedPassword, now, id);
     }
 
+    logAudit({ userId: id, userEmail: (email || row.email) as string, action: 'user.profile_updated', resourceType: 'user', resourceId: id, details: { emailChanged: !!email, passwordChanged: !!password } });
+
     const updatedRow = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as Record<string, unknown>;
     res.json({
       user: {
@@ -278,6 +286,7 @@ router.delete('/profile/:id', (req: Request, res: Response) => {
       res.status(404).json({ error: 'User not found' });
       return;
     }
+    logAudit({ userId: id, action: 'user.deleted', resourceType: 'user', resourceId: id });
     res.json({ message: 'Account deleted' });
   } catch (error) {
     console.error('Delete account error:', error);

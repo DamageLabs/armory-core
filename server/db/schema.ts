@@ -141,4 +141,21 @@ CREATE TABLE IF NOT EXISTS receipts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_receipts_item_id ON receipts(item_id);
+
+CREATE TABLE IF NOT EXISTS audit_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  user_email TEXT,
+  action TEXT NOT NULL,
+  resource_type TEXT NOT NULL,
+  resource_id INTEGER,
+  details TEXT,
+  ip_address TEXT,
+  timestamp TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_timestamp ON audit_log(timestamp);
+CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action);
+CREATE INDEX IF NOT EXISTS idx_audit_log_resource_type ON audit_log(resource_type);
+CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON audit_log(user_id);
 `;

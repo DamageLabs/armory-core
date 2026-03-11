@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById } from '../db/index';
 import { validate } from '../middleware/validate';
 import { createBomSchema, updateBomSchema, duplicateBomSchema } from '../schemas/boms';
+import { logAudit } from '../services/auditService';
 
 const router = Router();
 const JSON_FIELDS = ['items'];
@@ -53,7 +54,8 @@ router.post('/', validate(createBomSchema), (req: Request, res: Response) => {
     const now = new Date().toISOString();
     const bom = insert('boms', {
       name, description, items, createdAt: now, updatedAt: now,
-    }, JSON_FIELDS);
+    }, JSON_FIELDS) as Record<string, unknown>;
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'bom.created', resourceType: 'bom', resourceId: bom.id as number, details: { name } });
     res.status(201).json(bom);
   } catch (error) {
     console.error('Error creating BOM:', error);
@@ -77,6 +79,7 @@ router.put('/:id', validate(updateBomSchema), (req: Request, res: Response) => {
       res.status(404).json({ error: 'BOM not found' });
       return;
     }
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'bom.updated', resourceType: 'bom', resourceId: id, details: { name } });
     res.json(bom);
   } catch (error) {
     console.error('Error updating BOM:', error);
@@ -93,6 +96,7 @@ router.delete('/:id', (req: Request, res: Response) => {
       res.status(404).json({ error: 'BOM not found' });
       return;
     }
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'bom.deleted', resourceType: 'bom', resourceId: id });
     res.json({ message: 'BOM deleted' });
   } catch (error) {
     console.error('Error deleting BOM:', error);
@@ -160,7 +164,8 @@ router.post('/:id/duplicate', validate(duplicateBomSchema), (req: Request, res: 
       items: bom.items,
       createdAt: now,
       updatedAt: now,
-    }, JSON_FIELDS);
+    }, JSON_FIELDS) as Record<string, unknown>;
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'bom.duplicated', resourceType: 'bom', resourceId: newBom.id as number, details: { sourceId: bom.id, name: newBom.name } });
     res.status(201).json(newBom);
   } catch (error) {
     console.error('Error duplicating BOM:', error);

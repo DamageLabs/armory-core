@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, update, deleteById } from '../db/index';
 import { validate } from '../middleware/validate';
 import { updateRoleSchema } from '../schemas/users';
+import { logAudit } from '../services/auditService';
 
 const router = Router();
 
@@ -59,6 +60,7 @@ router.put('/:id/role', validate(updateRoleSchema), (req: Request, res: Response
       res.status(404).json({ error: 'User not found' });
       return;
     }
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'user.role_changed', resourceType: 'user', resourceId: id, details: { role, targetEmail: user.email } });
     res.json(stripPassword(user));
   } catch (error) {
     console.error('Error updating user role:', error);
@@ -75,6 +77,7 @@ router.delete('/:id', (req: Request, res: Response) => {
       res.status(404).json({ error: 'User not found' });
       return;
     }
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'user.deleted', resourceType: 'user', resourceId: id });
     res.json({ message: 'User deleted' });
   } catch (error) {
     console.error('Error deleting user:', error);

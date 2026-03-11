@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById, count, run } from '../db/index';
 import { validate } from '../middleware/validate';
 import { createCategorySchema, updateCategorySchema, reorderCategoriesSchema } from '../schemas/categories';
+import { logAudit } from '../services/auditService';
 
 const router = Router();
 
@@ -69,7 +70,8 @@ router.post('/', validate(createCategorySchema), (req: Request, res: Response) =
     const now = new Date().toISOString();
     const category = insert('categories', {
       name, sortOrder, inventoryTypeId, createdAt: now, updatedAt: now,
-    });
+    }) as Record<string, unknown>;
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'category.created', resourceType: 'category', resourceId: category.id as number, details: { name } });
     res.status(201).json(category);
   } catch (error) {
     console.error('Error creating category:', error);
@@ -106,6 +108,7 @@ router.put('/:id', validate(updateCategorySchema), (req: Request, res: Response)
       res.status(404).json({ error: 'Category not found' });
       return;
     }
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'category.updated', resourceType: 'category', resourceId: id, details: { name } });
     res.json(category);
   } catch (error) {
     console.error('Error updating category:', error);
@@ -130,6 +133,7 @@ router.delete('/:id', (req: Request, res: Response) => {
     }
 
     deleteById('categories', id);
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'category.deleted', resourceType: 'category', resourceId: id, details: { name: cat.name } });
     res.json({ message: 'Category deleted' });
   } catch (error) {
     console.error('Error deleting category:', error);

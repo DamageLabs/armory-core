@@ -25,6 +25,7 @@ import {
   cilPeople,
   cilSettings,
   cilApplications,
+  cilHistory,
 } from '@coreui/icons';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -83,6 +84,7 @@ export default function Sidebar({ visible, onVisibleChange }: SidebarProps) {
             <SidebarNavLink to="/users" icon={cilPeople}>Users</SidebarNavLink>
             <SidebarNavLink to="/settings/categories" icon={cilApplications}>Categories</SidebarNavLink>
             <SidebarNavLink to="/settings/inventory-types" icon={cilSettings}>Inventory Types</SidebarNavLink>
+            <SidebarNavLink to="/admin/audit-log" icon={cilHistory}>Audit Log</SidebarNavLink>
           </CNavGroup>
         )}
       </CSidebarNav>

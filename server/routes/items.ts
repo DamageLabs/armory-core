@@ -6,6 +6,7 @@ import { queryAll, queryOne, run, insert, update, deleteById, getDatabase } from
 import { parsePaginationParams, buildItemWhereClause, getSortColumn, buildPaginationMeta } from '../db/pagination';
 import { validate } from '../middleware/validate';
 import { createItemSchema, updateItemSchema, bulkCreateSchema, bulkDeleteSchema, bulkCategorySchema } from '../schemas/items';
+import { logAudit } from '../services/auditService';
 
 const router = Router();
 const JSON_FIELDS = ['customFields'];
@@ -145,7 +146,7 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
         if (oldId) idMapping[oldId] = result.id as number;
         run(
           'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [result.id, item.name, 'created', 0, qty, 0, value, null, item.category || '', 'Bulk restore', null, null, now]
+          [result.id, item.name, 'created', 0, qty, 0, value, null, item.category || '', 'Bulk restore', req.user?.userId ?? null, req.user?.email ?? null, now]
         );
         created++;
       }
@@ -179,12 +180,14 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
         if (oldId) idMapping[oldId] = result.id as number;
         run(
           'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [result.id, item.name, 'created', 0, qty, 0, value, null, item.category || '', 'Bulk restore', null, null, now]
+          [result.id, item.name, 'created', 0, qty, 0, value, null, item.category || '', 'Bulk restore', req.user?.userId ?? null, req.user?.email ?? null, now]
         );
         created++;
       }
     });
     txn();
+
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.bulk_created', resourceType: 'item', details: { count: created } });
 
     res.status(201).json({ created, idMapping });
   } catch (error) {
@@ -238,7 +241,7 @@ router.post('/bulk-delete', validate(bulkDeleteSchema), (req: Request, res: Resp
           run('UPDATE items SET parent_item_id = NULL WHERE parent_item_id = ?', [id]);
           run(
             'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, existing.name, 'deleted', existing.quantity, 0, existing.value, 0, existing.category, null, 'Bulk delete', null, null, now]
+            [id, existing.name, 'deleted', existing.quantity, 0, existing.value, 0, existing.category, null, 'Bulk delete', req.user?.userId ?? null, req.user?.email ?? null, now]
           );
           cleanupReceiptFiles(id);
           deleteById('items', id);
@@ -246,6 +249,8 @@ router.post('/bulk-delete', validate(bulkDeleteSchema), (req: Request, res: Resp
       }
     });
     txn();
+
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.bulk_deleted', resourceType: 'item', details: { count: ids.length } });
 
     res.json({ message: `Deleted ${ids.length} items` });
   } catch (error) {
@@ -267,13 +272,15 @@ router.put('/bulk-category', validate(bulkCategorySchema), (req: Request, res: R
         if (existing) {
           run(
             'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, existing.name, 'category_change', existing.quantity, existing.quantity, existing.value, existing.value, existing.category, category, 'Bulk category update', null, null, now]
+            [id, existing.name, 'category_change', existing.quantity, existing.quantity, existing.value, existing.value, existing.category, category, 'Bulk category update', req.user?.userId ?? null, req.user?.email ?? null, now]
           );
           update('items', id, { category, updatedAt: now }, JSON_FIELDS);
         }
       }
     });
     txn();
+
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.category_changed', resourceType: 'item', details: { count: ids.length, category } });
 
     res.json({ message: `Updated category for ${ids.length} items` });
   } catch (error) {
@@ -342,8 +349,9 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
     const created = item as Record<string, unknown>;
     run(
       'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [created.id, name || '', 'created', 0, qty, 0, value, null, category || '', 'Item created', null, null, now]
+      [created.id, name || '', 'created', 0, qty, 0, value, null, category || '', 'Item created', req.user?.userId ?? null, req.user?.email ?? null, now]
     );
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.created', resourceType: 'item', resourceId: created.id as number, details: { name: name || '' } });
 
     res.status(201).json(item);
   } catch (error) {
@@ -374,7 +382,7 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
     if (existing.quantity !== qty) {
       run(
         'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [id, merged.name, 'updated', existing.quantity, qty, existing.value, merged.value, existing.category, merged.category, 'Quantity updated', null, null, now]
+        [id, merged.name, 'updated', existing.quantity, qty, existing.value, merged.value, existing.category, merged.category, 'Quantity updated', req.user?.userId ?? null, req.user?.email ?? null, now]
       );
     }
 
@@ -384,6 +392,8 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
         [id, existing.unitValue, uv, 'manual', now]
       );
     }
+
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.updated', resourceType: 'item', resourceId: id, details: { name: merged.name } });
 
     res.json(updated);
   } catch (error) {
@@ -408,11 +418,12 @@ router.delete('/:id', (req: Request, res: Response) => {
 
     run(
       'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [id, existing.name, 'deleted', existing.quantity, 0, existing.value, 0, existing.category, null, 'Item deleted', null, null, now]
+      [id, existing.name, 'deleted', existing.quantity, 0, existing.value, 0, existing.category, null, 'Item deleted', req.user?.userId ?? null, req.user?.email ?? null, now]
     );
 
     cleanupReceiptFiles(id);
     deleteById('items', id);
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.deleted', resourceType: 'item', resourceId: id, details: { name: existing.name as string } });
     res.json({ message: 'Item deleted' });
   } catch (error) {
     console.error('Error deleting item:', error);
