@@ -13,6 +13,7 @@ export interface Item {
   inventoryTypeId: number;
   customFields: Record<string, unknown>;
   parentItemId: number | null;
+  parentName?: string;
   childCount?: number;
   createdAt: string;
   updatedAt: string;
