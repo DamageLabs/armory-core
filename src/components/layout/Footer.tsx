@@ -15,6 +15,9 @@ export default function Footer() {
           View on GitHub
         </a>
       </div>
+      <div className="text-muted">
+        &copy; 2026 DamageLabs. All rights reserved.
+      </div>
     </CFooter>
   );
 }
