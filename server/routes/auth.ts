@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { userQueries, rateLimitQueries, getDatabase } from '../db';
 import { sendVerificationEmail } from '../services/emailService';
 import { hashPassword, verifyPassword } from '../utils/password';
+import { signToken } from '../middleware/auth';
 
 const router = Router();
 
@@ -225,7 +226,10 @@ router.post('/login', async (req: Request, res: Response) => {
       'UPDATE users SET sign_in_count = sign_in_count + 1, last_sign_in_at = ?, last_sign_in_ip = ?, updated_at = ? WHERE id = ?'
     ).run(now, '127.0.0.1', now, user.id);
 
+    const token = signToken({ userId: user.id, email: user.email, role: user.role });
+
     res.json({
+      token,
       user: {
         id: user.id,
         email: user.email,

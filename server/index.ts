@@ -5,6 +5,7 @@ async function main() {
   const express = (await import('express')).default;
   const cors = (await import('cors')).default;
   const { seedDatabase } = await import('./db/seed');
+  const { requireAuth, requireAdmin } = await import('./middleware/auth');
   const authRoutes = (await import('./routes/auth')).default;
   const itemRoutes = (await import('./routes/items')).default;
   const inventoryTypeRoutes = (await import('./routes/inventoryTypes')).default;
@@ -28,16 +29,16 @@ async function main() {
   }));
   app.use(express.json({ limit: '10mb' }));
 
-  // Routes
+  // Routes — auth is public, everything else requires authentication
   app.use('/api/auth', authRoutes);
-  app.use('/api/items', itemRoutes);
-  app.use('/api/inventory-types', inventoryTypeRoutes);
-  app.use('/api/categories', categoryRoutes);
-  app.use('/api/stock-history', stockHistoryRoutes);
-  app.use('/api/cost-history', costHistoryRoutes);
-  app.use('/api/templates', templateRoutes);
-  app.use('/api/boms', bomRoutes);
-  app.use('/api/users', userRoutes);
+  app.use('/api/items', requireAuth, itemRoutes);
+  app.use('/api/inventory-types', requireAuth, inventoryTypeRoutes);
+  app.use('/api/categories', requireAuth, categoryRoutes);
+  app.use('/api/stock-history', requireAuth, stockHistoryRoutes);
+  app.use('/api/cost-history', requireAuth, costHistoryRoutes);
+  app.use('/api/templates', requireAuth, templateRoutes);
+  app.use('/api/boms', requireAuth, bomRoutes);
+  app.use('/api/users', requireAuth, requireAdmin, userRoutes);
 
   // Health check
   app.get('/api/health', (_req, res) => {
