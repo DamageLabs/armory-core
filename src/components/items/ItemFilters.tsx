@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Form, Row, Col, Button, InputGroup } from 'react-bootstrap';
+import { CRow, CCol, CButton, CInputGroup, CInputGroupText, CFormInput, CFormSelect } from '@coreui/react';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import * as categoryService from '../../services/categoryService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
@@ -58,22 +58,22 @@ export default function ItemFilters({
   }, [typeFilter]);
 
   return (
-    <Row className="mb-3 g-2">
-      <Col md={4}>
-        <InputGroup>
-          <InputGroup.Text>
+    <CRow className="mb-3 g-2">
+      <CCol md={4}>
+        <CInputGroup>
+          <CInputGroupText>
             <FaSearch />
-          </InputGroup.Text>
-          <Form.Control
+          </CInputGroupText>
+          <CFormInput
             type="text"
             placeholder="Search by name, description, custom fields..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
-        </InputGroup>
-      </Col>
-      <Col md={2}>
-        <Form.Select
+        </CInputGroup>
+      </CCol>
+      <CCol md={2}>
+        <CFormSelect
           value={typeFilter}
           onChange={(e) => onTypeChange(e.target.value)}
         >
@@ -83,10 +83,10 @@ export default function ItemFilters({
               {type.name}
             </option>
           ))}
-        </Form.Select>
-      </Col>
-      <Col md={3}>
-        <Form.Select
+        </CFormSelect>
+      </CCol>
+      <CCol md={3}>
+        <CFormSelect
           value={categoryFilter}
           onChange={(e) => onCategoryChange(e.target.value)}
         >
@@ -96,19 +96,20 @@ export default function ItemFilters({
               {category}
             </option>
           ))}
-        </Form.Select>
-      </Col>
-      <Col md={2}>
-        <Button
-          variant="outline-secondary"
+        </CFormSelect>
+      </CCol>
+      <CCol md={2}>
+        <CButton
+          color="secondary"
+          variant="outline"
           onClick={onReset}
           disabled={!hasFilters}
           className="w-100"
         >
           <FaTimes className="me-1" />
           Reset
-        </Button>
-      </Col>
-    </Row>
+        </CButton>
+      </CCol>
+    </CRow>
   );
 }

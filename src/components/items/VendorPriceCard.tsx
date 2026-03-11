@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Button, Spinner, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CSpinner, CBadge } from '@coreui/react';
 import * as vendorService from '../../services/vendorService';
 import { VendorPriceResult } from '../../types/Vendor';
 import { useAlert } from '../../contexts/AlertContext';
@@ -31,27 +31,28 @@ export default function VendorPriceCard({ partNumber, unitValue }: VendorPriceCa
   };
 
   return (
-    <Card className="mt-3">
-      <Card.Header className="d-flex justify-content-between align-items-center">
+    <CCard className="mt-3">
+      <CCardHeader className="d-flex justify-content-between align-items-center">
         <h6 className="mb-0">Vendor Price Comparison</h6>
-        <Button
-          variant="outline-primary"
+        <CButton
+          color="primary"
+          variant="outline"
           size="sm"
           onClick={handleCompare}
           disabled={isLoading}
         >
           {isLoading ? (
             <>
-              <Spinner size="sm" animation="border" className="me-1" />
+              <CSpinner size="sm" className="me-1" />
               Loading...
             </>
           ) : (
             'Compare Prices'
           )}
-        </Button>
-      </Card.Header>
+        </CButton>
+      </CCardHeader>
       {vendorPrices.length > 0 && (
-        <Card.Body>
+        <CCardBody>
           <div className="table-responsive">
             <table className="table table-sm">
               <thead>
@@ -79,15 +80,15 @@ export default function VendorPriceCard({ partNumber, unitValue }: VendorPriceCa
                       <td>{formatCurrency(vp.price)}</td>
                       <td>
                         {vp.inStock ? (
-                          <Badge bg="success">{vp.stockQuantity} in stock</Badge>
+                          <CBadge color="success">{vp.stockQuantity} in stock</CBadge>
                         ) : (
-                          <Badge bg="danger">Out of Stock</Badge>
+                          <CBadge color="danger">Out of Stock</CBadge>
                         )}
                       </td>
                       <td>
-                        <Badge bg={diff < 0 ? 'success' : diff > 0 ? 'danger' : 'secondary'}>
+                        <CBadge color={diff < 0 ? 'success' : diff > 0 ? 'danger' : 'secondary'}>
                           {diff > 0 ? '+' : ''}{formatCurrency(diff)}
-                        </Badge>
+                        </CBadge>
                       </td>
                     </tr>
                   );
@@ -95,8 +96,8 @@ export default function VendorPriceCard({ partNumber, unitValue }: VendorPriceCa
               </tbody>
             </table>
           </div>
-        </Card.Body>
+        </CCardBody>
       )}
-    </Card>
+    </CCard>
   );
 }

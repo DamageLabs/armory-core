@@ -1,5 +1,5 @@
 import { useState, ChangeEvent } from 'react';
-import { Card, Form, Button, Table, Alert, Badge, ProgressBar, Row, Col } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CAlert, CBadge, CProgress, CProgressBar, CRow, CCol, CFormLabel, CFormSelect, CFormInput } from '@coreui/react';
 import { FaFileUpload, FaCheck, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
@@ -105,62 +105,62 @@ export default function RestoreBackup() {
   const invalidCount = items.length - validCount;
 
   return (
-    <Card>
-      <Card.Header>
+    <CCard>
+      <CCardHeader>
         <h5 className="mb-0">Restore from Backup</h5>
-      </Card.Header>
-      <Card.Body>
+      </CCardHeader>
+      <CCardBody>
         {status === 'idle' && (
           <>
             <p className="text-muted">
               Upload a JSON or CSV backup file previously exported from Armory Core.
             </p>
-            <Form.Group>
-              <Form.Label><FaFileUpload className="me-2" />Select Backup File</Form.Label>
-              <Form.Control
+            <div>
+              <CFormLabel><FaFileUpload className="me-2" />Select Backup File</CFormLabel>
+              <CFormInput
                 type="file"
                 accept=".json,.csv"
                 onChange={handleFileChange}
               />
-            </Form.Group>
+            </div>
           </>
         )}
 
         {status === 'preview' && (
           <>
-            <Alert variant="info">
+            <CAlert color="info">
               <strong>{fileName}</strong> — {items.length} items found
               {invalidCount > 0 && (
                 <span className="ms-2">
-                  (<Badge bg="danger">{invalidCount} invalid</Badge>)
+                  (<CBadge color="danger">{invalidCount} invalid</CBadge>)
                 </span>
               )}
-            </Alert>
+            </CAlert>
 
-            <Row className="mb-3">
-              <Col md={4}>
-                <Form.Group>
-                  <Form.Label>Restore Mode</Form.Label>
-                  <Form.Select
+            <CRow className="mb-3">
+              <CCol md={4}>
+                <div>
+                  <CFormLabel>Restore Mode</CFormLabel>
+                  <CFormSelect
                     value={mode}
                     onChange={(e) => setMode(e.target.value as RestoreMode)}
                   >
                     <option value="merge">Merge (add to existing)</option>
                     <option value="replace">Replace All (clear first)</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-            </Row>
+                  </CFormSelect>
+                </div>
+              </CCol>
+            </CRow>
 
             {mode === 'replace' && (
-              <Alert variant="warning">
+              <CAlert color="warning">
                 <FaExclamationTriangle className="me-2" />
                 Replace mode will delete all existing items and history before restoring.
-              </Alert>
+              </CAlert>
             )}
 
             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              <Table striped bordered size="sm">
+              <table className="table table-striped table-bordered table-sm">
                 <thead>
                   <tr>
                     <th>Status</th>
@@ -191,26 +191,27 @@ export default function RestoreBackup() {
                     </tr>
                   ))}
                 </tbody>
-              </Table>
+              </table>
             </div>
             {items.length > 100 && (
               <p className="text-muted">Showing first 100 of {items.length} items.</p>
             )}
 
             <div className="mt-3 d-flex gap-2">
-              <Button
-                variant="primary"
+              <CButton
+                color="primary"
                 onClick={handleRestore}
                 disabled={validCount === 0}
               >
                 Restore {validCount} Items
-              </Button>
-              <Button
-                variant="outline-secondary"
+              </CButton>
+              <CButton
+                color="secondary"
+                variant="outline"
                 onClick={() => { setStatus('idle'); setItems([]); }}
               >
                 Cancel
-              </Button>
+              </CButton>
             </div>
           </>
         )}
@@ -218,29 +219,32 @@ export default function RestoreBackup() {
         {status === 'restoring' && (
           <div className="text-center py-4">
             <p>Restoring items...</p>
-            <ProgressBar now={progress} animated striped />
+            <CProgress animated>
+              <CProgressBar value={progress} />
+            </CProgress>
           </div>
         )}
 
         {status === 'done' && result && (
           <>
-            <Alert variant="success">
+            <CAlert color="success">
               <h6>Restore Complete</h6>
               <ul className="mb-0">
                 <li><strong>{result.created}</strong> items created</li>
                 {result.skipped > 0 && <li><strong>{result.skipped}</strong> items skipped (invalid)</li>}
                 {result.errors > 0 && <li><strong>{result.errors}</strong> errors</li>}
               </ul>
-            </Alert>
-            <Button
-              variant="outline-primary"
+            </CAlert>
+            <CButton
+              color="primary"
+              variant="outline"
               onClick={() => { setStatus('idle'); setItems([]); setResult(null); }}
             >
               Restore Another Backup
-            </Button>
+            </CButton>
           </>
         )}
-      </Card.Body>
-    </Card>
+      </CCardBody>
+    </CCard>
   );
 }

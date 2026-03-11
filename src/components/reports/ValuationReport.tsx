@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Table, Row, Col, Form, Button, ButtonGroup, Collapse } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CRow, CCol, CButton, CButtonGroup, CFormLabel, CFormSelect, CFormCheck, CCollapse } from '@coreui/react';
 import { FaChevronDown, FaChevronRight, FaFileExcel } from 'react-icons/fa';
 import {
   BarChart,
@@ -160,36 +160,36 @@ export default function ValuationReport() {
           <h4 className="mb-1">Inventory Valuation Report</h4>
           <p className="text-muted mb-0">Total value by {groupBy}</p>
         </div>
-        <ButtonGroup size="sm">
-          <Button variant="outline-success" onClick={exportToCSV}>
+        <CButtonGroup size="sm">
+          <CButton color="success" variant="outline" onClick={exportToCSV}>
             <FaFileExcel className="me-1" /> Export CSV
-          </Button>
-        </ButtonGroup>
+          </CButton>
+        </CButtonGroup>
       </div>
 
       {/* Controls */}
-      <Card className="mb-4">
-        <Card.Body>
-          <Row className="align-items-center g-3">
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label className="small text-muted">Group By</Form.Label>
-                <Form.Select
+      <CCard className="mb-4">
+        <CCardBody>
+          <CRow className="align-items-center g-3">
+            <CCol md={4}>
+              <div>
+                <CFormLabel className="small text-muted">Group By</CFormLabel>
+                <CFormSelect
                   value={groupBy}
                   onChange={(e) => setGroupBy(e.target.value as GroupBy)}
                 >
                   <option value="category">Category</option>
                   <option value="location">Location</option>
                   <option value="vendor">Vendor</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label className="small text-muted">View Options</Form.Label>
+                </CFormSelect>
+              </div>
+            </CCol>
+            <CCol md={4}>
+              <div>
+                <CFormLabel className="small text-muted">View Options</CFormLabel>
                 <div>
-                  <Form.Check
-                    type="switch"
+                  <CFormCheck
+                    type="checkbox"
                     id="show-chart"
                     label="Show Chart"
                     checked={showChart}
@@ -197,26 +197,26 @@ export default function ValuationReport() {
                     inline
                   />
                 </div>
-              </Form.Group>
-            </Col>
-            <Col md={4} className="text-md-end">
-              <ButtonGroup size="sm">
-                <Button variant="outline-secondary" onClick={expandAll}>
+              </div>
+            </CCol>
+            <CCol md={4} className="text-md-end">
+              <CButtonGroup size="sm">
+                <CButton color="secondary" variant="outline" onClick={expandAll}>
                   Expand All
-                </Button>
-                <Button variant="outline-secondary" onClick={collapseAll}>
+                </CButton>
+                <CButton color="secondary" variant="outline" onClick={collapseAll}>
                   Collapse All
-                </Button>
-              </ButtonGroup>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+                </CButton>
+              </CButtonGroup>
+            </CCol>
+          </CRow>
+        </CCardBody>
+      </CCard>
 
       {/* Chart */}
       {showChart && (
-        <Card className="mb-4">
-          <Card.Body>
+        <CCard className="mb-4">
+          <CCardBody>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={groupedData.slice(0, 15)}>
                 <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#495057' : '#dee2e6'} />
@@ -244,42 +244,42 @@ export default function ValuationReport() {
                 <Bar dataKey="totalValue" fill="#0d6efd" name="Total Value" />
               </BarChart>
             </ResponsiveContainer>
-          </Card.Body>
-        </Card>
+          </CCardBody>
+        </CCard>
       )}
 
       {/* Summary Cards */}
-      <Row className="g-3 mb-4">
-        <Col md={4}>
-          <Card className="text-center">
-            <Card.Body>
+      <CRow className="g-3 mb-4">
+        <CCol md={4}>
+          <CCard className="text-center">
+            <CCardBody>
               <h6 className="text-muted">Total Groups</h6>
               <h3>{groupedData.length}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="text-center">
-            <Card.Body>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol md={4}>
+          <CCard className="text-center">
+            <CCardBody>
               <h6 className="text-muted">Total Items</h6>
               <h3>{totals.items.toLocaleString()}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="text-center border-success">
-            <Card.Body>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol md={4}>
+          <CCard className="text-center border-success">
+            <CCardBody>
               <h6 className="text-muted">Total Value</h6>
               <h3 className="text-success">{formatCurrency(totals.value)}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
 
       {/* Grouped Tables */}
       {groupedData.map((group) => (
-        <Card key={group.name} className="mb-3">
-          <Card.Header
+        <CCard key={group.name} className="mb-3">
+          <CCardHeader
             onClick={() => toggleGroup(group.name)}
             style={{ cursor: 'pointer' }}
             className="d-flex justify-content-between align-items-center"
@@ -300,10 +300,10 @@ export default function ValuationReport() {
                 ({((group.totalValue / totals.value) * 100).toFixed(1)}%)
               </span>
             </div>
-          </Card.Header>
-          <Collapse in={expandedGroups.has(group.name)}>
+          </CCardHeader>
+          <CCollapse visible={expandedGroups.has(group.name)}>
             <div>
-              <Table hover className="mb-0">
+              <table className="table table-hover mb-0">
                 <thead>
                   <tr>
                     <th>Item Name</th>
@@ -337,15 +337,15 @@ export default function ValuationReport() {
                     <td></td>
                   </tr>
                 </tfoot>
-              </Table>
+              </table>
             </div>
-          </Collapse>
-        </Card>
+          </CCollapse>
+        </CCard>
       ))}
 
       {/* Grand Total */}
-      <Card className="border-success">
-        <Card.Body className="d-flex justify-content-between align-items-center">
+      <CCard className="border-success">
+        <CCardBody className="d-flex justify-content-between align-items-center">
           <h5 className="mb-0">Grand Total</h5>
           <div>
             <span className="me-4">
@@ -358,8 +358,8 @@ export default function ValuationReport() {
               {formatCurrency(totals.value)}
             </span>
           </div>
-        </Card.Body>
-      </Card>
+        </CCardBody>
+      </CCard>
     </div>
   );
 }

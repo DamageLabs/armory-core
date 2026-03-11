@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Button, Row, Col, ButtonGroup } from 'react-bootstrap';
+import { CRow, CCol, CCard, CCardHeader, CCardBody, CForm, CFormLabel, CFormInput, CFormText, CButton, CButtonGroup } from '@coreui/react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAlert } from '../../contexts/AlertContext';
 import ConfirmModal from '../common/ConfirmModal';
@@ -52,81 +52,85 @@ export default function EditProfile() {
   };
 
   return (
-    <Row className="justify-content-center">
-      <Col md={6} lg={5}>
-        <Card className="border-primary">
-          <Card.Header className="bg-primary text-white">
+    <CRow className="justify-content-center">
+      <CCol md={6} lg={5}>
+        <CCard className="border-primary">
+          <CCardHeader className="bg-primary text-white">
             <h4 className="mb-0">Edit User</h4>
-          </Card.Header>
-          <Card.Body>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group className="mb-3" controlId="email">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
+          </CCardHeader>
+          <CCardBody>
+            <CForm onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <CFormLabel htmlFor="email">Email</CFormLabel>
+                <CFormInput
                   type="email"
+                  id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-              </Form.Group>
+              </div>
 
-              <Form.Group className="mb-3" controlId="password">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
+              <div className="mb-3">
+                <CFormLabel htmlFor="password">Password</CFormLabel>
+                <CFormInput
                   type="password"
+                  id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <Form.Text className="text-muted">
+                <CFormText className="text-muted">
                   Leave blank if you don't want to change it
-                </Form.Text>
-              </Form.Group>
+                </CFormText>
+              </div>
 
-              <Form.Group className="mb-3" controlId="passwordConfirmation">
-                <Form.Label>Password Confirmation</Form.Label>
-                <Form.Control
+              <div className="mb-3">
+                <CFormLabel htmlFor="passwordConfirmation">Password Confirmation</CFormLabel>
+                <CFormInput
                   type="password"
+                  id="passwordConfirmation"
                   value={passwordConfirmation}
                   onChange={(e) => setPasswordConfirmation(e.target.value)}
                 />
-              </Form.Group>
+              </div>
 
-              <Form.Group className="mb-3" controlId="currentPassword">
-                <Form.Label>Current Password</Form.Label>
-                <Form.Control
+              <div className="mb-3">
+                <CFormLabel htmlFor="currentPassword">Current Password</CFormLabel>
+                <CFormInput
                   type="password"
+                  id="currentPassword"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   required
                 />
-                <Form.Text className="text-muted">
+                <CFormText className="text-muted">
                   Enter your current password to confirm changes
-                </Form.Text>
-              </Form.Group>
+                </CFormText>
+              </div>
 
-              <ButtonGroup className="w-100">
-                <Button variant="primary" type="submit">
+              <CButtonGroup className="w-100">
+                <CButton color="primary" type="submit">
                   Update
-                </Button>
-                <Button
-                  variant="danger"
+                </CButton>
+                <CButton
+                  color="danger"
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
                 >
                   Cancel my account
-                </Button>
-                <Button
-                  variant="warning"
+                </CButton>
+                <CButton
+                  color="warning"
                   type="button"
                   onClick={() => navigate(-1)}
                 >
                   Cancel
-                </Button>
-              </ButtonGroup>
-            </Form>
-          </Card.Body>
-        </Card>
-      </Col>
+                </CButton>
+              </CButtonGroup>
+            </CForm>
+          </CCardBody>
+        </CCard>
+      </CCol>
 
       <ConfirmModal
         show={showDeleteModal}
@@ -136,6 +140,6 @@ export default function EditProfile() {
         onConfirm={handleDeleteAccount}
         onCancel={() => setShowDeleteModal(false)}
       />
-    </Row>
+    </CRow>
   );
 }

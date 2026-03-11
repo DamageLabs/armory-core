@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, Table, Button, ButtonGroup, Form, Row, Col, Badge, Collapse } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CButtonGroup, CFormInput, CFormLabel, CRow, CCol, CBadge, CCollapse } from '@coreui/react';
 import { FaPlus, FaTrash, FaEdit, FaChevronDown, FaChevronRight, FaFileExcel, FaFileCode } from 'react-icons/fa';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { InventoryType, FieldDefinition } from '../../types/InventoryType';
@@ -132,49 +132,49 @@ export default function InventoryTypeManager() {
   return (
     <>
       <Breadcrumbs items={breadcrumbItems} />
-      <Card>
-        <Card.Header>
+      <CCard>
+        <CCardHeader>
           <div className="d-flex justify-content-between align-items-center">
             <h4 className="mb-0">Inventory Types</h4>
-            <ButtonGroup size="sm">
-              <Button variant="outline-success" onClick={exportCSV} disabled={types.length === 0}>
+            <CButtonGroup size="sm">
+              <CButton color="success" variant="outline" onClick={exportCSV} disabled={types.length === 0}>
                 <FaFileExcel className="me-1" /> CSV
-              </Button>
-              <Button variant="outline-info" onClick={exportJSON} disabled={types.length === 0}>
+              </CButton>
+              <CButton color="info" variant="outline" onClick={exportJSON} disabled={types.length === 0}>
                 <FaFileCode className="me-1" /> JSON
-              </Button>
-            </ButtonGroup>
+              </CButton>
+            </CButtonGroup>
           </div>
-        </Card.Header>
-        <Card.Body>
+        </CCardHeader>
+        <CCardBody>
           {/* Add new type */}
-          <Row className="mb-4 g-2 align-items-end">
-            <Col md={4}>
-              <Form.Label>New Type Name</Form.Label>
-              <Form.Control
+          <CRow className="mb-4 g-2 align-items-end">
+            <CCol md={4}>
+              <CFormLabel>New Type Name</CFormLabel>
+              <CFormInput
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="e.g., Firearms"
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               />
-            </Col>
-            <Col md={3}>
-              <Form.Label>Icon (optional)</Form.Label>
-              <Form.Control
+            </CCol>
+            <CCol md={3}>
+              <CFormLabel>Icon (optional)</CFormLabel>
+              <CFormInput
                 value={newIcon}
                 onChange={(e) => setNewIcon(e.target.value)}
                 placeholder="e.g., FaCrosshairs"
               />
-            </Col>
-            <Col md={2}>
-              <Button variant="primary" onClick={handleCreate} disabled={!newName.trim()}>
+            </CCol>
+            <CCol md={2}>
+              <CButton color="primary" onClick={handleCreate} disabled={!newName.trim()}>
                 <FaPlus className="me-1" /> Add Type
-              </Button>
-            </Col>
-          </Row>
+              </CButton>
+            </CCol>
+          </CRow>
 
           {/* Types list */}
-          <Table bordered hover>
+          <table className="table table-bordered table-hover">
             <thead>
               <tr>
                 <th style={{ width: '40px' }}></th>
@@ -188,17 +188,17 @@ export default function InventoryTypeManager() {
                 <>
                   <tr key={type.id}>
                     <td className="text-center">
-                      <Button
+                      <CButton
                         size="sm"
-                        variant="link"
+                        color="link"
                         onClick={() => setExpandedId(expandedId === type.id ? null : type.id)}
                       >
                         {expandedId === type.id ? <FaChevronDown /> : <FaChevronRight />}
-                      </Button>
+                      </CButton>
                     </td>
                     <td>
                       {editingId === type.id ? (
-                        <Form.Control
+                        <CFormInput
                           size="sm"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
@@ -208,22 +208,22 @@ export default function InventoryTypeManager() {
                       )}
                     </td>
                     <td>
-                      <Badge bg="info">{type.schema.length} fields</Badge>
+                      <CBadge color="info">{type.schema.length} fields</CBadge>
                     </td>
                     <td>
                       {editingId === type.id ? (
                         <>
-                          <Button size="sm" variant="success" onClick={saveEdit} className="me-1">Save</Button>
-                          <Button size="sm" variant="secondary" onClick={() => setEditingId(null)}>Cancel</Button>
+                          <CButton size="sm" color="success" onClick={saveEdit} className="me-1">Save</CButton>
+                          <CButton size="sm" color="secondary" onClick={() => setEditingId(null)}>Cancel</CButton>
                         </>
                       ) : (
                         <>
-                          <Button size="sm" variant="outline-primary" onClick={() => startEdit(type)} className="me-1">
+                          <CButton size="sm" color="primary" variant="outline" onClick={() => startEdit(type)} className="me-1">
                             <FaEdit />
-                          </Button>
-                          <Button size="sm" variant="outline-danger" onClick={() => setDeleteId(type.id)}>
+                          </CButton>
+                          <CButton size="sm" color="danger" variant="outline" onClick={() => setDeleteId(type.id)}>
                             <FaTrash />
-                          </Button>
+                          </CButton>
                         </>
                       )}
                     </td>
@@ -231,13 +231,13 @@ export default function InventoryTypeManager() {
                   {expandedId === type.id && (
                     <tr key={`${type.id}-schema`}>
                       <td colSpan={4}>
-                        <Collapse in={expandedId === type.id}>
+                        <CCollapse visible={expandedId === type.id}>
                           <div className="p-3">
                             {editingId === type.id ? (
                               <FieldSchemaEditor schema={editSchema} onChange={setEditSchema} />
                             ) : (
                               type.schema.length > 0 ? (
-                                <Table size="sm" className="mb-0">
+                                <table className="table table-sm mb-0">
                                   <thead>
                                     <tr>
                                       <th>Label</th>
@@ -251,27 +251,27 @@ export default function InventoryTypeManager() {
                                       <tr key={field.key}>
                                         <td>{field.label}</td>
                                         <td><code>{field.key}</code></td>
-                                        <td><Badge bg="secondary">{field.type}</Badge></td>
+                                        <td><CBadge color="secondary">{field.type}</CBadge></td>
                                         <td>{field.required ? 'Yes' : 'No'}</td>
                                       </tr>
                                     ))}
                                   </tbody>
-                                </Table>
+                                </table>
                               ) : (
                                 <p className="text-muted mb-0">No fields defined. Click Edit to add fields.</p>
                               )
                             )}
                           </div>
-                        </Collapse>
+                        </CCollapse>
                       </td>
                     </tr>
                   )}
                 </>
               ))}
             </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
+          </table>
+        </CCardBody>
+      </CCard>
 
       <ConfirmModal
         show={!!deleteId}

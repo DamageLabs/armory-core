@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Table, Button, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CBadge } from '@coreui/react';
 import { FaPlus, FaEye, FaEdit, FaTrash, FaClipboardList } from 'react-icons/fa';
 import * as bomService from '../../services/bomService';
 import { BOM } from '../../types/BOM';
@@ -49,14 +49,14 @@ export default function BOMList() {
   };
 
   return (
-    <Card>
-      <Card.Header className="d-flex justify-content-between align-items-center">
+    <CCard>
+      <CCardHeader className="d-flex justify-content-between align-items-center">
         <h4 className="mb-0">Bill of Materials</h4>
         <Link to="/bom/new" className="btn btn-primary">
           <FaPlus className="me-1" /> New BOM
         </Link>
-      </Card.Header>
-      <Card.Body>
+      </CCardHeader>
+      <CCardBody>
         {boms.length === 0 ? (
           <EmptyState
             icon={FaClipboardList}
@@ -66,7 +66,7 @@ export default function BOMList() {
             actionPath="/bom/new"
           />
         ) : (
-          <Table striped hover responsive>
+          <table className="table table-striped table-hover table-responsive">
             <thead>
               <tr>
                 <th>Name</th>
@@ -87,9 +87,9 @@ export default function BOMList() {
                   <td>{bomCosts.get(bom.id) ?? 'N/A'}</td>
                   <td>
                     {bomAvailability.get(bom.id) ? (
-                      <Badge bg="success">Can Build</Badge>
+                      <CBadge color="success">Can Build</CBadge>
                     ) : (
-                      <Badge bg="warning">Missing Parts</Badge>
+                      <CBadge color="warning">Missing Parts</CBadge>
                     )}
                   </td>
                   <td>{new Date(bom.createdAt).toLocaleDateString()}</td>
@@ -109,22 +109,23 @@ export default function BOMList() {
                       >
                         <FaEdit aria-hidden="true" />
                       </Link>
-                      <Button
-                        variant="outline-danger"
+                      <CButton
+                        color="danger"
+                        variant="outline"
                         size="sm"
                         onClick={() => setDeleteTarget(bom)}
                         aria-label={`Delete ${bom.name}`}
                       >
                         <FaTrash aria-hidden="true" />
-                      </Button>
+                      </CButton>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </Table>
+          </table>
         )}
-      </Card.Body>
+      </CCardBody>
 
       <ConfirmModal
         show={!!deleteTarget}
@@ -134,6 +135,6 @@ export default function BOMList() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
-    </Card>
+    </CCard>
   );
 }

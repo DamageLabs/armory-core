@@ -1,4 +1,4 @@
-import { Pagination as BSPagination } from 'react-bootstrap';
+import { CPagination, CPaginationItem } from '@coreui/react';
 
 interface PaginationProps {
   currentPage: number;
@@ -32,33 +32,45 @@ export default function Pagination({
       <div className="text-muted">
         Displaying {startItem} - {endItem} of {totalItems} entries
       </div>
-      <BSPagination className="mb-0">
-        <BSPagination.First
+      <CPagination className="mb-0">
+        <CPaginationItem
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-        />
-        <BSPagination.Prev
+          aria-label="First"
+        >
+          &laquo;
+        </CPaginationItem>
+        <CPaginationItem
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-        />
+          aria-label="Previous"
+        >
+          &lsaquo;
+        </CPaginationItem>
         {pages.map((page) => (
-          <BSPagination.Item
+          <CPaginationItem
             key={page}
             active={page === currentPage}
             onClick={() => onPageChange(page)}
           >
             {page}
-          </BSPagination.Item>
+          </CPaginationItem>
         ))}
-        <BSPagination.Next
+        <CPaginationItem
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-        />
-        <BSPagination.Last
+          aria-label="Next"
+        >
+          &rsaquo;
+        </CPaginationItem>
+        <CPaginationItem
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-        />
-      </BSPagination>
+          aria-label="Last"
+        >
+          &raquo;
+        </CPaginationItem>
+      </CPagination>
     </div>
   );
 }

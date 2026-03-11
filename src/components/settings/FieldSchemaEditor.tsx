@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Form, Table, Row, Col, Badge } from 'react-bootstrap';
+import { CButton, CFormInput, CFormSelect, CFormCheck, CFormLabel, CRow, CCol, CBadge } from '@coreui/react';
 import { FaPlus, FaTrash, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { FieldDefinition, FieldType } from '../../types/InventoryType';
 
@@ -57,7 +57,7 @@ export default function FieldSchemaEditor({ schema, onChange }: FieldSchemaEdito
   return (
     <div>
       {schema.length > 0 && (
-        <Table size="sm" bordered className="mb-3">
+        <table className="table table-sm table-bordered mb-3">
           <thead>
             <tr>
               <th>Label</th>
@@ -73,44 +73,44 @@ export default function FieldSchemaEditor({ schema, onChange }: FieldSchemaEdito
                 <td>{field.label}</td>
                 <td><code>{field.key}</code></td>
                 <td>
-                  <Badge bg="secondary">{field.type}</Badge>
+                  <CBadge color="secondary">{field.type}</CBadge>
                   {field.options && (
                     <small className="text-muted ms-1">({field.options.length} options)</small>
                   )}
                 </td>
                 <td>{field.required ? 'Yes' : 'No'}</td>
                 <td>
-                  <Button size="sm" variant="link" onClick={() => moveField(index, -1)} disabled={index === 0}>
+                  <CButton size="sm" color="link" onClick={() => moveField(index, -1)} disabled={index === 0}>
                     <FaArrowUp />
-                  </Button>
-                  <Button size="sm" variant="link" onClick={() => moveField(index, 1)} disabled={index === schema.length - 1}>
+                  </CButton>
+                  <CButton size="sm" color="link" onClick={() => moveField(index, 1)} disabled={index === schema.length - 1}>
                     <FaArrowDown />
-                  </Button>
-                  <Button size="sm" variant="link" className="text-danger" onClick={() => removeField(index)}>
+                  </CButton>
+                  <CButton size="sm" color="link" className="text-danger" onClick={() => removeField(index)}>
                     <FaTrash />
-                  </Button>
+                  </CButton>
                 </td>
               </tr>
             ))}
           </tbody>
-        </Table>
+        </table>
       )}
 
       <div className="border rounded p-3 bg-light">
         <h6>Add Field</h6>
-        <Row className="g-2 align-items-end">
-          <Col md={3}>
-            <Form.Label>Label</Form.Label>
-            <Form.Control
+        <CRow className="g-2 align-items-end">
+          <CCol md={3}>
+            <CFormLabel>Label</CFormLabel>
+            <CFormInput
               size="sm"
               value={newField.label}
               onChange={(e) => setNewField({ ...newField, label: e.target.value })}
               placeholder="e.g., Serial Number"
             />
-          </Col>
-          <Col md={2}>
-            <Form.Label>Type</Form.Label>
-            <Form.Select
+          </CCol>
+          <CCol md={2}>
+            <CFormLabel>Type</CFormLabel>
+            <CFormSelect
               size="sm"
               value={newField.type}
               onChange={(e) => setNewField({ ...newField, type: e.target.value as FieldType })}
@@ -118,34 +118,34 @@ export default function FieldSchemaEditor({ schema, onChange }: FieldSchemaEdito
               {FIELD_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
-            </Form.Select>
-          </Col>
-          <Col md={2}>
-            <Form.Check
+            </CFormSelect>
+          </CCol>
+          <CCol md={2}>
+            <CFormCheck
               type="checkbox"
               label="Required"
               checked={newField.required}
               onChange={(e) => setNewField({ ...newField, required: e.target.checked })}
               className="mt-4"
             />
-          </Col>
+          </CCol>
           {newField.type === 'select' && (
-            <Col md={3}>
-              <Form.Label>Options (comma-separated)</Form.Label>
-              <Form.Control
+            <CCol md={3}>
+              <CFormLabel>Options (comma-separated)</CFormLabel>
+              <CFormInput
                 size="sm"
                 value={newOptions}
                 onChange={(e) => setNewOptions(e.target.value)}
                 placeholder="Option1, Option2, Option3"
               />
-            </Col>
+            </CCol>
           )}
-          <Col md={2}>
-            <Button size="sm" variant="primary" onClick={addField} disabled={!newField.label.trim()}>
+          <CCol md={2}>
+            <CButton size="sm" color="primary" onClick={addField} disabled={!newField.label.trim()}>
               <FaPlus className="me-1" /> Add
-            </Button>
-          </Col>
-        </Row>
+            </CButton>
+          </CCol>
+        </CRow>
       </div>
     </div>
   );

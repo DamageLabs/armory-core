@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
+import { CContainer } from '@coreui/react';
+import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
 import AlertDisplay from '../common/AlertDisplay';
@@ -9,16 +11,22 @@ import { useKeyboardShortcuts, useShortcutHelp } from '../../hooks/useKeyboardSh
 export default function Layout() {
   const { showHelp, openHelp, closeHelp } = useShortcutHelp();
   useKeyboardShortcuts(openHelp);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   return (
-    <div className="d-flex flex-column min-vh-100">
-      <Header />
-      <Container className="flex-grow-1 mt-5 pt-4">
-        <AlertDisplay />
-        <Outlet />
-      </Container>
-      <Footer />
+    <>
+      <Sidebar visible={sidebarVisible} onVisibleChange={setSidebarVisible} />
+      <div className="wrapper d-flex flex-column min-vh-100">
+        <Header onToggleSidebar={() => setSidebarVisible((v) => !v)} />
+        <div className="body flex-grow-1 px-3">
+          <CContainer lg>
+            <AlertDisplay />
+            <Outlet />
+          </CContainer>
+        </div>
+        <Footer />
+      </div>
       <ShortcutHelp show={showHelp} onClose={closeHelp} />
-    </div>
+    </>
   );
 }

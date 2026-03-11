@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Alert, Form, ListGroup, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CAlert, CForm, CListGroup, CListGroupItem, CBadge, CFormLabel, CFormInput } from '@coreui/react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { FaCamera, FaStop, FaSearch, FaPlus, FaMinus, FaBarcode } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
@@ -125,11 +125,11 @@ export default function BarcodeScanner() {
 
       <div className="row">
         <div className="col-lg-6 mb-4">
-          <Card>
-            <Card.Header>
+          <CCard>
+            <CCardHeader>
               <h6 className="mb-0">Camera Scanner</h6>
-            </Card.Header>
-            <Card.Body>
+            </CCardHeader>
+            <CCardBody>
               <div
                 id="barcode-reader"
                 style={{
@@ -140,47 +140,47 @@ export default function BarcodeScanner() {
               />
 
               {!scanning ? (
-                <Button variant="primary" onClick={startScanning} className="w-100">
+                <CButton color="primary" onClick={startScanning} className="w-100">
                   <FaCamera className="me-2" />
                   Start Camera
-                </Button>
+                </CButton>
               ) : (
-                <Button variant="danger" onClick={stopScanning} className="w-100">
+                <CButton color="danger" onClick={stopScanning} className="w-100">
                   <FaStop className="me-2" />
                   Stop Camera
-                </Button>
+                </CButton>
               )}
 
               <hr />
 
-              <Form onSubmit={handleManualLookup}>
-                <Form.Label>Manual Entry</Form.Label>
+              <CForm onSubmit={handleManualLookup}>
+                <CFormLabel>Manual Entry</CFormLabel>
                 <div className="d-flex gap-2">
-                  <Form.Control
+                  <CFormInput
                     type="text"
                     placeholder="Enter barcode..."
                     value={manualBarcode}
                     onChange={(e) => setManualBarcode(e.target.value)}
                   />
-                  <Button type="submit" variant="outline-primary">
+                  <CButton type="submit" color="primary" variant="outline">
                     <FaSearch />
-                  </Button>
+                  </CButton>
                 </div>
-              </Form>
-            </Card.Body>
-          </Card>
+              </CForm>
+            </CCardBody>
+          </CCard>
 
           {foundItem && (
-            <Card className="mt-3">
-              <Card.Header className="bg-success text-white">
+            <CCard className="mt-3">
+              <CCardHeader className="bg-success text-white">
                 <h6 className="mb-0">Item Found</h6>
-              </Card.Header>
-              <Card.Body>
+              </CCardHeader>
+              <CCardBody>
                 <h5>{foundItem.name}</h5>
                 <p className="text-muted mb-2">{foundItem.description}</p>
                 <div className="mb-3">
-                  <Badge bg="secondary" className="me-2">{foundItem.category}</Badge>
-                  <Badge bg="info">{foundItem.location || 'No location'}</Badge>
+                  <CBadge color="secondary" className="me-2">{foundItem.category}</CBadge>
+                  <CBadge color="info">{foundItem.location || 'No location'}</CBadge>
                 </div>
                 <table className="table table-sm mb-3">
                   <tbody>
@@ -193,7 +193,7 @@ export default function BarcodeScanner() {
                       <td>
                         <strong>{foundItem.quantity}</strong>
                         {foundItem.reorderPoint > 0 && foundItem.quantity <= foundItem.reorderPoint && (
-                          <Badge bg="warning" className="ms-2">Low Stock</Badge>
+                          <CBadge color="warning" className="ms-2">Low Stock</CBadge>
                         )}
                       </td>
                     </tr>
@@ -209,57 +209,60 @@ export default function BarcodeScanner() {
                 </table>
 
                 <div className="d-flex gap-2 mb-3">
-                  <Button
-                    variant="outline-danger"
+                  <CButton
+                    color="danger"
+                    variant="outline"
                     onClick={() => adjustQuantity(foundItem, -1)}
                     disabled={foundItem.quantity === 0}
                   >
                     <FaMinus />
-                  </Button>
-                  <Button
-                    variant="outline-success"
+                  </CButton>
+                  <CButton
+                    color="success"
+                    variant="outline"
                     onClick={() => adjustQuantity(foundItem, 1)}
                   >
                     <FaPlus />
-                  </Button>
-                  <Button
-                    variant="primary"
+                  </CButton>
+                  <CButton
+                    color="primary"
                     onClick={() => navigate(`/items/${foundItem.id}`)}
                     className="flex-grow-1"
                   >
                     View Details
-                  </Button>
+                  </CButton>
                 </div>
-              </Card.Body>
-            </Card>
+              </CCardBody>
+            </CCard>
           )}
 
           {lastScanned && !foundItem && (
-            <Alert variant="warning" className="mt-3">
+            <CAlert color="warning" className="mt-3">
               <strong>Barcode not found:</strong> <code>{lastScanned}</code>
               <div className="mt-2">
-                <Button
-                  variant="outline-primary"
+                <CButton
+                  color="primary"
+                  variant="outline"
                   size="sm"
                   onClick={() => navigate(`/items/new?barcode=${encodeURIComponent(lastScanned)}`)}
                 >
                   Create New Item with this Barcode
-                </Button>
+                </CButton>
               </div>
-            </Alert>
+            </CAlert>
           )}
         </div>
 
         <div className="col-lg-6">
-          <Card>
-            <Card.Header>
+          <CCard>
+            <CCardHeader>
               <h6 className="mb-0">Recent Scans</h6>
-            </Card.Header>
-            <Card.Body className="p-0">
+            </CCardHeader>
+            <CCardBody className="p-0">
               {recentScans.length > 0 ? (
-                <ListGroup variant="flush">
+                <CListGroup flush>
                   {recentScans.map((scan, index) => (
-                    <ListGroup.Item
+                    <CListGroupItem
                       key={index}
                       className="d-flex justify-content-between align-items-center"
                     >
@@ -272,8 +275,8 @@ export default function BarcodeScanner() {
                       </div>
                       {scan.item ? (
                         <div className="text-end">
-                          <Button
-                            variant="link"
+                          <CButton
+                            color="link"
                             size="sm"
                             onClick={() => {
                               setFoundItem(scan.item);
@@ -281,23 +284,23 @@ export default function BarcodeScanner() {
                             }}
                           >
                             {scan.item.name}
-                          </Button>
+                          </CButton>
                           <br />
                           <small>Qty: {scan.item.quantity}</small>
                         </div>
                       ) : (
-                        <Badge bg="secondary">Not found</Badge>
+                        <CBadge color="secondary">Not found</CBadge>
                       )}
-                    </ListGroup.Item>
+                    </CListGroupItem>
                   ))}
-                </ListGroup>
+                </CListGroup>
               ) : (
                 <div className="p-4 text-center text-muted">
                   No scans yet. Start scanning or enter a barcode manually.
                 </div>
               )}
-            </Card.Body>
-          </Card>
+            </CCardBody>
+          </CCard>
         </div>
       </div>
     </div>

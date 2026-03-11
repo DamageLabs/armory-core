@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Table, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CBadge } from '@coreui/react';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { Item } from '../../types/Item';
@@ -38,14 +38,14 @@ export default function ChildItemsList({ parentId, parentTypeName }: ChildItemsL
   if (loading || children.length === 0) return null;
 
   return (
-    <Card className="mt-3">
-      <Card.Header>
+    <CCard className="mt-3">
+      <CCardHeader>
         <h6 className="mb-0">
-          Attached Items <Badge bg="secondary">{children.length}</Badge>
+          Attached Items <CBadge color="secondary">{children.length}</CBadge>
         </h6>
-      </Card.Header>
-      <Card.Body className="p-0">
-        <Table hover responsive className="mb-0">
+      </CCardHeader>
+      <CCardBody className="p-0">
+        <table className="table table-hover mb-0">
           <thead>
             <tr>
               <th>Name</th>
@@ -63,8 +63,8 @@ export default function ChildItemsList({ parentId, parentTypeName }: ChildItemsL
                     <Link to={`/items/${child.id}`}>{child.name}</Link>
                   </td>
                   <td className="text-center">
-                    {parentTypeName && <Badge bg="primary" className="me-1">{parentTypeName}</Badge>}
-                    {childType && <Badge bg="secondary">{childType.name}</Badge>}
+                    {parentTypeName && <CBadge color="primary" className="me-1">{parentTypeName}</CBadge>}
+                    {childType && <CBadge color="secondary">{childType.name}</CBadge>}
                   </td>
                   <td className="text-center">{child.category}</td>
                   <td className="text-center">{formatCurrency(child.unitValue)}</td>
@@ -72,8 +72,8 @@ export default function ChildItemsList({ parentId, parentTypeName }: ChildItemsL
               );
             })}
           </tbody>
-        </Table>
-      </Card.Body>
-    </Card>
+        </table>
+      </CCardBody>
+    </CCard>
   );
 }

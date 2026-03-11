@@ -1,6 +1,6 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Card, Form, Button, Row, Col, Alert } from 'react-bootstrap';
+import { CRow, CCol, CCard, CCardHeader, CCardBody, CForm, CFormLabel, CFormInput, CButton, CAlert } from '@coreui/react';
 import { resendVerificationEmail } from '../../services/authService';
 
 export default function ResendVerification() {
@@ -34,55 +34,56 @@ export default function ResendVerification() {
 
   if (submitted) {
     return (
-      <Row className="justify-content-center">
-        <Col md={6} lg={4}>
-          <Card className="border-success">
-            <Card.Header className="bg-success text-white">
+      <CRow className="justify-content-center">
+        <CCol md={6} lg={4}>
+          <CCard className="border-success">
+            <CCardHeader className="bg-success text-white">
               <h4 className="mb-0">Email Sent</h4>
-            </Card.Header>
-            <Card.Body>
-              <Alert variant="success">
-                <Alert.Heading>Check Your Inbox</Alert.Heading>
+            </CCardHeader>
+            <CCardBody>
+              <CAlert color="success">
+                <h4 className="alert-heading">Check Your Inbox</h4>
                 <p>
                   If an account exists for <strong>{email}</strong>, we've sent a new verification email.
                 </p>
                 <p className="mb-0">
                   Please check your inbox and spam folder.
                 </p>
-              </Alert>
+              </CAlert>
               <div className="d-grid gap-2 mt-3">
                 <Link to="/login" className="btn btn-primary">
                   Back to Sign In
                 </Link>
               </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
     );
   }
 
   return (
-    <Row className="justify-content-center">
-      <Col md={6} lg={4}>
-        <Card className="border-primary">
-          <Card.Header className="bg-primary text-white">
+    <CRow className="justify-content-center">
+      <CCol md={6} lg={4}>
+        <CCard className="border-primary">
+          <CCardHeader className="bg-primary text-white">
             <h4 className="mb-0">Resend Verification Email</h4>
-          </Card.Header>
-          <Card.Body>
+          </CCardHeader>
+          <CCardBody>
             <p className="text-muted">
               Enter your email address and we'll send you a new verification link.
             </p>
             {error && (
-              <Alert variant="danger" onClose={() => setError(null)} dismissible>
+              <CAlert color="danger" dismissible onClose={() => setError(null)}>
                 {error}
-              </Alert>
+              </CAlert>
             )}
-            <Form onSubmit={handleSubmit}>
-              <Form.Group className="mb-3" controlId="email">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
+            <CForm onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <CFormLabel htmlFor="email">Email</CFormLabel>
+                <CFormInput
                   type="email"
+                  id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -90,22 +91,22 @@ export default function ResendVerification() {
                   disabled={isLoading}
                   placeholder="your@email.com"
                 />
-              </Form.Group>
+              </div>
 
               <div className="d-grid gap-2">
-                <Button variant="primary" type="submit" disabled={isLoading}>
+                <CButton color="primary" type="submit" disabled={isLoading}>
                   {isLoading ? 'Sending...' : 'Send Verification Email'}
-                </Button>
+                </CButton>
               </div>
-            </Form>
+            </CForm>
             <div className="mt-3 text-center">
               <Link to="/login" className="btn btn-link">
                 Back to Sign In
               </Link>
             </div>
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
+          </CCardBody>
+        </CCard>
+      </CCol>
+    </CRow>
   );
 }

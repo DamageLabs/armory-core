@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Card, Row, Col, Badge, Button } from 'react-bootstrap';
+import { CCard, CCardBody, CRow, CCol, CBadge, CButton, CCardImage, CCardTitle } from '@coreui/react';
 import { FaEdit, FaTrash, FaLink } from 'react-icons/fa';
 import { Item } from '../../types/Item';
 import { InventoryType } from '../../types/InventoryType';
@@ -16,7 +16,7 @@ interface ItemCardGridProps {
 
 export default function ItemCardGrid({ items, allItems, inventoryTypes, lowStockTypeIds, onDelete }: ItemCardGridProps) {
   return (
-    <Row xs={1} sm={2} lg={3} xl={4} className="g-3">
+    <CRow xs={{ cols: 1 }} sm={{ cols: 2 }} lg={{ cols: 3 }} xl={{ cols: 4 }} className="g-3">
       {items.map((item) => {
         const typeName = inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name || '-';
         const parent = item.parentItemId ? allItems.find((p) => p.id === item.parentItemId) : null;
@@ -24,40 +24,40 @@ export default function ItemCardGrid({ items, allItems, inventoryTypes, lowStock
         const isOutOfStock = lowStockTypeIds.has(item.inventoryTypeId) && item.quantity === 0;
 
         return (
-          <Col key={item.id}>
-            <Card className="h-100">
+          <CCol key={item.id}>
+            <CCard className="h-100">
               {item.picture && (
-                <Card.Img
-                  variant="top"
+                <CCardImage
+                  orientation="top"
                   src={item.picture}
                   alt={item.name}
                   style={{ height: '160px', objectFit: 'cover' }}
                 />
               )}
-              <Card.Body className="d-flex flex-column">
+              <CCardBody className="d-flex flex-column">
                 <div className="d-flex justify-content-between align-items-start mb-2">
-                  <Card.Title className="mb-0 fs-6">
+                  <CCardTitle className="mb-0 fs-6">
                     <Link to={`/items/${item.id}`} className="text-decoration-none">
                       {item.name}
                     </Link>
                     {(item.childCount ?? 0) > 0 && (
-                      <Badge bg="info" className="ms-1">{item.childCount}</Badge>
+                      <CBadge color="info" className="ms-1">{item.childCount}</CBadge>
                     )}
-                  </Card.Title>
-                  <Badge bg="primary" className="ms-2 flex-shrink-0">{typeName}</Badge>
+                  </CCardTitle>
+                  <CBadge color="primary" className="ms-2 flex-shrink-0">{typeName}</CBadge>
                 </div>
 
                 {parent && (
                   <div className="mb-2">
                     <Link to={`/items/${parent.id}`}>
-                      <Badge bg="dark"><FaLink size={10} className="me-1" />{parent.name}</Badge>
+                      <CBadge color="dark"><FaLink size={10} className="me-1" />{parent.name}</CBadge>
                     </Link>
                   </div>
                 )}
 
                 {item.category && (
                   <div className="mb-2">
-                    <Badge bg="secondary">{item.category}</Badge>
+                    <CBadge color="secondary">{item.category}</CBadge>
                   </div>
                 )}
 
@@ -89,21 +89,22 @@ export default function ItemCardGrid({ items, allItems, inventoryTypes, lowStock
                   >
                     <FaEdit className="me-1" />Edit
                   </Link>
-                  <Button
-                    variant="outline-danger"
+                  <CButton
+                    color="danger"
+                    variant="outline"
                     size="sm"
                     className="flex-fill"
                     onClick={() => onDelete(item)}
                     aria-label={`Delete ${item.name}`}
                   >
                     <FaTrash className="me-1" />Delete
-                  </Button>
+                  </CButton>
                 </div>
-              </Card.Body>
-            </Card>
-          </Col>
+              </CCardBody>
+            </CCard>
+          </CCol>
         );
       })}
-    </Row>
+    </CRow>
   );
 }

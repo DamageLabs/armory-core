@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, ChangeEvent } from 'react';
-import { Card, Button, ListGroup, Badge, Form, Spinner } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CListGroup, CListGroupItem, CBadge, CSpinner, CFormLabel, CFormInput } from '@coreui/react';
 import { Receipt } from '../../types/Receipt';
 import * as receiptService from '../../services/receiptService';
 import { useAlert } from '../../contexts/AlertContext';
@@ -116,18 +116,18 @@ export default function ReceiptList({ itemId }: ReceiptListProps) {
 
   return (
     <>
-      <Card className="mb-3">
-        <Card.Header className="d-flex justify-content-between align-items-center">
+      <CCard className="mb-3">
+        <CCardHeader className="d-flex justify-content-between align-items-center">
           <h6 className="mb-0">Receipts</h6>
           <div>
-            <Form.Label
+            <CFormLabel
               htmlFor="receipt-upload"
               className="btn btn-sm btn-outline-primary mb-0"
               style={{ cursor: 'pointer' }}
             >
-              {isUploading ? <><Spinner size="sm" animation="border" className="me-1" />Uploading...</> : 'Upload'}
-            </Form.Label>
-            <Form.Control
+              {isUploading ? <><CSpinner size="sm" className="me-1" />Uploading...</> : 'Upload'}
+            </CFormLabel>
+            <CFormInput
               id="receipt-upload"
               type="file"
               accept="image/png,image/jpeg,application/pdf"
@@ -136,47 +136,48 @@ export default function ReceiptList({ itemId }: ReceiptListProps) {
               className="d-none"
             />
           </div>
-        </Card.Header>
+        </CCardHeader>
         {receipts.length > 0 ? (
           <>
-            <ListGroup variant="flush">
+            <CListGroup flush>
               {receipts.map((receipt) => (
-                <ListGroup.Item
+                <CListGroupItem
                   key={receipt.id}
-                  action
+                  as="button"
                   active={previewReceipt?.id === receipt.id}
                   onClick={() => handlePreview(receipt)}
                   className="d-flex justify-content-between align-items-center"
                 >
                   <div>
-                    <Badge bg={receipt.mimeType === 'application/pdf' ? 'danger' : 'info'} className="me-2">
+                    <CBadge color={receipt.mimeType === 'application/pdf' ? 'danger' : 'info'} className="me-2">
                       {mimeIcon(receipt.mimeType)}
-                    </Badge>
+                    </CBadge>
                     {receipt.originalName}
                     <small className="text-muted ms-2">
                       {formatBytes(receipt.sizeBytes)} &middot; {formatDate(receipt.createdAt)}
                     </small>
                   </div>
-                  <Button
-                    variant="outline-danger"
+                  <CButton
+                    color="danger"
+                    variant="outline"
                     size="sm"
                     onClick={(e) => { e.stopPropagation(); setDeleteTarget(receipt); }}
                   >
                     Delete
-                  </Button>
-                </ListGroup.Item>
+                  </CButton>
+                </CListGroupItem>
               ))}
-            </ListGroup>
+            </CListGroup>
 
             {isLoadingPreview && (
-              <Card.Body className="text-center py-4">
-                <Spinner animation="border" size="sm" className="me-2" />
+              <CCardBody className="text-center py-4">
+                <CSpinner size="sm" className="me-2" />
                 Loading preview...
-              </Card.Body>
+              </CCardBody>
             )}
 
             {previewUrl && previewReceipt && !isLoadingPreview && (
-              <Card.Body className="p-2">
+              <CCardBody className="p-2">
                 {previewReceipt.mimeType.startsWith('image/') ? (
                   <img
                     src={previewUrl}
@@ -191,15 +192,15 @@ export default function ReceiptList({ itemId }: ReceiptListProps) {
                     style={{ width: '100%', height: '500px', border: 'none', borderRadius: '4px' }}
                   />
                 )}
-              </Card.Body>
+              </CCardBody>
             )}
           </>
         ) : (
-          <Card.Body className="text-muted text-center py-3">
+          <CCardBody className="text-muted text-center py-3">
             No receipts attached.
-          </Card.Body>
+          </CCardBody>
         )}
-      </Card>
+      </CCard>
 
       <ConfirmModal
         show={!!deleteTarget}

@@ -1,4 +1,4 @@
-import { Modal, Button } from 'react-bootstrap';
+import { CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CButton } from '@coreui/react';
 
 interface ConfirmModalProps {
   show: boolean;
@@ -22,19 +22,19 @@ export default function ConfirmModal({
   onCancel,
 }: ConfirmModalProps) {
   return (
-    <Modal show={show} onHide={onCancel} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>{title}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>{message}</Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onCancel}>
+    <CModal visible={show} onClose={onCancel} alignment="center">
+      <CModalHeader closeButton>
+        <CModalTitle>{title}</CModalTitle>
+      </CModalHeader>
+      <CModalBody>{message}</CModalBody>
+      <CModalFooter>
+        <CButton color="secondary" onClick={onCancel}>
           {cancelLabel}
-        </Button>
-        <Button variant={confirmVariant} onClick={onConfirm}>
+        </CButton>
+        <CButton color={confirmVariant} onClick={onConfirm}>
           {confirmLabel}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+        </CButton>
+      </CModalFooter>
+    </CModal>
   );
 }

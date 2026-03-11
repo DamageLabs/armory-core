@@ -31,7 +31,7 @@ import ResendVerification from './components/auth/ResendVerification';
 import CategoryManager from './components/settings/CategoryManager';
 import InventoryTypeManager from './components/settings/InventoryTypeManager';
 
-import 'bootstrap/dist/css/bootstrap.min.css';
+import '@coreui/coreui/dist/css/coreui.min.css';
 import './index.css';
 
 function App() {

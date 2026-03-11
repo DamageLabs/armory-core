@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Card, Table, Row, Col, Form, Button, ButtonGroup, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CCardFooter, CRow, CCol, CButton, CButtonGroup, CFormLabel, CFormInput, CFormSelect, CBadge } from '@coreui/react';
 import { FaFileExcel, FaTimes } from 'react-icons/fa';
 import {
   XAxis,
@@ -153,41 +153,41 @@ export default function MovementReport() {
           <h4 className="mb-1">Stock Movement Report</h4>
           <p className="text-muted mb-0">Track inventory changes over time</p>
         </div>
-        <ButtonGroup size="sm">
-          <Button variant="outline-success" onClick={exportToCSV}>
+        <CButtonGroup size="sm">
+          <CButton color="success" variant="outline" onClick={exportToCSV}>
             <FaFileExcel className="me-1" /> Export CSV
-          </Button>
-        </ButtonGroup>
+          </CButton>
+        </CButtonGroup>
       </div>
 
       {/* Filters */}
-      <Card className="mb-4">
-        <Card.Body>
-          <Row className="g-3">
-            <Col md={2}>
-              <Form.Group>
-                <Form.Label className="small text-muted">Start Date</Form.Label>
-                <Form.Control
+      <CCard className="mb-4">
+        <CCardBody>
+          <CRow className="g-3">
+            <CCol md={2}>
+              <div>
+                <CFormLabel className="small text-muted">Start Date</CFormLabel>
+                <CFormInput
                   type="date"
                   value={startDate}
                   onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
                 />
-              </Form.Group>
-            </Col>
-            <Col md={2}>
-              <Form.Group>
-                <Form.Label className="small text-muted">End Date</Form.Label>
-                <Form.Control
+              </div>
+            </CCol>
+            <CCol md={2}>
+              <div>
+                <CFormLabel className="small text-muted">End Date</CFormLabel>
+                <CFormInput
                   type="date"
                   value={endDate}
                   onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
                 />
-              </Form.Group>
-            </Col>
-            <Col md={2}>
-              <Form.Group>
-                <Form.Label className="small text-muted">Change Type</Form.Label>
-                <Form.Select
+              </div>
+            </CCol>
+            <CCol md={2}>
+              <div>
+                <CFormLabel className="small text-muted">Change Type</CFormLabel>
+                <CFormSelect
                   value={changeType}
                   onChange={(e) => { setChangeType(e.target.value as StockChangeType | ''); setCurrentPage(1); }}
                 >
@@ -196,13 +196,13 @@ export default function MovementReport() {
                   <option value="updated">Updated</option>
                   <option value="deleted">Deleted</option>
                   <option value="category_changed">Category Changed</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label className="small text-muted">Item</Form.Label>
-                <Form.Select
+                </CFormSelect>
+              </div>
+            </CCol>
+            <CCol md={4}>
+              <div>
+                <CFormLabel className="small text-muted">Item</CFormLabel>
+                <CFormSelect
                   value={itemId}
                   onChange={(e) => { setItemId(e.target.value ? Number(e.target.value) : ''); setCurrentPage(1); }}
                 >
@@ -212,81 +212,81 @@ export default function MovementReport() {
                       {item.name}
                     </option>
                   ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={2} className="d-flex align-items-end">
+                </CFormSelect>
+              </div>
+            </CCol>
+            <CCol md={2} className="d-flex align-items-end">
               {hasFilters && (
-                <Button variant="outline-secondary" onClick={clearFilters} className="w-100">
+                <CButton color="secondary" variant="outline" onClick={clearFilters} className="w-100">
                   <FaTimes className="me-1" /> Clear
-                </Button>
+                </CButton>
               )}
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+            </CCol>
+          </CRow>
+        </CCardBody>
+      </CCard>
 
       {/* Stats Cards */}
-      <Row className="g-3 mb-4">
-        <Col md={2}>
-          <Card className="text-center h-100">
-            <Card.Body>
+      <CRow className="g-3 mb-4">
+        <CCol md={2}>
+          <CCard className="text-center h-100">
+            <CCardBody>
               <h6 className="text-muted small">Total Changes</h6>
               <h4>{stats.total}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={2}>
-          <Card className="text-center h-100 border-success">
-            <Card.Body>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol md={2}>
+          <CCard className="text-center h-100 border-success">
+            <CCardBody>
               <h6 className="text-muted small">Created</h6>
               <h4 className="text-success">{stats.created}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={2}>
-          <Card className="text-center h-100 border-primary">
-            <Card.Body>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol md={2}>
+          <CCard className="text-center h-100 border-primary">
+            <CCardBody>
               <h6 className="text-muted small">Updated</h6>
               <h4 className="text-primary">{stats.updated}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={2}>
-          <Card className="text-center h-100 border-danger">
-            <Card.Body>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol md={2}>
+          <CCard className="text-center h-100 border-danger">
+            <CCardBody>
               <h6 className="text-muted small">Deleted</h6>
               <h4 className="text-danger">{stats.deleted}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={2}>
-          <Card className="text-center h-100 border-secondary">
-            <Card.Body>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol md={2}>
+          <CCard className="text-center h-100 border-secondary">
+            <CCardBody>
               <h6 className="text-muted small">Category</h6>
               <h4>{stats.categoryChanged}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={2}>
-          <Card className="text-center h-100 border-info">
-            <Card.Body>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol md={2}>
+          <CCard className="text-center h-100 border-info">
+            <CCardBody>
               <h6 className="text-muted small">Net Qty Change</h6>
               <h4 className={stats.netQuantityChange >= 0 ? 'text-success' : 'text-danger'}>
                 {stats.netQuantityChange >= 0 ? '+' : ''}{stats.netQuantityChange}
               </h4>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
 
       {/* Activity Chart */}
       {dailyActivity.length > 0 && (
-        <Card className="mb-4">
-          <Card.Header>
+        <CCard className="mb-4">
+          <CCardHeader>
             <h6 className="mb-0">Daily Activity (Last 30 Days)</h6>
-          </Card.Header>
-          <Card.Body>
+          </CCardHeader>
+          <CCardBody>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={dailyActivity}>
                 <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#495057' : '#dee2e6'} />
@@ -311,20 +311,20 @@ export default function MovementReport() {
                 <Bar dataKey="deleted" stackId="a" fill="#dc3545" name="Deleted" />
               </BarChart>
             </ResponsiveContainer>
-          </Card.Body>
-        </Card>
+          </CCardBody>
+        </CCard>
       )}
 
       {/* History Table */}
-      <Card>
-        <Card.Header>
+      <CCard>
+        <CCardHeader>
           <h6 className="mb-0">
             Movement History
-            {hasFilters && <Badge bg="secondary" className="ms-2">Filtered</Badge>}
+            {hasFilters && <CBadge color="secondary" className="ms-2">Filtered</CBadge>}
           </h6>
-        </Card.Header>
-        <Card.Body className="p-0">
-          <Table hover responsive className="mb-0">
+        </CCardHeader>
+        <CCardBody className="p-0">
+          <table className="table table-hover table-responsive mb-0">
             <thead>
               <tr>
                 <th>Date & Time</th>
@@ -350,9 +350,9 @@ export default function MovementReport() {
                     </td>
                     <td>{entry.itemName}</td>
                     <td>
-                      <Badge bg={getChangeTypeBadge(entry.changeType)}>
+                      <CBadge color={getChangeTypeBadge(entry.changeType)}>
                         {formatChangeType(entry.changeType)}
-                      </Badge>
+                      </CBadge>
                     </td>
                     <td className="text-end">
                       {entry.previousQuantity !== null ? entry.previousQuantity : '-'}
@@ -381,10 +381,10 @@ export default function MovementReport() {
                 </tr>
               )}
             </tbody>
-          </Table>
-        </Card.Body>
+          </table>
+        </CCardBody>
         {totalPages > 1 && (
-          <Card.Footer>
+          <CCardFooter>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -392,9 +392,9 @@ export default function MovementReport() {
               totalItems={filteredHistory.length}
               itemsPerPage={ITEMS_PER_PAGE}
             />
-          </Card.Footer>
+          </CCardFooter>
         )}
-      </Card>
+      </CCard>
     </div>
   );
 }

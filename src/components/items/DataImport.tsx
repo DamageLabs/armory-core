@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Form, Button, Table, Alert, Row, Col, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CAlert, CRow, CCol, CBadge, CFormLabel, CFormSelect, CFormInput } from '@coreui/react';
 import { FaFileUpload, FaCheck, FaTimes, FaDownload } from 'react-icons/fa';
 import Papa from 'papaparse';
 import * as itemService from '../../services/itemService';
@@ -280,15 +280,15 @@ export default function DataImport() {
   const invalidCount = importData.length - validCount;
 
   return (
-    <Card>
-      <Card.Header className="d-flex justify-content-between align-items-center">
+    <CCard>
+      <CCardHeader className="d-flex justify-content-between align-items-center">
         <h4 className="mb-0">Import Items</h4>
-        <Button variant="outline-secondary" size="sm" onClick={downloadTemplate}>
+        <CButton color="secondary" variant="outline" size="sm" onClick={downloadTemplate}>
           <FaDownload className="me-1" /> Download Template
-        </Button>
-      </Card.Header>
-      <Card.Body>
-        <Alert variant="info">
+        </CButton>
+      </CCardHeader>
+      <CCardBody>
+        <CAlert color="info">
           <strong>Supported format:</strong> CSV
           <br />
           <small>
@@ -296,49 +296,49 @@ export default function DataImport() {
             unitValue, category, location, barcode, reorderPoint.
             Type-specific fields (e.g., vendorName, modelNumber) are mapped to custom fields.
           </small>
-        </Alert>
+        </CAlert>
 
-        <Row className="mb-4 g-3">
-          <Col md={4}>
-            <Form.Label>Inventory Type</Form.Label>
-            <Form.Select
+        <CRow className="mb-4 g-3">
+          <CCol md={4}>
+            <CFormLabel>Inventory Type</CFormLabel>
+            <CFormSelect
               value={selectedTypeId}
               onChange={(e) => setSelectedTypeId(parseInt(e.target.value))}
             >
               {inventoryTypes.map((type) => (
                 <option key={type.id} value={type.id}>{type.name}</option>
               ))}
-            </Form.Select>
-          </Col>
-          <Col md={8}>
-            <Form.Label>Select File</Form.Label>
-            <Form.Control
+            </CFormSelect>
+          </CCol>
+          <CCol md={8}>
+            <CFormLabel>Select File</CFormLabel>
+            <CFormInput
               ref={fileInputRef}
               type="file"
               accept=".csv"
               onChange={handleFileChange}
             />
-          </Col>
-        </Row>
+          </CCol>
+        </CRow>
 
         {importData.length > 0 && (
           <>
-            <Row className="mb-3">
-              <Col>
-                <Alert variant={invalidCount > 0 ? 'warning' : 'success'}>
+            <CRow className="mb-3">
+              <CCol>
+                <CAlert color={invalidCount > 0 ? 'warning' : 'success'}>
                   <strong>File:</strong> {fileName}
                   <span className="ms-3">
-                    <Badge bg="success">{validCount} valid</Badge>
+                    <CBadge color="success">{validCount} valid</CBadge>
                     {invalidCount > 0 && (
-                      <Badge bg="danger" className="ms-2">{invalidCount} invalid</Badge>
+                      <CBadge color="danger" className="ms-2">{invalidCount} invalid</CBadge>
                     )}
                   </span>
-                </Alert>
-              </Col>
-            </Row>
+                </CAlert>
+              </CCol>
+            </CRow>
 
             <div className="table-responsive" style={{ maxHeight: '400px' }}>
-              <Table striped bordered hover size="sm">
+              <table className="table table-striped table-bordered table-hover table-sm">
                 <thead className="sticky-top bg-light">
                   <tr>
                     <th style={{ width: '50px' }}>Status</th>
@@ -367,29 +367,29 @@ export default function DataImport() {
                       <td>{row.location || '-'}</td>
                       <td>
                         {row.errors.map((err, i) => (
-                          <Badge key={i} bg="danger" className="me-1">
+                          <CBadge key={i} color="danger" className="me-1">
                             {err}
-                          </Badge>
+                          </CBadge>
                         ))}
                       </td>
                     </tr>
                   ))}
                 </tbody>
-              </Table>
+              </table>
             </div>
 
             <div className="mt-4">
-              <Button
-                variant="primary"
+              <CButton
+                color="primary"
                 onClick={handleImport}
                 disabled={importing || validCount === 0}
                 className="me-2"
               >
                 <FaFileUpload className="me-1" />
                 {importing ? 'Importing...' : `Import ${validCount} Items`}
-              </Button>
-              <Button
-                variant="secondary"
+              </CButton>
+              <CButton
+                color="secondary"
                 onClick={() => {
                   setImportData([]);
                   setFileName('');
@@ -399,11 +399,11 @@ export default function DataImport() {
                 }}
               >
                 Clear
-              </Button>
+              </CButton>
             </div>
           </>
         )}
-      </Card.Body>
-    </Card>
+      </CCardBody>
+    </CCard>
   );
 }

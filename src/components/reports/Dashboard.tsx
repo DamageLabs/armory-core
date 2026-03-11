@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Row, Col, Table } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CRow, CCol } from '@coreui/react';
 import {
   PieChart,
   Pie,
@@ -36,8 +36,8 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, variant, link }: StatCardProps) {
   const content = (
-    <Card className={`border-${variant} h-100`}>
-      <Card.Body>
+    <CCard className={`border-${variant} h-100`}>
+      <CCardBody>
         <div className="d-flex justify-content-between align-items-center">
           <div>
             <h6 className="text-muted mb-1">{title}</h6>
@@ -47,8 +47,8 @@ function StatCard({ title, value, icon, variant, link }: StatCardProps) {
             {icon}
           </div>
         </div>
-      </Card.Body>
-    </Card>
+      </CCardBody>
+    </CCard>
   );
 
   if (link) {
@@ -147,8 +147,8 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <Row className="g-3 mb-4">
-        <Col md={3}>
+      <CRow className="g-3 mb-4">
+        <CCol md={3}>
           <StatCard
             title="Total Items"
             value={stats.totalItems}
@@ -156,8 +156,8 @@ export default function Dashboard() {
             variant="primary"
             link="/items"
           />
-        </Col>
-        <Col md={3}>
+        </CCol>
+        <CCol md={3}>
           <StatCard
             title="Total Value"
             value={formatCurrency(stats.totalValue)}
@@ -165,8 +165,8 @@ export default function Dashboard() {
             variant="success"
             link="/reports/valuation"
           />
-        </Col>
-        <Col md={3}>
+        </CCol>
+        <CCol md={3}>
           <StatCard
             title="Low Stock Items"
             value={stats.lowStockCount + stats.outOfStockCount}
@@ -174,8 +174,8 @@ export default function Dashboard() {
             variant="warning"
             link="/items"
           />
-        </Col>
-        <Col md={3}>
+        </CCol>
+        <CCol md={3}>
           <StatCard
             title="Total Quantity"
             value={stats.totalQuantity.toLocaleString()}
@@ -183,17 +183,17 @@ export default function Dashboard() {
             variant="info"
             link="/reports/movement"
           />
-        </Col>
-      </Row>
+        </CCol>
+      </CRow>
 
       {/* Charts Row */}
-      <Row className="g-3 mb-4">
-        <Col lg={6}>
-          <Card className="h-100">
-            <Card.Header>
+      <CRow className="g-3 mb-4">
+        <CCol lg={6}>
+          <CCard className="h-100">
+            <CCardHeader>
               <h6 className="mb-0">Value by Category</h6>
-            </Card.Header>
-            <Card.Body>
+            </CCardHeader>
+            <CCardBody>
               {categoryData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
@@ -224,15 +224,15 @@ export default function Dashboard() {
               ) : (
                 <div className="text-center text-muted py-5">No data available</div>
               )}
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col lg={6}>
-          <Card className="h-100">
-            <Card.Header>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol lg={6}>
+          <CCard className="h-100">
+            <CCardHeader>
               <h6 className="mb-0">Value by Location (Top 10)</h6>
-            </Card.Header>
-            <Card.Body>
+            </CCardHeader>
+            <CCardBody>
               {locationData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={locationData} layout="vertical">
@@ -253,23 +253,23 @@ export default function Dashboard() {
               ) : (
                 <div className="text-center text-muted py-5">No data available</div>
               )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
 
       {/* Tables Row */}
-      <Row className="g-3">
-        <Col lg={6}>
-          <Card className="h-100">
-            <Card.Header className="d-flex justify-content-between align-items-center">
+      <CRow className="g-3">
+        <CCol lg={6}>
+          <CCard className="h-100">
+            <CCardHeader className="d-flex justify-content-between align-items-center">
               <h6 className="mb-0">Top Items by Value</h6>
               <Link to="/reports/valuation" className="btn btn-sm btn-outline-primary">
                 View All
               </Link>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <Table hover className="mb-0">
+            </CCardHeader>
+            <CCardBody className="p-0">
+              <table className="table table-hover mb-0">
                 <thead>
                   <tr>
                     <th>Item</th>
@@ -293,20 +293,20 @@ export default function Dashboard() {
                     </tr>
                   )}
                 </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col lg={6}>
-          <Card className="h-100">
-            <Card.Header className="d-flex justify-content-between align-items-center">
+              </table>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol lg={6}>
+          <CCard className="h-100">
+            <CCardHeader className="d-flex justify-content-between align-items-center">
               <h6 className="mb-0">Recent Activity</h6>
               <Link to="/reports/movement" className="btn btn-sm btn-outline-primary">
                 View All
               </Link>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <Table hover className="mb-0">
+            </CCardHeader>
+            <CCardBody className="p-0">
+              <table className="table table-hover mb-0">
                 <thead>
                   <tr>
                     <th>Item</th>
@@ -334,11 +334,11 @@ export default function Dashboard() {
                     </tr>
                   )}
                 </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+              </table>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
     </div>
   );
 }

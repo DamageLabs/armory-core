@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, Table } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody } from '@coreui/react';
 import * as userService from '../../services/userService';
 import { UserWithoutPassword, UserRole } from '../../types/User';
 import { useAuth } from '../../contexts/AuthContext';
@@ -50,12 +50,12 @@ export default function UserList() {
   };
 
   return (
-    <Card>
-      <Card.Header>
+    <CCard>
+      <CCardHeader>
         <h4 className="mb-0">User List</h4>
-      </Card.Header>
-      <Card.Body>
-        <Table hover responsive>
+      </CCardHeader>
+      <CCardBody>
+        <table className="table table-hover table-responsive">
           <thead>
             <tr>
               <th>Email</th>
@@ -74,8 +74,8 @@ export default function UserList() {
               />
             ))}
           </tbody>
-        </Table>
-      </Card.Body>
+        </table>
+      </CCardBody>
 
       <ConfirmModal
         show={!!deleteModalUser}
@@ -85,6 +85,6 @@ export default function UserList() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteModalUser(null)}
       />
-    </Card>
+    </CCard>
   );
 }

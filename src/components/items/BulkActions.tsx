@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ButtonGroup, Button, Dropdown } from 'react-bootstrap';
+import { CButtonGroup, CButton, CDropdown, CDropdownToggle, CDropdownMenu, CDropdownItem } from '@coreui/react';
 import { FaTrash, FaFolderOpen } from 'react-icons/fa';
 import * as categoryService from '../../services/categoryService';
 
@@ -38,22 +38,23 @@ export default function BulkActions({
       <span className="me-2">
         <strong>{selectedCount}</strong> item{selectedCount !== 1 ? 's' : ''} selected
       </span>
-      <ButtonGroup size="sm">
-        <Button variant="outline-danger" onClick={onDelete}>
+      <CButtonGroup size="sm">
+        <CButton color="danger" variant="outline" onClick={onDelete}>
           <FaTrash className="me-1" />
           Delete Selected
-        </Button>
-        <Dropdown
-          show={showCategoryDropdown}
-          onToggle={setShowCategoryDropdown}
+        </CButton>
+        <CDropdown
+          visible={showCategoryDropdown}
+          onShow={() => setShowCategoryDropdown(true)}
+          onHide={() => setShowCategoryDropdown(false)}
         >
-          <Dropdown.Toggle variant="outline-secondary" size="sm">
+          <CDropdownToggle color="secondary" variant="outline" size="sm">
             <FaFolderOpen className="me-1" />
             Change Category
-          </Dropdown.Toggle>
-          <Dropdown.Menu style={{ maxHeight: '300px', overflowY: 'auto' }}>
+          </CDropdownToggle>
+          <CDropdownMenu style={{ maxHeight: '300px', overflowY: 'auto' }}>
             {categories.map((category) => (
-              <Dropdown.Item
+              <CDropdownItem
                 key={category}
                 onClick={() => {
                   onCategoryChange(category);
@@ -61,11 +62,11 @@ export default function BulkActions({
                 }}
               >
                 {category}
-              </Dropdown.Item>
+              </CDropdownItem>
             ))}
-          </Dropdown.Menu>
-        </Dropdown>
-      </ButtonGroup>
+          </CDropdownMenu>
+        </CDropdown>
+      </CButtonGroup>
     </div>
   );
 }

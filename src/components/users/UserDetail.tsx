@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Button } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CRow, CCol, CButton } from '@coreui/react';
 import * as userService from '../../services/userService';
 import { UserWithoutPassword } from '../../types/User';
 import { useAuth } from '../../contexts/AuthContext';
@@ -47,52 +47,52 @@ export default function UserDetail() {
   }
 
   return (
-    <Card>
-      <Card.Header>
+    <CCard>
+      <CCardHeader>
         <h4 className="mb-0">User Details</h4>
-      </Card.Header>
-      <Card.Body>
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Email</Col>
-          <Col md={9}>{user.email}</Col>
-        </Row>
+      </CCardHeader>
+      <CCardBody>
+        <CRow className="mb-2">
+          <CCol md={3} className="text-muted">Email</CCol>
+          <CCol md={9}>{user.email}</CCol>
+        </CRow>
 
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Role</Col>
-          <Col md={9} className="text-capitalize">{user.role}</Col>
-        </Row>
+        <CRow className="mb-2">
+          <CCol md={3} className="text-muted">Role</CCol>
+          <CCol md={9} className="text-capitalize">{user.role}</CCol>
+        </CRow>
 
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Sign In Count</Col>
-          <Col md={9}>{user.signInCount}</Col>
-        </Row>
+        <CRow className="mb-2">
+          <CCol md={3} className="text-muted">Sign In Count</CCol>
+          <CCol md={9}>{user.signInCount}</CCol>
+        </CRow>
 
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Last IP</Col>
-          <Col md={9}>{user.lastSignInIp || 'N/A'}</Col>
-        </Row>
+        <CRow className="mb-2">
+          <CCol md={3} className="text-muted">Last IP</CCol>
+          <CCol md={9}>{user.lastSignInIp || 'N/A'}</CCol>
+        </CRow>
 
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">Last Sign In</Col>
-          <Col md={9}>{formatDate(user.lastSignInAt)}</Col>
-        </Row>
+        <CRow className="mb-2">
+          <CCol md={3} className="text-muted">Last Sign In</CCol>
+          <CCol md={9}>{formatDate(user.lastSignInAt)}</CCol>
+        </CRow>
 
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">User Created</Col>
-          <Col md={9}>{formatDate(user.createdAt)}</Col>
-        </Row>
+        <CRow className="mb-2">
+          <CCol md={3} className="text-muted">User Created</CCol>
+          <CCol md={9}>{formatDate(user.createdAt)}</CCol>
+        </CRow>
 
-        <Row className="mb-2">
-          <Col md={3} className="text-muted">User Updated</Col>
-          <Col md={9}>{formatDate(user.updatedAt)}</Col>
-        </Row>
+        <CRow className="mb-2">
+          <CCol md={3} className="text-muted">User Updated</CCol>
+          <CCol md={9}>{formatDate(user.updatedAt)}</CCol>
+        </CRow>
 
         <hr />
 
-        <Button variant="danger" onClick={() => navigate(-1)}>
+        <CButton color="danger" onClick={() => navigate(-1)}>
           Back
-        </Button>
-      </Card.Body>
-    </Card>
+        </CButton>
+      </CCardBody>
+    </CCard>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { Card, Table, Button, Modal, Form, Row, Col, Badge } from 'react-bootstrap';
+import { CCard, CCardHeader, CCardBody, CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CForm, CRow, CCol, CBadge, CFormLabel, CFormInput, CFormSelect } from '@coreui/react';
 import { FaPlus, FaEdit, FaTrash, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import * as categoryService from '../../services/categoryService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
@@ -120,37 +120,37 @@ export default function CategoryManager() {
           { label: 'Categories' },
         ]}
       />
-      <Card>
-        <Card.Header className="d-flex justify-content-between align-items-center">
+      <CCard>
+        <CCardHeader className="d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Manage Categories</h4>
-          <Button variant="primary" onClick={() => handleOpenModal()}>
+          <CButton color="primary" onClick={() => handleOpenModal()}>
             <FaPlus className="me-1" /> New Category
-          </Button>
-        </Card.Header>
-        <Card.Body>
-          <Row className="mb-3 g-2 align-items-end">
-            <Col md={4}>
-              <Form.Label>Filter by Inventory Type</Form.Label>
-              <Form.Select value={filterTypeId} onChange={(e) => setFilterTypeId(e.target.value)}>
+          </CButton>
+        </CCardHeader>
+        <CCardBody>
+          <CRow className="mb-3 g-2 align-items-end">
+            <CCol md={4}>
+              <CFormLabel>Filter by Inventory Type</CFormLabel>
+              <CFormSelect value={filterTypeId} onChange={(e) => setFilterTypeId(e.target.value)}>
                 <option value="">All Types</option>
                 {inventoryTypes.map((t) => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
-              </Form.Select>
-            </Col>
-            <Col>
+              </CFormSelect>
+            </CCol>
+            <CCol>
               <p className="text-muted mb-0">
                 Categories are scoped to inventory types. Categories in use cannot be deleted.
               </p>
-            </Col>
-          </Row>
+            </CCol>
+          </CRow>
 
           {categories.length === 0 ? (
             <p className="text-center py-4 text-muted">
               No categories defined. Create one to get started.
             </p>
           ) : (
-            <Table striped hover responsive>
+            <table className="table table-striped table-hover table-responsive">
               <thead>
                 <tr>
                   <th style={{ width: '60px' }}>Order</th>
@@ -167,8 +167,8 @@ export default function CategoryManager() {
                     <tr key={category.id}>
                       <td className="text-center">
                         <div className="d-flex flex-column gap-1">
-                          <Button
-                            variant="link"
+                          <CButton
+                            color="link"
                             size="sm"
                             className="p-0"
                             disabled={index === 0}
@@ -176,9 +176,9 @@ export default function CategoryManager() {
                             aria-label="Move up"
                           >
                             <FaArrowUp />
-                          </Button>
-                          <Button
-                            variant="link"
+                          </CButton>
+                          <CButton
+                            color="link"
                             size="sm"
                             className="p-0"
                             disabled={index === categories.length - 1}
@@ -186,7 +186,7 @@ export default function CategoryManager() {
                             aria-label="Move down"
                           >
                             <FaArrowDown />
-                          </Button>
+                          </CButton>
                         </div>
                       </td>
                       <td className="align-middle">{category.name}</td>
@@ -194,49 +194,51 @@ export default function CategoryManager() {
                         <small>{inventoryTypes.find((t) => t.id === category.inventoryTypeId)?.name || '-'}</small>
                       </td>
                       <td className="align-middle">
-                        <Badge bg={count > 0 ? 'primary' : 'secondary'}>{count}</Badge>
+                        <CBadge color={count > 0 ? 'primary' : 'secondary'}>{count}</CBadge>
                       </td>
                       <td className="align-middle">
                         <div className="d-flex gap-1">
-                          <Button
-                            variant="outline-primary"
+                          <CButton
+                            color="primary"
+                            variant="outline"
                             size="sm"
                             onClick={() => handleOpenModal(category)}
                           >
                             <FaEdit />
-                          </Button>
-                          <Button
-                            variant="outline-danger"
+                          </CButton>
+                          <CButton
+                            color="danger"
+                            variant="outline"
                             size="sm"
                             onClick={() => setDeleteTarget(category)}
                             disabled={count > 0}
                             title={count > 0 ? 'Cannot delete: category has items' : 'Delete category'}
                           >
                             <FaTrash />
-                          </Button>
+                          </CButton>
                         </div>
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
-            </Table>
+            </table>
           )}
-        </Card.Body>
-      </Card>
+        </CCardBody>
+      </CCard>
 
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>
+      <CModal visible={showModal} onClose={handleCloseModal}>
+        <CModalHeader closeButton>
+          <CModalTitle>
             {editingCategory ? 'Edit Category' : 'New Category'}
-          </Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSubmit}>
-          <Modal.Body>
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Type</Form.Label>
-              <Col sm={9}>
-                <Form.Select
+          </CModalTitle>
+        </CModalHeader>
+        <CForm onSubmit={handleSubmit}>
+          <CModalBody>
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Type</CFormLabel>
+              <CCol sm={9}>
+                <CFormSelect
                   value={modalTypeId}
                   onChange={(e) => setModalTypeId(parseInt(e.target.value))}
                   disabled={!!editingCategory}
@@ -244,13 +246,13 @@ export default function CategoryManager() {
                   {inventoryTypes.map((t) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
-                </Form.Select>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Form.Label column sm={3}>Name</Form.Label>
-              <Col sm={9}>
-                <Form.Control
+                </CFormSelect>
+              </CCol>
+            </CRow>
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Name</CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -258,19 +260,19 @@ export default function CategoryManager() {
                   placeholder="e.g., Handguns"
                   autoFocus
                 />
-              </Col>
-            </Row>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
+              </CCol>
+            </CRow>
+          </CModalBody>
+          <CModalFooter>
+            <CButton color="secondary" onClick={handleCloseModal}>
               Cancel
-            </Button>
-            <Button variant="primary" type="submit">
+            </CButton>
+            <CButton color="primary" type="submit">
               {editingCategory ? 'Update' : 'Create'}
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
+            </CButton>
+          </CModalFooter>
+        </CForm>
+      </CModal>
 
       <ConfirmModal
         show={!!deleteTarget}

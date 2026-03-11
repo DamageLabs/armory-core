@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Form } from 'react-bootstrap';
+import { CFormSelect } from '@coreui/react';
 import * as itemService from '../../services/itemService';
 import { Item } from '../../types/Item';
 
@@ -38,7 +38,7 @@ export default function ParentItemSelector({ value, onChange, currentItemId }: P
   }, {});
 
   return (
-    <Form.Select
+    <CFormSelect
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : null)}
     >
@@ -54,6 +54,6 @@ export default function ParentItemSelector({ value, onChange, currentItemId }: P
             ))}
           </optgroup>
         ))}
-    </Form.Select>
+    </CFormSelect>
   );
 }
