@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById, count, run } from '../db/index';
+import { validate } from '../middleware/validate';
+import { createCategorySchema, updateCategorySchema, reorderCategoriesSchema } from '../schemas/categories';
 
 const router = Router();
 
@@ -37,13 +39,9 @@ router.get('/counts', (_req: Request, res: Response) => {
 });
 
 // PUT /reorder — reorder categories
-router.put('/reorder', (req: Request, res: Response) => {
+router.put('/reorder', validate(reorderCategoriesSchema), (req: Request, res: Response) => {
   try {
     const { orderedIds } = req.body as { orderedIds: number[] };
-    if (!Array.isArray(orderedIds)) {
-      res.status(400).json({ error: 'orderedIds must be an array' });
-      return;
-    }
     for (let i = 0; i < orderedIds.length; i++) {
       run('UPDATE categories SET sort_order = ? WHERE id = ?', [i, orderedIds[i]]);
     }
@@ -55,13 +53,9 @@ router.put('/reorder', (req: Request, res: Response) => {
 });
 
 // POST / — create category
-router.post('/', (req: Request, res: Response) => {
+router.post('/', validate(createCategorySchema), (req: Request, res: Response) => {
   try {
     const { name, sortOrder, inventoryTypeId } = req.body;
-    if (!name) {
-      res.status(400).json({ error: 'Name is required' });
-      return;
-    }
 
     const existing = queryOne(
       'SELECT id FROM categories WHERE LOWER(name) = LOWER(?) AND inventory_type_id = ?',
@@ -84,7 +78,7 @@ router.post('/', (req: Request, res: Response) => {
 });
 
 // PUT /:id — update category
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', validate(updateCategorySchema), (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { name, sortOrder, inventoryTypeId } = req.body;

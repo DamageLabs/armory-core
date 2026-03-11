@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, update, deleteById } from '../db/index';
+import { validate } from '../middleware/validate';
+import { updateRoleSchema } from '../schemas/users';
 
 const router = Router();
 
@@ -47,15 +49,10 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 // PUT /:id/role — update user role
-router.put('/:id/role', (req: Request, res: Response) => {
+router.put('/:id/role', validate(updateRoleSchema), (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { role } = req.body;
-
-    if (!role) {
-      res.status(400).json({ error: 'Role is required' });
-      return;
-    }
 
     const user = update<UserRow>('users', id, { role, updatedAt: new Date().toISOString() });
     if (!user) {

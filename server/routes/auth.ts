@@ -4,6 +4,8 @@ import { userQueries, rateLimitQueries, getDatabase } from '../db';
 import { sendVerificationEmail } from '../services/emailService';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signToken } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { registerSchema, loginSchema, verifyEmailSchema, emailSchema, updateProfileSchema } from '../schemas/auth';
 
 const router = Router();
 
@@ -21,25 +23,9 @@ function getTokenExpiryDate(): string {
 }
 
 // POST /api/auth/register
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', validate(registerSchema), async (req: Request, res: Response) => {
   try {
-    const { email, password, passwordConfirmation } = req.body;
-
-    // Validate input
-    if (!email || !password || !passwordConfirmation) {
-      res.status(400).json({ error: 'Email, password, and password confirmation are required' });
-      return;
-    }
-
-    if (password !== passwordConfirmation) {
-      res.status(400).json({ error: 'Password confirmation does not match' });
-      return;
-    }
-
-    if (password.length < 8) {
-      res.status(400).json({ error: 'Password must be at least 8 characters' });
-      return;
-    }
+    const { email, password } = req.body;
 
     // Check if email already exists
     const existingUser = userQueries.findByEmail(email);
@@ -81,14 +67,9 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/verify-email
-router.post('/verify-email', async (req: Request, res: Response) => {
+router.post('/verify-email', validate(verifyEmailSchema), async (req: Request, res: Response) => {
   try {
     const { token } = req.body;
-
-    if (!token) {
-      res.status(400).json({ error: 'Verification token is required' });
-      return;
-    }
 
     // Find user by token
     const user = userQueries.findByVerificationToken(token);
@@ -124,14 +105,9 @@ router.post('/verify-email', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/resend-verification
-router.post('/resend-verification', async (req: Request, res: Response) => {
+router.post('/resend-verification', validate(emailSchema), async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
-
-    if (!email) {
-      res.status(400).json({ error: 'Email is required' });
-      return;
-    }
 
     // Find user by email
     const user = userQueries.findByEmail(email);
@@ -177,14 +153,9 @@ router.post('/resend-verification', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/check-verification
-router.post('/check-verification', async (req: Request, res: Response) => {
+router.post('/check-verification', validate(emailSchema), async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
-
-    if (!email) {
-      res.status(400).json({ error: 'Email is required' });
-      return;
-    }
 
     const user = userQueries.findByEmail(email);
     if (!user) {
@@ -200,14 +171,9 @@ router.post('/check-verification', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', validate(loginSchema), async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ error: 'Email and password are required' });
-      return;
-    }
 
     const user = userQueries.findByEmail(email);
     if (!user || !(await verifyPassword(password, user.password))) {
@@ -249,7 +215,7 @@ router.post('/login', async (req: Request, res: Response) => {
 });
 
 // PUT /api/auth/profile/:id
-router.put('/profile/:id', async (req: Request, res: Response) => {
+router.put('/profile/:id', validate(updateProfileSchema), async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { email, password, currentPassword } = req.body;
@@ -320,14 +286,9 @@ router.delete('/profile/:id', (req: Request, res: Response) => {
 });
 
 // POST /api/auth/sync - Sync user from server to frontend (validates password)
-router.post('/sync', async (req: Request, res: Response) => {
+router.post('/sync', validate(loginSchema), async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ error: 'Email and password are required' });
-      return;
-    }
 
     const user = userQueries.findByEmail(email);
     if (!user || !(await verifyPassword(password, user.password))) {
