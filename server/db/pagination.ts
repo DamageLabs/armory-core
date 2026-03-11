@@ -82,6 +82,12 @@ export interface PaginationMeta {
   totalPages: number;
 }
 
+function parseThreshold(value: unknown): number {
+  if (value === undefined || value === '') return 10;
+  const parsed = parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? 10 : parsed;
+}
+
 export function parsePaginationParams(query: Record<string, unknown>): PaginationParams {
   const page = Math.max(1, parseInt(String(query.page || '1'), 10) || 1);
   const pageSize = Math.min(100, Math.max(1, parseInt(String(query.pageSize || '25'), 10) || 25));
@@ -107,7 +113,7 @@ export function parsePaginationParams(query: Record<string, unknown>): Paginatio
     sortBy,
     sortDir,
     lowStock: query.lowStock === 'true',
-    lowStockThreshold: query.lowStockThreshold ? parseInt(String(query.lowStockThreshold), 10) || 10 : 10,
+    lowStockThreshold: parseThreshold(query.lowStockThreshold),
     filters,
   };
 }
