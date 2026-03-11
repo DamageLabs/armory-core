@@ -12,6 +12,9 @@ export const LOW_STOCK_THRESHOLD = 5;
 // Inventory types where low stock / reorder alerts apply
 export const LOW_STOCK_TYPE_NAMES = ['Ammunition'];
 
+// Inventory type name for firearms (serial number cleared on clone)
+export const FIREARMS_TYPE_NAME = 'Firearms';
+
 // Theme
 export const THEME_STORAGE_KEY = 'armory-theme';
 export type Theme = 'light' | 'dark';
