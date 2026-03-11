@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
-import { queryAll, queryOne, run, getDatabase } from '../db/index';
+import { queryAll, queryOne, run, getDatabase, mapRowToEntity } from '../db/index';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '../schemas/receipts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -75,8 +75,8 @@ router.post('/:itemId/receipts', (req: Request, res: Response) => {
         'INSERT INTO receipts (item_id, filename, original_name, mime_type, size_bytes, created_at) VALUES (?, ?, ?, ?, ?, ?)'
       ).run(itemId, req.file.filename, req.file.originalname, req.file.mimetype, req.file.size, now);
 
-      const receipt = db.prepare('SELECT * FROM receipts WHERE id = ?').get(result.lastInsertRowid);
-      res.status(201).json(receipt);
+      const row = db.prepare('SELECT * FROM receipts WHERE id = ?').get(result.lastInsertRowid) as Record<string, unknown>;
+      res.status(201).json(mapRowToEntity(row));
     } catch (error) {
       // Clean up uploaded file on DB failure
       fs.unlink(req.file.path, () => {});
@@ -127,7 +127,7 @@ router.get('/download/:receiptId', (req: Request, res: Response) => {
     }
 
     res.setHeader('Content-Type', receipt.mimeType);
-    res.setHeader('Content-Disposition', `inline; filename="${receipt.originalName}"`);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(receipt.originalName)}"`);
     res.sendFile(filePath);
   } catch (error) {
     console.error('Error downloading receipt:', error);
