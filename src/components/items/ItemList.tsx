@@ -17,7 +17,7 @@ import ItemCardGrid from './ItemCardGrid';
 import SavedFilterChips from './SavedFilterChips';
 import { exportToCSV, exportToPDF, backupItemsToCSV, backupItemsToJSON } from '../../utils/export';
 import { formatCurrency } from '../../utils/formatters';
-import { ITEMS_PER_PAGE, LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME } from '../../constants/config';
+import { ITEMS_PER_PAGE, LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME, AMMUNITION_TYPE_NAME } from '../../constants/config';
 import { ItemFormData } from '../../types/Item';
 import { FilterCriterion, SavedFilter } from '../../types/SavedFilter';
 import * as savedFilterService from '../../services/savedFilterService';
@@ -563,7 +563,13 @@ export default function ItemList() {
                       </CBadge>
                     </td>
                     <td className={`text-center ${lowStockTypeIds.has(item.inventoryTypeId) && item.reorderPoint > 0 ? (item.quantity === 0 ? 'text-danger fw-bold' : item.quantity <= item.reorderPoint ? 'text-warning fw-bold' : '') : ''}`}>
-                      {item.quantity}
+                      {inventoryTypes.find((t) => t.id === item.inventoryTypeId)?.name === AMMUNITION_TYPE_NAME && item.customFields.roundCount ? (
+                        <span title={`${item.quantity} box${item.quantity !== 1 ? 'es' : ''} × ${item.customFields.roundCount} rounds`}>
+                          {item.quantity * Number(item.customFields.roundCount)} rds
+                        </span>
+                      ) : (
+                        item.quantity
+                      )}
                     </td>
                     <td className="text-center">{formatCurrency(item.unitValue)}</td>
                     <td className="text-center">{formatCurrency(item.value)}</td>
