@@ -1,4 +1,5 @@
 import { getDatabase } from './index';
+import { hashPassword, isHashed } from '../utils/password';
 
 const FIREARMS_SCHEMA = JSON.stringify([
   { key: 'serialNumber', label: 'Serial Number', type: 'text', required: true },
@@ -166,10 +167,24 @@ function fixOrphanedItems(): void {
   }
 }
 
-export function seedDatabase(): void {
+async function migrateUnhashedPasswords(): Promise<void> {
+  const db = getDatabase();
+  const users = db.prepare('SELECT id, password FROM users').all() as { id: number; password: string }[];
+  const update = db.prepare('UPDATE users SET password = ? WHERE id = ?');
+
+  for (const user of users) {
+    if (!isHashed(user.password)) {
+      const hashed = await hashPassword(user.password);
+      update.run(hashed, user.id);
+    }
+  }
+}
+
+export async function seedDatabase(): Promise<void> {
   ensureParentItemIdColumn();
   ensureInventoryTypes();
   migrateOpticsAndLights();
   fixOrphanedItems();
   ensureCategories();
+  await migrateUnhashedPasswords();
 }

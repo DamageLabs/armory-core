@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { userQueries, rateLimitQueries, getDatabase } from '../db';
 import { sendVerificationEmail } from '../services/emailService';
+import { hashPassword, verifyPassword } from '../utils/password';
 
 const router = Router();
 
@@ -50,10 +51,11 @@ router.post('/register', async (req: Request, res: Response) => {
     const verificationToken = generateToken();
     const tokenExpiresAt = getTokenExpiryDate();
 
-    // Create user
+    // Hash password and create user
+    const hashedPassword = await hashPassword(password);
     const user = userQueries.create({
       email,
-      password,
+      password: hashedPassword,
       emailVerificationToken: verificationToken,
       emailVerificationTokenExpiresAt: tokenExpiresAt,
     });
@@ -106,12 +108,11 @@ router.post('/verify-email', async (req: Request, res: Response) => {
     // Mark email as verified
     const verifiedUser = userQueries.markEmailVerified(user.id);
 
-    // Return user data so frontend can sync
+    // Return user data so frontend can sync (never expose password)
     res.json({
       message: 'Email verified successfully. You can now log in.',
       user: verifiedUser ? {
         email: verifiedUser.email,
-        password: verifiedUser.password,
         role: verifiedUser.role,
       } : null
     });
@@ -198,9 +199,9 @@ router.post('/check-verification', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/login
-router.post('/login', (_req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
   try {
-    const { email, password } = _req.body;
+    const { email, password } = req.body;
 
     if (!email || !password) {
       res.status(400).json({ error: 'Email and password are required' });
@@ -208,7 +209,7 @@ router.post('/login', (_req: Request, res: Response) => {
     }
 
     const user = userQueries.findByEmail(email);
-    if (!user || user.password !== password) {
+    if (!user || !(await verifyPassword(password, user.password))) {
       res.status(401).json({ error: 'invalid_credentials' });
       return;
     }
@@ -244,7 +245,7 @@ router.post('/login', (_req: Request, res: Response) => {
 });
 
 // PUT /api/auth/profile/:id
-router.put('/profile/:id', (req: Request, res: Response) => {
+router.put('/profile/:id', async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { email, password, currentPassword } = req.body;
@@ -256,7 +257,7 @@ router.put('/profile/:id', (req: Request, res: Response) => {
       return;
     }
 
-    if (currentPassword && currentPassword !== row.password) {
+    if (currentPassword && !(await verifyPassword(currentPassword, row.password as string))) {
       res.status(400).json({ error: 'Current password is incorrect' });
       return;
     }
@@ -273,7 +274,8 @@ router.put('/profile/:id', (req: Request, res: Response) => {
     }
 
     if (password) {
-      db.prepare('UPDATE users SET password = ?, updated_at = ? WHERE id = ?').run(password, now, id);
+      const hashedPassword = await hashPassword(password);
+      db.prepare('UPDATE users SET password = ?, updated_at = ? WHERE id = ?').run(hashedPassword, now, id);
     }
 
     const updatedRow = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as Record<string, unknown>;
@@ -324,7 +326,7 @@ router.post('/sync', async (req: Request, res: Response) => {
     }
 
     const user = userQueries.findByEmail(email);
-    if (!user || user.password !== password) {
+    if (!user || !(await verifyPassword(password, user.password))) {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
@@ -337,7 +339,6 @@ router.post('/sync', async (req: Request, res: Response) => {
     res.json({
       user: {
         email: user.email,
-        password: user.password,
         role: user.role,
         emailVerified: user.emailVerified,
       }
