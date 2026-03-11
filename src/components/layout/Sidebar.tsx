@@ -1,8 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import {
   CSidebar,
-  CSidebarHeader,
-  CSidebarBrand,
   CSidebarNav,
   CNavGroup,
   CSidebarFooter,
@@ -51,15 +49,9 @@ export default function Sidebar({ visible, onVisibleChange }: SidebarProps) {
 
   return (
     <CSidebar
-      position="fixed"
       visible={visible}
       onVisibleChange={onVisibleChange}
     >
-      <CSidebarHeader className="border-bottom">
-        <CSidebarBrand as={NavLink} to="/">
-          Armory Core
-        </CSidebarBrand>
-      </CSidebarHeader>
       <CSidebarNav>
         <SidebarNavLink to="/" icon={cilSpeedometer}>Home</SidebarNavLink>
         {isAuthenticated && (
@@ -94,8 +86,8 @@ export default function Sidebar({ visible, onVisibleChange }: SidebarProps) {
           </CNavGroup>
         )}
       </CSidebarNav>
-      <CSidebarFooter className="border-top">
-        <CSidebarToggler />
+      <CSidebarFooter>
+        <CSidebarToggler onClick={() => onVisibleChange(!visible)} />
       </CSidebarFooter>
     </CSidebar>
   );

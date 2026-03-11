@@ -2,11 +2,11 @@ import { CFooter } from '@coreui/react';
 
 export default function Footer() {
   return (
-    <CFooter className="px-4">
+    <CFooter className="px-4 justify-content-center flex-column text-center">
       <div>
         Armory Core - Firearms Inventory Management System
       </div>
-      <div className="ms-auto">
+      <div>
         <a
           href="https://github.com/DamageLabs/armory-core"
           target="_blank"

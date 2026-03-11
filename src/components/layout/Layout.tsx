@@ -14,19 +14,19 @@ export default function Layout() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
   return (
-    <>
-      <Sidebar visible={sidebarVisible} onVisibleChange={setSidebarVisible} />
-      <div className="wrapper d-flex flex-column min-vh-100">
-        <Header onToggleSidebar={() => setSidebarVisible((v) => !v)} />
-        <div className="body flex-grow-1 px-3">
+    <div className="d-flex flex-column min-vh-100">
+      <Header onToggleSidebar={() => setSidebarVisible(true)} sidebarVisible={sidebarVisible} />
+      <div className="d-flex flex-grow-1">
+        <Sidebar visible={sidebarVisible} onVisibleChange={setSidebarVisible} />
+        <main className="flex-grow-1 px-3 py-3">
           <CContainer lg>
             <AlertDisplay />
             <Outlet />
           </CContainer>
-        </div>
-        <Footer />
+        </main>
       </div>
+      <Footer />
       <ShortcutHelp show={showHelp} onClose={closeHelp} />
-    </>
+    </div>
   );
 }
