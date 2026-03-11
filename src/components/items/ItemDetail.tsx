@@ -12,7 +12,9 @@ import ChildItemsList from './ChildItemsList';
 import VendorPriceCard from './VendorPriceCard';
 import Breadcrumbs from '../common/Breadcrumbs';
 import { SkeletonDetailPage } from '../common/Skeleton';
+import Markdown from 'react-markdown';
 import ReceiptList from './ReceiptList';
+import { LOW_STOCK_TYPE_NAMES } from '../../constants/config';
 
 export default function ItemDetail() {
   const { id } = useParams<{ id: string }>();
@@ -139,6 +141,7 @@ export default function ItemDetail() {
                       <td className="pe-3 text-end">{item.barcode}</td>
                     </tr>
                   )}
+                  {LOW_STOCK_TYPE_NAMES.includes(inventoryType?.name || '') && (
                   <tr>
                     <td className="text-muted ps-3">Reorder Point</td>
                     <td className="pe-3 text-end">
@@ -154,6 +157,7 @@ export default function ItemDetail() {
                       )}
                     </td>
                   </tr>
+                  )}
                 </tbody>
               </table>
             </CCardBody>
@@ -187,7 +191,11 @@ export default function ItemDetail() {
             <CCard className="mb-3">
               <CCardHeader><h6 className="mb-0">Description</h6></CCardHeader>
               <CCardBody>
-                <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>{item.description}</p>
+                <div className="mb-0">
+                  <Markdown components={{ a: ({ children, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer">{children}</a> }}>
+                    {item.description}
+                  </Markdown>
+                </div>
               </CCardBody>
             </CCard>
           )}

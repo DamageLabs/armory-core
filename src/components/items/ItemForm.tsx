@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
+import { useState, useEffect, useRef, FormEvent, ChangeEvent } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { CCard, CCardHeader, CCardBody, CForm, CButton, CRow, CCol, CButtonGroup, CSpinner, CBadge, CFormLabel, CFormInput, CFormTextarea, CFormSelect, CFormText } from '@coreui/react';
 import * as itemService from '../../services/itemService';
@@ -10,9 +10,11 @@ import { InventoryType } from '../../types/InventoryType';
 import { ItemTemplate } from '../../types/ItemTemplate';
 import { useAlert } from '../../contexts/AlertContext';
 import { compressImage, formatBytes, compressionPercent } from '../../utils/imageOptimizer';
+import { LOW_STOCK_TYPE_NAMES } from '../../constants/config';
 import CustomFieldRenderer from './CustomFieldRenderer';
 import ParentItemSelector from './ParentItemSelector';
 import Breadcrumbs from '../common/Breadcrumbs';
+import MarkdownToolbar from '../common/MarkdownToolbar';
 
 export default function ItemForm() {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +40,7 @@ export default function ItemForm() {
     parentItemId: null,
   });
 
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [inventoryTypes, setInventoryTypes] = useState<InventoryType[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -300,9 +303,15 @@ export default function ItemForm() {
             </CRow>
 
             <CRow className="mb-3">
-              <CFormLabel className="col-sm-3 col-form-label">Description</CFormLabel>
+              <CFormLabel className="col-sm-3 col-form-label">Description<br /><small className="text-muted fw-normal">(Supports Markdown)</small></CFormLabel>
               <CCol sm={5}>
+                <MarkdownToolbar
+                  textareaRef={descriptionRef}
+                  value={formData.description}
+                  onChange={(val) => setFormData((prev) => ({ ...prev, description: val }))}
+                />
                 <CFormTextarea
+                  ref={descriptionRef}
                   rows={5}
                   name="description"
                   value={formData.description}
@@ -406,21 +415,25 @@ export default function ItemForm() {
               </CCol>
             </CRow>
 
-            <CRow className="mb-3">
-              <CFormLabel className="col-sm-3 col-form-label">Reorder Point</CFormLabel>
-              <CCol sm={5}>
-                <CFormInput
-                  type="number"
-                  name="reorderPoint"
-                  value={formData.reorderPoint}
-                  onChange={handleChange}
-                  min={0}
-                />
-                <CFormText className="text-muted">
-                  Alert when quantity falls to or below this level
-                </CFormText>
-              </CCol>
-            </CRow>
+            {LOW_STOCK_TYPE_NAMES.includes(
+              inventoryTypes.find((t) => t.id === formData.inventoryTypeId)?.name || ''
+            ) && (
+              <CRow className="mb-3">
+                <CFormLabel className="col-sm-3 col-form-label">Reorder Point</CFormLabel>
+                <CCol sm={5}>
+                  <CFormInput
+                    type="number"
+                    name="reorderPoint"
+                    value={formData.reorderPoint}
+                    onChange={handleChange}
+                    min={0}
+                  />
+                  <CFormText className="text-muted">
+                    Alert when quantity falls to or below this level
+                  </CFormText>
+                </CCol>
+              </CRow>
+            )}
           </fieldset>
 
           {/* Media Section */}
