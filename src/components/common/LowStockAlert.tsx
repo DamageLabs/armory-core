@@ -1,4 +1,4 @@
-import { Alert, Button } from 'react-bootstrap';
+import { CAlert, CButton } from '@coreui/react';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { Item } from '../../types/Item';
 import { LOW_STOCK_THRESHOLD } from '../../constants/config';
@@ -28,7 +28,7 @@ export default function LowStockAlert({
   }
 
   return (
-    <Alert variant="warning" className="mb-3">
+    <CAlert color="warning" className="mb-3">
       <div className="d-flex align-items-center justify-content-between">
         <div>
           <FaExclamationTriangle className="me-2" />
@@ -39,14 +39,14 @@ export default function LowStockAlert({
           )}
           {lowStockItems.length > 0 && (
             <span>
-              <strong>{lowStockItems.length}</strong> item{lowStockItems.length !== 1 ? 's' : ''} low stock (≤{threshold})
+              <strong>{lowStockItems.length}</strong> item{lowStockItems.length !== 1 ? 's' : ''} low stock ({'\u2264'}{threshold})
             </span>
           )}
         </div>
-        <Button variant="warning" size="sm" onClick={onFilterLowStock}>
+        <CButton color="warning" size="sm" onClick={onFilterLowStock}>
           View Low Stock
-        </Button>
+        </CButton>
       </div>
-    </Alert>
+    </CAlert>
   );
 }

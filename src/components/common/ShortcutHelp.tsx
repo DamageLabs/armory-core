@@ -1,4 +1,4 @@
-import { Modal, Table } from 'react-bootstrap';
+import { CModal, CModalHeader, CModalTitle, CModalBody, CTable } from '@coreui/react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface ShortcutHelpProps {
@@ -31,12 +31,12 @@ export default function ShortcutHelp({ show, onClose }: ShortcutHelpProps) {
   );
 
   return (
-    <Modal show={show} onHide={onClose} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>Keyboard Shortcuts</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Table striped size="sm">
+    <CModal visible={show} onClose={onClose} alignment="center">
+      <CModalHeader closeButton>
+        <CModalTitle>Keyboard Shortcuts</CModalTitle>
+      </CModalHeader>
+      <CModalBody>
+        <CTable striped small>
           <thead>
             <tr>
               <th>Key</th>
@@ -60,8 +60,8 @@ export default function ShortcutHelp({ show, onClose }: ShortcutHelpProps) {
               </tr>
             ))}
           </tbody>
-        </Table>
-      </Modal.Body>
-    </Modal>
+        </CTable>
+      </CModalBody>
+    </CModal>
   );
 }

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Button } from 'react-bootstrap';
+import { CButton } from '@coreui/react';
 import { IconType } from 'react-icons';
 import { FaBoxOpen } from 'react-icons/fa';
 
@@ -31,9 +31,9 @@ export default function EmptyState({
         </Link>
       )}
       {actionLabel && onAction && !actionPath && (
-        <Button variant="primary" onClick={onAction}>
+        <CButton color="primary" onClick={onAction}>
           {actionLabel}
-        </Button>
+        </CButton>
       )}
     </div>
   );

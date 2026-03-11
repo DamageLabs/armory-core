@@ -1,4 +1,4 @@
-import { Alert } from 'react-bootstrap';
+import { CAlert } from '@coreui/react';
 import { useAlert } from '../../contexts/AlertContext';
 
 export default function AlertDisplay() {
@@ -11,14 +11,14 @@ export default function AlertDisplay() {
   return (
     <div className="alert-container">
       {alerts.map((alert) => (
-        <Alert
+        <CAlert
           key={alert.id}
-          variant={alert.type}
+          color={alert.type}
           dismissible
           onClose={() => dismissAlert(alert.id)}
         >
           {alert.message}
-        </Alert>
+        </CAlert>
       ))}
     </div>
   );
