@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { Card, Button, ListGroup, Badge, Form, Spinner } from 'react-bootstrap';
 import { Receipt } from '../../types/Receipt';
 import * as receiptService from '../../services/receiptService';
@@ -16,10 +16,20 @@ export default function ReceiptList({ itemId }: ReceiptListProps) {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Receipt | null>(null);
+  const [previewReceipt, setPreviewReceipt] = useState<Receipt | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   useEffect(() => {
     loadReceipts();
   }, [itemId]);
+
+  // Clean up blob URL on unmount or preview change
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   async function loadReceipts() {
     try {
@@ -29,6 +39,30 @@ export default function ReceiptList({ itemId }: ReceiptListProps) {
       // Silently handle — receipts section is supplementary
     }
   }
+
+  const handlePreview = useCallback(async (receipt: Receipt) => {
+    if (previewReceipt?.id === receipt.id) {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewReceipt(null);
+      setPreviewUrl(null);
+      return;
+    }
+
+    setIsLoadingPreview(true);
+    setPreviewReceipt(receipt);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    try {
+      const url = await receiptService.getReceiptBlobUrl(receipt.id);
+      setPreviewUrl(url);
+    } catch {
+      showError('Failed to load receipt preview.');
+      setPreviewReceipt(null);
+      setPreviewUrl(null);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  }, [previewReceipt, previewUrl, showError]);
 
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,6 +97,11 @@ export default function ReceiptList({ itemId }: ReceiptListProps) {
       await receiptService.deleteReceipt(deleteTarget.id);
       showSuccess('Receipt deleted.');
       setReceipts((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+      if (previewReceipt?.id === deleteTarget.id) {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        setPreviewReceipt(null);
+        setPreviewUrl(null);
+      }
     } catch {
       showError('Failed to delete receipt.');
     }
@@ -99,34 +138,62 @@ export default function ReceiptList({ itemId }: ReceiptListProps) {
           </div>
         </Card.Header>
         {receipts.length > 0 ? (
-          <ListGroup variant="flush">
-            {receipts.map((receipt) => (
-              <ListGroup.Item key={receipt.id} className="d-flex justify-content-between align-items-center">
-                <div>
-                  <Badge bg={receipt.mime_type === 'application/pdf' ? 'danger' : 'info'} className="me-2">
-                    {mimeIcon(receipt.mime_type)}
-                  </Badge>
-                  <a
-                    href={receiptService.getDownloadUrl(receipt.id)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {receipt.original_name}
-                  </a>
-                  <small className="text-muted ms-2">
-                    {formatBytes(receipt.size_bytes)} &middot; {formatDate(receipt.created_at)}
-                  </small>
-                </div>
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => setDeleteTarget(receipt)}
+          <>
+            <ListGroup variant="flush">
+              {receipts.map((receipt) => (
+                <ListGroup.Item
+                  key={receipt.id}
+                  action
+                  active={previewReceipt?.id === receipt.id}
+                  onClick={() => handlePreview(receipt)}
+                  className="d-flex justify-content-between align-items-center"
                 >
-                  Delete
-                </Button>
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
+                  <div>
+                    <Badge bg={receipt.mimeType === 'application/pdf' ? 'danger' : 'info'} className="me-2">
+                      {mimeIcon(receipt.mimeType)}
+                    </Badge>
+                    {receipt.originalName}
+                    <small className="text-muted ms-2">
+                      {formatBytes(receipt.sizeBytes)} &middot; {formatDate(receipt.createdAt)}
+                    </small>
+                  </div>
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(receipt); }}
+                  >
+                    Delete
+                  </Button>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+
+            {isLoadingPreview && (
+              <Card.Body className="text-center py-4">
+                <Spinner animation="border" size="sm" className="me-2" />
+                Loading preview...
+              </Card.Body>
+            )}
+
+            {previewUrl && previewReceipt && !isLoadingPreview && (
+              <Card.Body className="p-2">
+                {previewReceipt.mimeType.startsWith('image/') ? (
+                  <img
+                    src={previewUrl}
+                    alt={previewReceipt.originalName}
+                    className="img-fluid rounded"
+                    style={{ maxHeight: '500px', width: '100%', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <iframe
+                    src={previewUrl}
+                    title={previewReceipt.originalName}
+                    style={{ width: '100%', height: '500px', border: 'none', borderRadius: '4px' }}
+                  />
+                )}
+              </Card.Body>
+            )}
+          </>
         ) : (
           <Card.Body className="text-muted text-center py-3">
             No receipts attached.
@@ -137,7 +204,7 @@ export default function ReceiptList({ itemId }: ReceiptListProps) {
       <ConfirmModal
         show={!!deleteTarget}
         title="Delete Receipt"
-        message={`Delete "${deleteTarget?.original_name}"?`}
+        message={`Delete "${deleteTarget?.originalName}"?`}
         confirmLabel="Delete"
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
