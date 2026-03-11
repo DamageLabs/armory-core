@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById } from '../db/index';
+import { validate } from '../middleware/validate';
+import { createTemplateSchema, updateTemplateSchema } from '../schemas/templates';
 
 const router = Router();
 const JSON_FIELDS = ['defaultFields'];
@@ -31,7 +33,7 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 // POST / — create template
-router.post('/', (req: Request, res: Response) => {
+router.post('/', validate(createTemplateSchema), (req: Request, res: Response) => {
   try {
     const { name, category, defaultFields } = req.body;
     const now = new Date().toISOString();
@@ -46,7 +48,7 @@ router.post('/', (req: Request, res: Response) => {
 });
 
 // PUT /:id — update template
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', validate(updateTemplateSchema), (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { name, category, defaultFields } = req.body;

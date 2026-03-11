@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, run, insert, update, deleteById, getDatabase } from '../db/index';
 import { parsePaginationParams, buildItemWhereClause, getSortColumn, buildPaginationMeta } from '../db/pagination';
+import { validate } from '../middleware/validate';
+import { createItemSchema, updateItemSchema, bulkCreateSchema, bulkDeleteSchema, bulkCategorySchema } from '../schemas/items';
 
 const router = Router();
 const JSON_FIELDS = ['customFields'];
@@ -90,13 +92,9 @@ router.get('/low-stock', (req: Request, res: Response) => {
 });
 
 // POST /bulk-create — Create multiple items with parent-child remapping
-router.post('/bulk-create', (req: Request, res: Response) => {
+router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Response) => {
   try {
     const { items } = req.body as { items: Record<string, unknown>[] };
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      res.status(400).json({ error: 'items array is required' });
-      return;
-    }
 
     const now = new Date().toISOString();
     const db = getDatabase();
@@ -201,13 +199,9 @@ router.delete('/all', (_req: Request, res: Response) => {
 });
 
 // POST /bulk-delete — Delete multiple items (must be before /:id)
-router.post('/bulk-delete', (req: Request, res: Response) => {
+router.post('/bulk-delete', validate(bulkDeleteSchema), (req: Request, res: Response) => {
   try {
     const { ids } = req.body as { ids: number[] };
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      res.status(400).json({ error: 'ids array is required' });
-      return;
-    }
 
     const now = new Date().toISOString();
     const db = getDatabase();
@@ -234,17 +228,9 @@ router.post('/bulk-delete', (req: Request, res: Response) => {
 });
 
 // PUT /bulk-category — Update category for multiple items (must be before /:id)
-router.put('/bulk-category', (req: Request, res: Response) => {
+router.put('/bulk-category', validate(bulkCategorySchema), (req: Request, res: Response) => {
   try {
     const { ids, category } = req.body as { ids: number[]; category: string };
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      res.status(400).json({ error: 'ids array is required' });
-      return;
-    }
-    if (category === undefined) {
-      res.status(400).json({ error: 'category is required' });
-      return;
-    }
 
     const now = new Date().toISOString();
     const db = getDatabase();
@@ -300,7 +286,7 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 // POST / — Create item
-router.post('/', (req: Request, res: Response) => {
+router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
   try {
     const now = new Date().toISOString();
     const { name, description, quantity, unitValue, picture, category, location, barcode, reorderPoint, inventoryTypeId, customFields, parentItemId } = req.body;
@@ -340,7 +326,7 @@ router.post('/', (req: Request, res: Response) => {
 });
 
 // PUT /:id — Update item
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     const existing = queryOne<Record<string, unknown>>('SELECT * FROM items WHERE id = ?', [id], JSON_FIELDS);

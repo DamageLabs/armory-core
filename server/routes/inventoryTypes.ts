@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById, count } from '../db/index';
+import { validate } from '../middleware/validate';
+import { createInventoryTypeSchema, updateInventoryTypeSchema } from '../schemas/inventoryTypes';
 
 const router = Router();
 const JSON_FIELDS = ['schema'];
@@ -31,13 +33,9 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 // POST / — create inventory type
-router.post('/', (req: Request, res: Response) => {
+router.post('/', validate(createInventoryTypeSchema), (req: Request, res: Response) => {
   try {
     const { name, icon, schema } = req.body;
-    if (!name) {
-      res.status(400).json({ error: 'Name is required' });
-      return;
-    }
 
     const existing = queryOne('SELECT id FROM inventory_types WHERE LOWER(name) = LOWER(?)', [name]);
     if (existing) {
@@ -55,7 +53,7 @@ router.post('/', (req: Request, res: Response) => {
 });
 
 // PUT /:id — update inventory type
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', validate(updateInventoryTypeSchema), (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { name, icon, schema } = req.body;

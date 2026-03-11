@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById } from '../db/index';
+import { validate } from '../middleware/validate';
+import { createBomSchema, updateBomSchema, duplicateBomSchema } from '../schemas/boms';
 
 const router = Router();
 const JSON_FIELDS = ['items'];
@@ -45,7 +47,7 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 // POST / — create BOM
-router.post('/', (req: Request, res: Response) => {
+router.post('/', validate(createBomSchema), (req: Request, res: Response) => {
   try {
     const { name, description, items } = req.body;
     const now = new Date().toISOString();
@@ -60,7 +62,7 @@ router.post('/', (req: Request, res: Response) => {
 });
 
 // PUT /:id — update BOM
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', validate(updateBomSchema), (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { name, description, items } = req.body;
@@ -142,7 +144,7 @@ router.get('/:id/cost', (req: Request, res: Response) => {
 });
 
 // POST /:id/duplicate — duplicate BOM with new name
-router.post('/:id/duplicate', (req: Request, res: Response) => {
+router.post('/:id/duplicate', validate(duplicateBomSchema), (req: Request, res: Response) => {
   try {
     const bom = queryOne<Bom>('SELECT * FROM boms WHERE id = ?', [req.params.id], JSON_FIELDS);
     if (!bom) {
