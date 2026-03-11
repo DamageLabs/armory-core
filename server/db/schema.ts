@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS items (
   location TEXT NOT NULL DEFAULT '',
   barcode TEXT NOT NULL DEFAULT '',
   reorder_point INTEGER NOT NULL DEFAULT 0,
-  inventory_type_id INTEGER NOT NULL DEFAULT 1,
+  inventory_type_id INTEGER NOT NULL DEFAULT 1 REFERENCES inventory_types(id) ON DELETE RESTRICT,
   custom_fields TEXT NOT NULL DEFAULT '{}',
   parent_item_id INTEGER REFERENCES items(id) ON DELETE SET NULL,
   created_at TEXT NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
-  inventory_type_id INTEGER NOT NULL DEFAULT 1,
+  inventory_type_id INTEGER NOT NULL DEFAULT 1 REFERENCES inventory_types(id) ON DELETE CASCADE,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   UNIQUE(name, inventory_type_id)
