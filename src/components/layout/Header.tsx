@@ -1,12 +1,29 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Navbar, Nav, NavDropdown, Container, Button } from 'react-bootstrap';
-import { FaSun, FaMoon } from 'react-icons/fa';
+import {
+  CHeader,
+  CContainer,
+  CHeaderToggler,
+  CHeaderNav,
+  CNavItem,
+  CNavLink,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
+  CDropdownDivider,
+} from '@coreui/react';
+import CIcon from '@coreui/icons-react';
+import { cilMenu, cilSun, cilMoon } from '@coreui/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAlert } from '../../contexts/AlertContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export default function Header() {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+interface HeaderProps {
+  onToggleSidebar: () => void;
+}
+
+export default function Header({ onToggleSidebar }: HeaderProps) {
+  const { user, isAuthenticated, logout } = useAuth();
   const { showSuccess } = useAlert();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -18,116 +35,43 @@ export default function Header() {
   };
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" fixed="top">
-      <Container>
-        <Navbar.Brand as={Link} to="/">
-          Armory Core
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            {isAuthenticated && (
-              <>
-                <NavDropdown title="Inventory" id="inventory-dropdown">
-                  <NavDropdown.Item as={Link} to="/items">
-                    All Items
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/items/new">
-                    New Item
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item as={Link} to="/items/import">
-                    Import Data
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/items/restore">
-                    Restore Backup
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/items/scanner">
-                    Barcode Scanner
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/items/labels">
-                    Print Labels
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item as={Link} to="/items/reorder">
-                    Reorder Alerts
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item as={Link} to="/items/templates">
-                    Item Templates
-                  </NavDropdown.Item>
-                </NavDropdown>
-                <NavDropdown title="Reports" id="reports-dropdown">
-                  <NavDropdown.Item as={Link} to="/reports">
-                    Dashboard
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item as={Link} to="/reports/valuation">
-                    Inventory Valuation
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/reports/movement">
-                    Stock Movement
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/reports/custom">
-                    Custom Report
-                  </NavDropdown.Item>
-                </NavDropdown>
-                <NavDropdown title="BOM" id="bom-dropdown">
-                  <NavDropdown.Item as={Link} to="/bom">
-                    All BOMs
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/bom/new">
-                    New BOM
-                  </NavDropdown.Item>
-                </NavDropdown>
-              </>
-            )}
-            {isAdmin && (
-              <NavDropdown title="Admin" id="admin-dropdown">
-                <NavDropdown.Item as={Link} to="/users">
-                  Users
-                </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/settings/categories">
-                  Categories
-                </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/settings/inventory-types">
-                  Inventory Types
-                </NavDropdown.Item>
-              </NavDropdown>
-            )}
-          </Nav>
-          <Nav className="align-items-center">
-            <Button
-              variant="link"
-              className="nav-link px-2"
+    <CHeader position="sticky" className="mb-4">
+      <CContainer fluid>
+        <CHeaderToggler onClick={onToggleSidebar}>
+          <CIcon icon={cilMenu} size="lg" />
+        </CHeaderToggler>
+        <CHeaderNav className="ms-auto">
+          <CNavItem>
+            <CNavLink
+              as="button"
+              className="btn btn-link nav-link"
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {isDark ? <FaSun className="text-warning" /> : <FaMoon className="text-light" />}
-            </Button>
-            {isAuthenticated ? (
-              <NavDropdown title={user?.email} id="account-dropdown" align="end">
-                <NavDropdown.Item as={Link} to="/profile">
-                  Edit Profile
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item onClick={handleLogout}>
-                  Logout
-                </NavDropdown.Item>
-              </NavDropdown>
-            ) : (
-              <>
-                <Nav.Link as={Link} to="/register">
-                  Sign up
-                </Nav.Link>
-                <Nav.Link as={Link} to="/login">
-                  Login
-                </Nav.Link>
-              </>
-            )}
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+              <CIcon icon={isDark ? cilSun : cilMoon} size="lg" />
+            </CNavLink>
+          </CNavItem>
+          {isAuthenticated ? (
+            <CDropdown variant="nav-item" alignment="end">
+              <CDropdownToggle caret={false}>{user?.email}</CDropdownToggle>
+              <CDropdownMenu>
+                <CDropdownItem as={Link} to="/profile">Edit Profile</CDropdownItem>
+                <CDropdownDivider />
+                <CDropdownItem onClick={handleLogout}>Logout</CDropdownItem>
+              </CDropdownMenu>
+            </CDropdown>
+          ) : (
+            <>
+              <CNavItem>
+                <CNavLink as={Link} to="/register">Sign up</CNavLink>
+              </CNavItem>
+              <CNavItem>
+                <CNavLink as={Link} to="/login">Login</CNavLink>
+              </CNavItem>
+            </>
+          )}
+        </CHeaderNav>
+      </CContainer>
+    </CHeader>
   );
 }
