@@ -192,9 +192,10 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response)
 
     const db = getDatabase();
     const now = new Date().toISOString();
+    const clientIp = req.ip || '127.0.0.1';
     db.prepare(
       'UPDATE users SET sign_in_count = sign_in_count + 1, last_sign_in_at = ?, last_sign_in_ip = ?, updated_at = ? WHERE id = ?'
-    ).run(now, '127.0.0.1', now, user.id);
+    ).run(now, clientIp, now, user.id);
 
     const token = signToken({ userId: user.id, email: user.email, role: user.role });
 
@@ -208,7 +209,7 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response)
         role: user.role,
         signInCount: user.signInCount + 1,
         lastSignInAt: now,
-        lastSignInIp: '127.0.0.1',
+        lastSignInIp: clientIp,
         emailVerified: true,
         createdAt: user.createdAt,
         updatedAt: now,
