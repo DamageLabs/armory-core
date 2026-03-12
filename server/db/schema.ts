@@ -183,6 +183,24 @@ CREATE TABLE IF NOT EXISTS item_notes (
 CREATE INDEX IF NOT EXISTS idx_item_notes_item_id ON item_notes(item_id);
 CREATE INDEX IF NOT EXISTS idx_item_notes_created_at ON item_notes(created_at);
 
+CREATE TABLE IF NOT EXISTS maintenance_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL,
+  user_email TEXT NOT NULL,
+  service_type TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  rounds_fired INTEGER NOT NULL DEFAULT 0,
+  service_provider TEXT NOT NULL DEFAULT '',
+  cost REAL NOT NULL DEFAULT 0,
+  performed_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_maintenance_logs_item_id ON maintenance_logs(item_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_logs_performed_at ON maintenance_logs(performed_at);
+
 CREATE TABLE IF NOT EXISTS item_photos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
