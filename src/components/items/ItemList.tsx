@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CCard, CCardHeader, CCardBody, CButton, CButtonGroup, CBadge, CFormCheck, CTable } from '@coreui/react';
-import { FaEdit, FaTrash, FaCopy, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase, FaThLarge, FaList } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaCopy, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase, FaThLarge, FaList, FaImage } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
 import { Item } from '../../types/Item';
@@ -543,19 +543,49 @@ export default function ItemList() {
                       />
                     </td>
                     <td>
-                      <Link to={`/items/${item.id}`}>{item.name}</Link>
-                      {(item.childCount ?? 0) > 0 && (
-                        <CBadge color="info" className="ms-1" title={`${item.childCount} attached item(s)`}>
-                          {item.childCount}
-                        </CBadge>
-                      )}
-                      {item.parentItemId && item.parentName && (
-                        <Link to={`/items/${item.parentItemId}`} className="ms-1">
-                          <CBadge color="dark" title={`Attached to ${item.parentName}`}>
-                            <FaLink size={10} className="me-1" />{item.parentName}
-                          </CBadge>
-                        </Link>
-                      )}
+                      <div className="d-flex align-items-center gap-2">
+                        {item.picture ? (
+                          <img
+                            src={item.picture}
+                            alt=""
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              objectFit: 'cover',
+                              borderRadius: '4px',
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <span
+                            className="d-flex align-items-center justify-content-center text-muted"
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '4px',
+                              backgroundColor: 'var(--cui-tertiary-bg)',
+                              flexShrink: 0,
+                            }}
+                          >
+                            <FaImage size={14} />
+                          </span>
+                        )}
+                        <div>
+                          <Link to={`/items/${item.id}`}>{item.name}</Link>
+                          {(item.childCount ?? 0) > 0 && (
+                            <CBadge color="info" className="ms-1" title={`${item.childCount} attached item(s)`}>
+                              {item.childCount}
+                            </CBadge>
+                          )}
+                          {item.parentItemId && item.parentName && (
+                            <Link to={`/items/${item.parentItemId}`} className="ms-1">
+                              <CBadge color="dark" title={`Attached to ${item.parentName}`}>
+                                <FaLink size={10} className="me-1" />{item.parentName}
+                              </CBadge>
+                            </Link>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td className="text-center">
                       <CBadge color="primary">
