@@ -7,6 +7,78 @@ const router = Router();
 
 const VALID_TYPES = ['Cleaning', 'Repair', 'Inspection', 'Modification', 'Service', 'Other'];
 
+// GET /report — fleet-wide maintenance report
+router.get('/report', (_req: Request, res: Response) => {
+  try {
+    const db = getDatabase();
+
+    // Fleet totals
+    const totals = db.prepare(`
+      SELECT
+        COALESCE(SUM(rounds_fired), 0) as totalRounds,
+        COALESCE(SUM(cost), 0) as totalCost,
+        COUNT(*) as totalEntries,
+        COUNT(DISTINCT item_id) as firearmsServiced
+      FROM maintenance_logs
+    `).get() as { totalRounds: number; totalCost: number; totalEntries: number; firearmsServiced: number };
+
+    // Per-firearm summaries
+    const perFirearm = db.prepare(`
+      SELECT
+        m.item_id as itemId,
+        i.name as itemName,
+        COALESCE(SUM(m.rounds_fired), 0) as totalRounds,
+        COALESCE(SUM(m.cost), 0) as totalCost,
+        COUNT(*) as entryCount,
+        MAX(m.performed_at) as lastServiceDate
+      FROM maintenance_logs m
+      JOIN items i ON i.id = m.item_id
+      GROUP BY m.item_id
+      ORDER BY MAX(m.performed_at) DESC
+    `).all() as { itemId: number; itemName: string; totalRounds: number; totalCost: number; entryCount: number; lastServiceDate: string }[];
+
+    // By service type (count + cost)
+    const byType = db.prepare(`
+      SELECT
+        service_type as type,
+        COUNT(*) as count,
+        COALESCE(SUM(cost), 0) as totalCost
+      FROM maintenance_logs
+      GROUP BY service_type
+      ORDER BY count DESC
+    `).all() as { type: string; count: number; totalCost: number }[];
+
+    // Monthly time series (last 12 months)
+    const monthly = db.prepare(`
+      SELECT
+        strftime('%Y-%m', performed_at) as month,
+        COALESCE(SUM(cost), 0) as totalCost,
+        COALESCE(SUM(rounds_fired), 0) as totalRounds,
+        COUNT(*) as entryCount
+      FROM maintenance_logs
+      WHERE performed_at >= date('now', '-12 months')
+      GROUP BY strftime('%Y-%m', performed_at)
+      ORDER BY month ASC
+    `).all() as { month: string; totalCost: number; totalRounds: number; entryCount: number }[];
+
+    // All logs for CSV export
+    const allLogs = db.prepare(`
+      SELECT
+        m.id, i.name as item_name, m.service_type, m.description,
+        m.rounds_fired, m.service_provider, m.cost, m.performed_at,
+        m.user_email, m.created_at
+      FROM maintenance_logs m
+      JOIN items i ON i.id = m.item_id
+      ORDER BY m.performed_at DESC
+    `).all() as Record<string, unknown>[];
+
+    res.json({ totals, perFirearm, byType, monthly, allLogs });
+  } catch (error) {
+    console.error('Error fetching maintenance report:', error);
+    res.status(500).json({ error: 'Failed to fetch maintenance report' });
+  }
+});
+
 // GET /:itemId/logs — paginated maintenance logs for an item
 router.get('/:itemId/logs', (req: Request, res: Response) => {
   try {

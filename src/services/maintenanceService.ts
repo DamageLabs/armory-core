@@ -11,6 +11,50 @@ interface PaginatedResponse {
   };
 }
 
+export interface MaintenanceReportData {
+  totals: {
+    totalRounds: number;
+    totalCost: number;
+    totalEntries: number;
+    firearmsServiced: number;
+  };
+  perFirearm: {
+    itemId: number;
+    itemName: string;
+    totalRounds: number;
+    totalCost: number;
+    entryCount: number;
+    lastServiceDate: string;
+  }[];
+  byType: {
+    type: string;
+    count: number;
+    totalCost: number;
+  }[];
+  monthly: {
+    month: string;
+    totalCost: number;
+    totalRounds: number;
+    entryCount: number;
+  }[];
+  allLogs: {
+    id: number;
+    itemName: string;
+    serviceType: string;
+    description: string;
+    roundsFired: number;
+    serviceProvider: string;
+    cost: number;
+    performedAt: string;
+    userEmail: string;
+    createdAt: string;
+  }[];
+}
+
+export async function getReport(): Promise<MaintenanceReportData> {
+  return api.get<MaintenanceReportData>('/maintenance/report');
+}
+
 export async function getLogs(itemId: number, page = 1, pageSize = 20, type?: string): Promise<PaginatedResponse> {
   const typeParam = type ? `&type=${encodeURIComponent(type)}` : '';
   return api.get<PaginatedResponse>(`/maintenance/${itemId}/logs?page=${page}&pageSize=${pageSize}${typeParam}`);
