@@ -51,7 +51,7 @@ const INVENTORY_TYPES = [
 
 const CATEGORY_PRESETS: Record<string, string[]> = {
   Firearms: ['Handguns', 'Rifles', 'Shotguns', 'Pistol Caliber Carbines', 'AR Platform', 'AK Platform', 'Bolt Action', 'Lever Action', 'Other'],
-  Accessories: ['Optics', 'Lights', 'Lasers', 'Grips & Foregrips', 'Magazines', 'Holsters', 'Cases & Bags', 'Mounts & Rings', 'Suppressors & Muzzle Devices', 'Bipods & Supports', 'Slings', 'Triggers & Fire Control', 'Stocks & Braces', 'Barrels & Handguards', 'Cleaning & Maintenance', 'Other'],
+  Accessories: ['Optics', 'Lights', 'Lasers', 'Grips & Foregrips', 'Magazines', 'Holsters', 'Cases & Bags', 'Mounts & Rings', 'Suppressors & Muzzle Devices', 'Bipods & Supports', 'Slings', 'Triggers & Fire Control', 'Stocks & Braces', 'Barrels & Handguards', 'Gun Safes', 'Cleaning & Maintenance', 'Other'],
   Ammunition: ['Rimfire', 'Centerfire Pistol', 'Centerfire Rifle', 'Shotshell', 'Specialty', 'Reloading Components'],
 };
 
