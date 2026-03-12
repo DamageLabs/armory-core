@@ -15,6 +15,7 @@ import { SkeletonDetailPage } from '../common/Skeleton';
 import Markdown from 'react-markdown';
 import AttachmentList from './AttachmentList';
 import ItemNotes from './ItemNotes';
+import PhotoGallery from './PhotoGallery';
 import { LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME, AMMUNITION_TYPE_NAME } from '../../constants/config';
 import { ItemFormData } from '../../types/Item';
 
@@ -115,18 +116,7 @@ export default function ItemDetail() {
       <CRow>
         {/* Left Panel — Image, Key Stats, Actions */}
         <CCol md={4} className="mb-3">
-          {item.picture && (
-            <CCard className="mb-3">
-              <CCardBody className="text-center p-2">
-                <img
-                  src={item.picture}
-                  alt={item.name}
-                  className="img-fluid rounded"
-                  style={{ maxHeight: '300px', objectFit: 'contain' }}
-                />
-              </CCardBody>
-            </CCard>
-          )}
+          <PhotoGallery itemId={item.id} />
 
           <CCard className="mb-3">
             <CCardHeader>
