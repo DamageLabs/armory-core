@@ -180,8 +180,8 @@ export default function MaintenanceReport() {
                     border: isDark ? '1px solid #495057' : '1px solid #dee2e6',
                     color: textColor,
                   }}
-                  formatter={(value: number, name: string) =>
-                    name === 'Cost' ? formatCurrency(value) : value
+                  formatter={(value, name) =>
+                    name === 'Cost' ? formatCurrency(Number(value ?? 0)) : Number(value ?? 0)
                   }
                 />
                 <Legend />
@@ -220,8 +220,8 @@ export default function MaintenanceReport() {
                     border: isDark ? '1px solid #495057' : '1px solid #dee2e6',
                     color: textColor,
                   }}
-                  formatter={(value: number, name: string) =>
-                    name === 'Cost' ? formatCurrency(value) : value.toLocaleString()
+                  formatter={(value, name) =>
+                    name === 'Cost' ? formatCurrency(Number(value ?? 0)) : Number(value ?? 0).toLocaleString()
                   }
                   labelFormatter={(v) => {
                     const [y, m] = v.split('-');
