@@ -4,6 +4,7 @@ import { CRow, CCol, CCard, CCardHeader, CCardBody, CForm, CFormLabel, CFormInpu
 import { useAuth } from '../../contexts/AuthContext';
 import { useAlert } from '../../contexts/AlertContext';
 import ConfirmModal from '../common/ConfirmModal';
+import { PASSWORD_RULES } from '../../constants/config';
 
 export default function EditProfile() {
   const { user, updateProfile, deleteAccount } = useAuth();
@@ -78,10 +79,21 @@ export default function EditProfile() {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  minLength={10}
                 />
-                <CFormText className="text-muted">
-                  Leave blank if you don't want to change it
-                </CFormText>
+                {password ? (
+                  <ul className="list-unstyled mt-1 mb-0 small">
+                    {PASSWORD_RULES.map((rule) => (
+                      <li key={rule.label} className={rule.test(password) ? 'text-success' : 'text-muted'}>
+                        {rule.test(password) ? '\u2713' : '\u2022'} {rule.label}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <CFormText className="text-muted">
+                    Leave blank if you don't want to change it
+                  </CFormText>
+                )}
               </div>
 
               <div className="mb-3">

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CRow, CCol, CCard, CCardHeader, CCardBody, CForm, CFormLabel, CFormInput, CFormText, CButton, CAlert } from '@coreui/react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAlert } from '../../contexts/AlertContext';
+import { PASSWORD_RULES } from '../../constants/config';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -96,12 +97,23 @@ export default function Register() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={8}
+                  minLength={10}
                   disabled={isLoading}
                 />
-                <CFormText className="text-muted">
-                  Minimum 8 characters
-                </CFormText>
+                {password && (
+                  <ul className="list-unstyled mt-1 mb-0 small">
+                    {PASSWORD_RULES.map((rule) => (
+                      <li key={rule.label} className={rule.test(password) ? 'text-success' : 'text-muted'}>
+                        {rule.test(password) ? '\u2713' : '\u2022'} {rule.label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {!password && (
+                  <CFormText className="text-muted">
+                    Minimum 10 characters with uppercase, lowercase, number, and special character
+                  </CFormText>
+                )}
               </div>
 
               <div className="mb-3">
