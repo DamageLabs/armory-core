@@ -53,6 +53,9 @@ export default function ItemForm() {
   } | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [templates, setTemplates] = useState<ItemTemplate[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
+  const [customLocation, setCustomLocation] = useState(false);
+  const [locationsLoaded, setLocationsLoaded] = useState(false);
 
   // Load inventory types
   useEffect(() => {
@@ -133,6 +136,26 @@ export default function ItemForm() {
       }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    async function loadLocations() {
+      try {
+        const locs = await itemService.getLocations();
+        setLocations(locs);
+        setLocationsLoaded(true);
+      } catch {
+        // silently handle
+      }
+    }
+    loadLocations();
+  }, []);
+
+  // Auto-switch to custom mode if item's location isn't in the list
+  useEffect(() => {
+    if (locationsLoaded && formData.location && !locations.includes(formData.location)) {
+      setCustomLocation(true);
+    }
+  }, [locationsLoaded, locations, formData.location]);
 
   useEffect(() => {
     async function loadTemplates() {
@@ -404,13 +427,48 @@ export default function ItemForm() {
             <CRow className="mb-3">
               <CFormLabel className="col-sm-3 col-form-label">Location</CFormLabel>
               <CCol sm={5}>
-                <CFormInput
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="e.g., Shelf A3, Bin 12"
-                />
+                {!customLocation ? (
+                  <>
+                    <CFormSelect
+                      value={formData.location}
+                      onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          setCustomLocation(true);
+                          setFormData((prev) => ({ ...prev, location: '' }));
+                        } else {
+                          setFormData((prev) => ({ ...prev, location: e.target.value }));
+                        }
+                      }}
+                    >
+                      <option value="">-- None --</option>
+                      {locations.map((loc) => (
+                        <option key={loc} value={loc}>{loc}</option>
+                      ))}
+                      <option value="__custom__">Custom...</option>
+                    </CFormSelect>
+                  </>
+                ) : (
+                  <div className="d-flex gap-2">
+                    <CFormInput
+                      type="text"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      placeholder="e.g., Shelf A3, Bin 12"
+                    />
+                    <CButton
+                      color="secondary"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setCustomLocation(false);
+                        setFormData((prev) => ({ ...prev, location: '' }));
+                      }}
+                    >
+                      List
+                    </CButton>
+                  </div>
+                )}
               </CCol>
             </CRow>
 

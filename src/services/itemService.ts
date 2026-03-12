@@ -134,6 +134,10 @@ export async function bulkCreateItems(
   return api.post('/items/bulk-create', { items });
 }
 
+export async function getLocations(): Promise<string[]> {
+  return api.get<string[]>('/items/locations');
+}
+
 export async function deleteAllItems(): Promise<{ message: string }> {
   return api.delete('/items/all');
 }
