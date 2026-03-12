@@ -18,6 +18,9 @@ export const FIREARMS_TYPE_NAME = 'Firearms';
 // Ammunition type name (for box count / total rounds display)
 export const AMMUNITION_TYPE_NAME = 'Ammunition';
 
+// Maintenance service types
+export const MAINTENANCE_TYPES = ['Cleaning', 'Repair', 'Inspection', 'Modification', 'Service', 'Other'] as const;
+
 // Theme
 export const THEME_STORAGE_KEY = 'armory-theme';
 export type Theme = 'light' | 'dark';
