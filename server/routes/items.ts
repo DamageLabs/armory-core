@@ -499,6 +499,11 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
       );
     }
 
+    // When a Gun Safe is renamed, update all items referencing the old name as their location
+    if (existing.category === 'Gun Safes' && existing.name !== merged.name) {
+      run('UPDATE items SET location = ?, updated_at = ? WHERE location = ?', [merged.name, now, existing.name]);
+    }
+
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.updated', resourceType: 'item', resourceId: id, details: { name: merged.name } });
 
     // Recalc parent firearm values when child value/parent changes
