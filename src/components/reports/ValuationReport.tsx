@@ -69,7 +69,7 @@ export default function ValuationReport() {
       name,
       items,
       totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
-      totalValue: items.reduce((sum, item) => sum + item.value, 0),
+      totalValue: items.reduce((sum, item) => sum + item.quantity * item.unitValue, 0),
       itemCount: items.length,
     }));
 
@@ -80,7 +80,7 @@ export default function ValuationReport() {
     return {
       items: allItems.length,
       quantity: allItems.reduce((sum, item) => sum + item.quantity, 0),
-      value: allItems.reduce((sum, item) => sum + item.value, 0),
+      value: allItems.reduce((sum, item) => sum + item.quantity * item.unitValue, 0),
     };
   }, [allItems]);
 

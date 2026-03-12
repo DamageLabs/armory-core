@@ -91,7 +91,7 @@ router.get('/stats', (req: Request, res: Response) => {
     const params = parsePaginationParams(req.query as Record<string, unknown>);
     const { where, values } = buildItemWhereClause(params);
     const row = db.prepare(
-      `SELECT COALESCE(SUM(quantity), 0) as totalQuantity, COALESCE(SUM(value), 0) as totalValue, COUNT(*) as totalItems FROM items ${where}`
+      `SELECT COALESCE(SUM(quantity), 0) as totalQuantity, COALESCE(SUM(quantity * unit_value), 0) as totalValue, COUNT(*) as totalItems FROM items ${where}`
     ).get(...values) as { totalQuantity: number; totalValue: number; totalItems: number };
     res.json(row);
   } catch (error) {
