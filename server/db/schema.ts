@@ -182,4 +182,19 @@ CREATE TABLE IF NOT EXISTS item_notes (
 
 CREATE INDEX IF NOT EXISTS idx_item_notes_item_id ON item_notes(item_id);
 CREATE INDEX IF NOT EXISTS idx_item_notes_created_at ON item_notes(created_at);
+
+CREATE TABLE IF NOT EXISTS item_photos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+  filename TEXT NOT NULL,
+  original_name TEXT NOT NULL,
+  mime_type TEXT NOT NULL,
+  size_bytes INTEGER NOT NULL,
+  is_primary INTEGER NOT NULL DEFAULT 0,
+  caption TEXT NOT NULL DEFAULT '',
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_item_photos_item_id ON item_photos(item_id);
 `;
