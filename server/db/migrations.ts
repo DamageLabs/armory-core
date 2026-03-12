@@ -110,6 +110,21 @@ function migrateReceiptsCategory(db: Database.Database): void {
 }
 
 /**
+ * Recalculate value for all Firearms items: value = unitValue + SUM(children.value).
+ * Runs on every startup to ensure consistency.
+ */
+function recalcAllFirearmValues(db: Database.Database): void {
+  db.exec(`
+    UPDATE items SET value = unit_value + COALESCE(
+      (SELECT SUM(c.value) FROM items c WHERE c.parent_item_id = items.id), 0
+    )
+    WHERE inventory_type_id IN (
+      SELECT id FROM inventory_types WHERE name = 'Firearms'
+    )
+  `);
+}
+
+/**
  * Run all pending migrations. Idempotent — skips tables that already have FK constraints.
  */
 export function runMigrations(db: Database.Database): void {
@@ -122,32 +137,33 @@ export function runMigrations(db: Database.Database): void {
   const needsItems = !hasForeignKey(db, 'items', 'inventory_type_id');
   const needsCategories = !hasForeignKey(db, 'categories', 'inventory_type_id');
 
-  if (!needsItems && !needsCategories) {
-    return;
-  }
+  if (needsItems || needsCategories) {
+    // Must disable FK checks during table recreation to avoid issues
+    // with self-referencing FKs and cross-table references
+    db.pragma('foreign_keys = OFF');
 
-  // Must disable FK checks during table recreation to avoid issues
-  // with self-referencing FKs and cross-table references
-  db.pragma('foreign_keys = OFF');
+    const txn = db.transaction(() => {
+      cleanOrphanedRecords(db);
 
-  const txn = db.transaction(() => {
-    cleanOrphanedRecords(db);
+      if (needsItems) {
+        migrateItemsTable(db);
+      }
 
-    if (needsItems) {
-      migrateItemsTable(db);
+      if (needsCategories) {
+        migrateCategoriesTable(db);
+      }
+    });
+    txn();
+
+    // Verify integrity after migration
+    const check = db.pragma('foreign_key_check') as unknown[];
+    if (check.length > 0) {
+      console.error('Foreign key violations found after migration:', check);
     }
 
-    if (needsCategories) {
-      migrateCategoriesTable(db);
-    }
-  });
-  txn();
-
-  // Verify integrity after migration
-  const check = db.pragma('foreign_key_check') as unknown[];
-  if (check.length > 0) {
-    console.error('Foreign key violations found after migration:', check);
+    db.pragma('foreign_keys = ON');
   }
 
-  db.pragma('foreign_keys = ON');
+  // Always recalc firearm values to ensure consistency
+  recalcAllFirearmValues(db);
 }
