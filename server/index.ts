@@ -20,6 +20,7 @@ async function main() {
   const savedFilterRoutes = (await import('./routes/savedFilters')).default;
   const noteRoutes = (await import('./routes/notes')).default;
   const photoRoutes = (await import('./routes/photos')).default;
+  const maintenanceRoutes = (await import('./routes/maintenance')).default;
 
   // Seed database on startup
   await seedDatabase();
@@ -48,6 +49,7 @@ async function main() {
   app.use('/api/saved-filters', requireAuth, savedFilterRoutes);
   app.use('/api/notes', requireAuth, noteRoutes);
   app.use('/api/photos', requireAuth, photoRoutes);
+  app.use('/api/maintenance', requireAuth, maintenanceRoutes);
   app.use('/api/audit-log', requireAuth, requireAdmin, auditLogRoutes);
 
   // Health check
