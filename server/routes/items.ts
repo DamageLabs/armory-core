@@ -13,11 +13,19 @@ const JSON_FIELDS = ['customFields'];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RECEIPTS_DIR = process.env.RECEIPTS_PATH || path.join(__dirname, '../../data/receipts');
+const PHOTOS_DIR = process.env.PHOTOS_PATH || path.join(__dirname, '../../data/photos');
 
 function cleanupReceiptFiles(itemId: number): void {
   const receipts = queryAll<{ filename: string }>('SELECT filename FROM receipts WHERE item_id = ?', [itemId]);
   for (const r of receipts) {
     fs.unlink(path.join(RECEIPTS_DIR, r.filename), () => {});
+  }
+}
+
+function cleanupPhotoFiles(itemId: number): void {
+  const photos = queryAll<{ filename: string }>('SELECT filename FROM item_photos WHERE item_id = ?', [itemId]);
+  for (const p of photos) {
+    fs.unlink(path.join(PHOTOS_DIR, p.filename), () => {});
   }
 }
 
@@ -264,6 +272,7 @@ router.post('/bulk-delete', validate(bulkDeleteSchema), (req: Request, res: Resp
             [id, existing.name, 'deleted', existing.quantity, 0, existing.value, 0, existing.category, null, 'Bulk delete', req.user?.userId ?? null, req.user?.email ?? null, now]
           );
           cleanupReceiptFiles(id);
+          cleanupPhotoFiles(id);
           deleteById('items', id);
         }
       }
@@ -442,6 +451,7 @@ router.delete('/:id', (req: Request, res: Response) => {
     );
 
     cleanupReceiptFiles(id);
+    cleanupPhotoFiles(id);
     deleteById('items', id);
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.deleted', resourceType: 'item', resourceId: id, details: { name: existing.name as string } });
     res.json({ message: 'Item deleted' });
