@@ -100,6 +100,28 @@ router.get('/stats', (req: Request, res: Response) => {
   }
 });
 
+// GET /locations — Return distinct locations including gun safe names
+router.get('/locations', (_req: Request, res: Response) => {
+  try {
+    const db = getDatabase();
+    const safes = db.prepare(
+      `SELECT name FROM items WHERE category = 'Gun Safes' ORDER BY name`
+    ).all() as { name: string }[];
+    const existing = db.prepare(
+      `SELECT DISTINCT location FROM items WHERE location != '' ORDER BY location`
+    ).all() as { location: string }[];
+
+    const locationSet = new Set<string>();
+    for (const s of safes) locationSet.add(s.name);
+    for (const e of existing) locationSet.add(e.location);
+
+    res.json([...locationSet].sort());
+  } catch (error) {
+    console.error('Error fetching locations:', error);
+    res.status(500).json({ error: 'Failed to fetch locations' });
+  }
+});
+
 // GET /reorder — Items needing reorder (Ammunition only)
 router.get('/reorder', (_req: Request, res: Response) => {
   try {
