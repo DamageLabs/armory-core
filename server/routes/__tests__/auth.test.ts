@@ -99,11 +99,11 @@ describe('auth routes', () => {
       mockUserQueries.findByEmail.mockReturnValue(null);
       mockUserQueries.create.mockReturnValue({ ...mockUser, id: 2 });
       const res = await request(app).post('/api/auth/register').send({
-        email: 'new@example.com', password: 'password123', passwordConfirmation: 'password123',
+        email: 'new@example.com', password: 'Strong1Pass!', passwordConfirmation: 'Strong1Pass!',
       });
       expect(res.status).toBe(201);
       expect(res.body.message).toContain('Registration successful');
-      expect(mockHashPassword).toHaveBeenCalledWith('password123');
+      expect(mockHashPassword).toHaveBeenCalledWith('Strong1Pass!');
       expect(mockUserQueries.create).toHaveBeenCalledWith(
         expect.objectContaining({ password: '$2b$12$hashedvalue' }),
       );
@@ -112,14 +112,14 @@ describe('auth routes', () => {
     it('returns 400 for duplicate email', async () => {
       mockUserQueries.findByEmail.mockReturnValue(mockUser);
       const res = await request(app).post('/api/auth/register').send({
-        email: 'test@example.com', password: 'password123', passwordConfirmation: 'password123',
+        email: 'test@example.com', password: 'Strong1Pass!', passwordConfirmation: 'Strong1Pass!',
       });
       expect(res.status).toBe(400);
     });
 
     it('returns 400 for password mismatch', async () => {
       const res = await request(app).post('/api/auth/register').send({
-        email: 'new@test.com', password: 'password123', passwordConfirmation: 'different',
+        email: 'new@test.com', password: 'Strong1Pass!', passwordConfirmation: 'different',
       });
       expect(res.status).toBe(400);
     });
@@ -181,10 +181,10 @@ describe('auth routes', () => {
       const { getDatabase } = await import('../../db');
       vi.mocked(getDatabase).mockReturnValue(mockDb as never);
       mockVerifyPassword.mockResolvedValue(true);
-      const res = await request(app).put('/api/auth/profile/1').send({ currentPassword: 'changeme', password: 'newpassword' });
+      const res = await request(app).put('/api/auth/profile/1').send({ currentPassword: 'changeme', password: 'NewSecure9!' });
       expect(res.status).toBe(200);
       expect(mockVerifyPassword).toHaveBeenCalledWith('changeme', '$2b$12$hashedvalue');
-      expect(mockHashPassword).toHaveBeenCalledWith('newpassword');
+      expect(mockHashPassword).toHaveBeenCalledWith('NewSecure9!');
     });
 
     it('returns 400 for incorrect current password', async () => {
