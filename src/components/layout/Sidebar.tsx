@@ -26,6 +26,7 @@ import {
   cilSettings,
   cilApplications,
   cilHistory,
+  cilNotes,
 } from '@coreui/icons';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -72,6 +73,7 @@ export default function Sidebar({ visible, onVisibleChange }: SidebarProps) {
               <SidebarNavLink to="/reports/valuation" icon={cilChart}>Inventory Valuation</SidebarNavLink>
               <SidebarNavLink to="/reports/movement" icon={cilSwapHorizontal}>Stock Movement</SidebarNavLink>
               <SidebarNavLink to="/reports/custom" icon={cilDescription}>Custom Report</SidebarNavLink>
+              <SidebarNavLink to="/reports/maintenance" icon={cilNotes}>Maintenance</SidebarNavLink>
             </CNavGroup>
             <CNavGroup toggler={<><CIcon customClassName="nav-icon" icon={cilLayers} /> BOM</>}>
               <SidebarNavLink to="/bom" icon={cilLayers}>All BOMs</SidebarNavLink>

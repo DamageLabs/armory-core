@@ -21,6 +21,7 @@ import Dashboard from './components/reports/Dashboard';
 import ValuationReport from './components/reports/ValuationReport';
 import MovementReport from './components/reports/MovementReport';
 import CustomReport from './components/reports/CustomReport';
+import MaintenanceReport from './components/reports/MaintenanceReport';
 import ItemTemplates from './components/items/ItemTemplates';
 import RestoreBackup from './components/items/RestoreBackup';
 import BOMList from './components/bom/BOMList';
@@ -237,6 +238,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <CustomReport />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="reports/maintenance"
+                  element={
+                    <ProtectedRoute>
+                      <MaintenanceReport />
                     </ProtectedRoute>
                   }
                 />
