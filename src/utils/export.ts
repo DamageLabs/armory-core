@@ -70,7 +70,7 @@ export function exportToPDF(items: Item[]): void {
   doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
 
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalValue = items.reduce((sum, item) => sum + item.value, 0);
+  const totalValue = items.reduce((sum, item) => sum + item.quantity * item.unitValue, 0);
   doc.text(`Total Items: ${items.length} | Total Quantity: ${totalQuantity} | Total Value: ${formatCurrency(totalValue)}`, 14, 36);
 
   const tableData = items.map((item) => [

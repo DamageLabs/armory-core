@@ -88,7 +88,7 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     const totalItems = items.length;
     const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-    const totalValue = items.reduce((sum, item) => sum + item.value, 0);
+    const totalValue = items.reduce((sum, item) => sum + item.quantity * item.unitValue, 0);
     const stockEligible = items.filter((item) => lowStockTypeIds.has(item.inventoryTypeId));
     const lowStockCount = stockEligible.filter((item) => item.quantity <= LOW_STOCK_THRESHOLD && item.quantity > 0).length;
     const outOfStockCount = stockEligible.filter((item) => item.quantity === 0).length;
@@ -103,7 +103,7 @@ export default function Dashboard() {
       const existing = categoryMap.get(item.category) || { count: 0, value: 0, quantity: 0 };
       categoryMap.set(item.category, {
         count: existing.count + 1,
-        value: existing.value + item.value,
+        value: existing.value + item.quantity * item.unitValue,
         quantity: existing.quantity + item.quantity,
       });
     });
@@ -121,7 +121,7 @@ export default function Dashboard() {
       const existing = locationMap.get(location) || { count: 0, value: 0 };
       locationMap.set(location, {
         count: existing.count + 1,
-        value: existing.value + item.value,
+        value: existing.value + item.quantity * item.unitValue,
       });
     });
 
@@ -132,7 +132,7 @@ export default function Dashboard() {
   }, [items]);
 
   const topItemsByValue = useMemo(() => {
-    return [...items].sort((a, b) => b.value - a.value).slice(0, 5);
+    return [...items].sort((a, b) => (b.quantity * b.unitValue) - (a.quantity * a.unitValue)).slice(0, 5);
   }, [items]);
 
   const textColor = isDark ? '#e9ecef' : '#212529';

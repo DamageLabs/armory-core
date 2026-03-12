@@ -133,7 +133,7 @@ export default function CustomReport() {
       name,
       items,
       totalQuantity: items.reduce((sum, i) => sum + i.quantity, 0),
-      totalValue: items.reduce((sum, i) => sum + i.value, 0),
+      totalValue: items.reduce((sum, i) => sum + i.quantity * i.unitValue, 0),
     }));
   }, [sortedItems, groupBy]);
 
@@ -147,7 +147,7 @@ export default function CustomReport() {
 
   const totals = useMemo(() => ({
     quantity: filteredItems.reduce((sum, i) => sum + i.quantity, 0),
-    value: filteredItems.reduce((sum, i) => sum + i.value, 0),
+    value: filteredItems.reduce((sum, i) => sum + i.quantity * i.unitValue, 0),
   }), [filteredItems]);
 
   const toggleColumn = (key: ColumnKey) => {
