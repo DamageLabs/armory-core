@@ -617,7 +617,7 @@ export default function ItemList() {
                     <td className="text-center">{formatCurrency(item.value)}</td>
                     <td className="text-center">{item.location}</td>
                     <td className="text-center">{item.category}</td>
-                    <td className="text-center">
+                    <td className="text-center text-nowrap">
                       <Link
                         to={`/items/${item.id}/edit`}
                         className="btn btn-sm btn-outline-primary me-1"
