@@ -153,9 +153,15 @@ export default function ItemDetail() {
                     </tr>
                   )}
                   <tr>
-                    <td className="text-muted ps-3">Unit Value</td>
+                    <td className="text-muted ps-3">{inventoryType?.name === FIREARMS_TYPE_NAME ? 'MSRP' : 'Unit Value'}</td>
                     <td className="pe-3 text-end">{formatCurrency(item.unitValue)}</td>
                   </tr>
+                  {inventoryType?.name === FIREARMS_TYPE_NAME && item.value > item.unitValue && (
+                    <tr>
+                      <td className="text-muted ps-3">Accessories</td>
+                      <td className="pe-3 text-end">{formatCurrency(item.value - item.unitValue)}</td>
+                    </tr>
+                  )}
                   <tr>
                     <td className="text-muted ps-3">Total Value</td>
                     <td className="pe-3 text-end fw-bold">{formatCurrency(item.value)}</td>
