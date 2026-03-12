@@ -20,6 +20,14 @@ function isFirearmType(inventoryTypeId: number): boolean {
   return row?.name === 'Firearms';
 }
 
+/** Inherit location from parent item if parent has one set. */
+function inheritParentLocation(itemId: number, parentItemId: number): void {
+  const parent = queryOne<{ location: string }>('SELECT location FROM items WHERE id = ?', [parentItemId]);
+  if (parent?.location) {
+    run('UPDATE items SET location = ?, updated_at = ? WHERE id = ?', [parent.location, new Date().toISOString(), itemId]);
+  }
+}
+
 /** Recalculate a firearm's total value = unitValue + SUM(children.value). No-op for non-firearms. */
 function recalcFirearmValue(itemId: number): void {
   const item = queryOne<{ inventoryTypeId: number; unitValue: number }>(
@@ -448,12 +456,15 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
     );
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.created', resourceType: 'item', resourceId: created.id as number, details: { name: name || '' } });
 
-    // Recalc parent firearm value when adding a child
+    // Inherit parent location and recalc parent firearm value when adding a child
     if (parentItemId) {
+      inheritParentLocation(created.id as number, parentItemId);
       recalcFirearmValue(parentItemId);
     }
 
-    res.status(201).json(item);
+    // Re-fetch to include inherited location
+    const final = parentItemId ? queryOne('SELECT * FROM items WHERE id = ?', [created.id], JSON_FIELDS) : item;
+    res.status(201).json(final);
   } catch (error) {
     console.error('Error creating item:', error);
     res.status(500).json({ error: 'Failed to create item' });
@@ -506,6 +517,16 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
 
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.updated', resourceType: 'item', resourceId: id, details: { name: merged.name } });
 
+    // Inherit new parent's location when reparented
+    if (newParentId && oldParentId !== newParentId) {
+      inheritParentLocation(id, newParentId);
+    }
+
+    // When a parent's location changes, update all children
+    if (existing.location !== merged.location) {
+      run('UPDATE items SET location = ?, updated_at = ? WHERE parent_item_id = ?', [merged.location, now, id]);
+    }
+
     // Recalc parent firearm values when child value/parent changes
     if (firearm) {
       recalcFirearmValue(id);
@@ -517,7 +538,9 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
       recalcFirearmValue(newParentId);
     }
 
-    res.json(updated);
+    // Re-fetch to include inherited location
+    const final = (newParentId && oldParentId !== newParentId) ? queryOne('SELECT * FROM items WHERE id = ?', [id], JSON_FIELDS) : updated;
+    res.json(final);
   } catch (error) {
     console.error('Error updating item:', error);
     res.status(500).json({ error: 'Failed to update item' });
