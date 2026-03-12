@@ -11,6 +11,32 @@ import { logAudit } from '../services/auditService';
 const router = Router();
 const JSON_FIELDS = ['customFields'];
 
+/** Check whether an inventory_type_id corresponds to 'Firearms'. */
+function isFirearmType(inventoryTypeId: number): boolean {
+  const row = queryOne<{ name: string }>(
+    'SELECT name FROM inventory_types WHERE id = ?',
+    [inventoryTypeId]
+  );
+  return row?.name === 'Firearms';
+}
+
+/** Recalculate a firearm's total value = unitValue + SUM(children.value). No-op for non-firearms. */
+function recalcFirearmValue(itemId: number): void {
+  const item = queryOne<{ inventoryTypeId: number; unitValue: number }>(
+    'SELECT inventory_type_id as inventoryTypeId, unit_value as unitValue FROM items WHERE id = ?',
+    [itemId]
+  );
+  if (!item || !isFirearmType(item.inventoryTypeId)) return;
+
+  const db = getDatabase();
+  const row = db.prepare(
+    'SELECT COALESCE(SUM(value), 0) as childTotal FROM items WHERE parent_item_id = ?'
+  ).get(itemId) as { childTotal: number };
+
+  const newValue = item.unitValue + row.childTotal;
+  run('UPDATE items SET value = ?, updated_at = ? WHERE id = ?', [newValue, new Date().toISOString(), itemId]);
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RECEIPTS_DIR = process.env.RECEIPTS_PATH || path.join(__dirname, '../../data/receipts');
 const PHOTOS_DIR = process.env.PHOTOS_PATH || path.join(__dirname, '../../data/photos');
@@ -146,11 +172,13 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
     const parents = items.filter((it) => !it.parentItemId);
     const children = items.filter((it) => it.parentItemId);
 
+    const parentIdsToRecalc = new Set<number>();
     const txn = db.transaction(() => {
       for (const item of parents) {
+        const typeId = Number(item.inventoryTypeId) || 1;
         const qty = Number(item.quantity) || 0;
         const uv = Number(item.unitValue) || 0;
-        const value = qty * uv;
+        const value = isFirearmType(typeId) ? uv : qty * uv;
         const oldId = item.id as number | undefined;
 
         const result = insert('items', {
@@ -164,7 +192,7 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
           location: item.location || '',
           barcode: item.barcode || '',
           reorderPoint: Number(item.reorderPoint) || 0,
-          inventoryTypeId: Number(item.inventoryTypeId) || 1,
+          inventoryTypeId: typeId,
           customFields: item.customFields || {},
           parentItemId: null,
           createdAt: now,
@@ -206,6 +234,7 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
         }, JSON_FIELDS) as Record<string, unknown>;
 
         if (oldId) idMapping[oldId] = result.id as number;
+        if (newParentId) parentIdsToRecalc.add(newParentId);
         run(
           'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [result.id, item.name, 'created', 0, qty, 0, value, null, item.category || '', 'Bulk restore', req.user?.userId ?? null, req.user?.email ?? null, now]
@@ -214,6 +243,11 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
       }
     });
     txn();
+
+    // Recalc parent firearm values after children are restored
+    for (const pid of parentIdsToRecalc) {
+      recalcFirearmValue(pid);
+    }
 
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.bulk_created', resourceType: 'item', details: { count: created } });
 
@@ -262,10 +296,14 @@ router.post('/bulk-delete', validate(bulkDeleteSchema), (req: Request, res: Resp
 
     const now = new Date().toISOString();
     const db = getDatabase();
+    const parentIdsToRecalc = new Set<number>();
     const txn = db.transaction(() => {
       for (const id of ids) {
         const existing = queryOne<Record<string, unknown>>('SELECT * FROM items WHERE id = ?', [id], JSON_FIELDS);
         if (existing) {
+          if (existing.parentItemId && !ids.includes(existing.parentItemId as number)) {
+            parentIdsToRecalc.add(existing.parentItemId as number);
+          }
           run('UPDATE items SET parent_item_id = NULL WHERE parent_item_id = ?', [id]);
           run(
             'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -278,6 +316,11 @@ router.post('/bulk-delete', validate(bulkDeleteSchema), (req: Request, res: Resp
       }
     });
     txn();
+
+    // Recalc parent firearm values after bulk delete
+    for (const pid of parentIdsToRecalc) {
+      recalcFirearmValue(pid);
+    }
 
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.bulk_deleted', resourceType: 'item', details: { count: ids.length } });
 
@@ -353,9 +396,10 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
   try {
     const now = new Date().toISOString();
     const { name, description, quantity, unitValue, picture, category, location, barcode, reorderPoint, inventoryTypeId, customFields, parentItemId } = req.body;
+    const typeId = inventoryTypeId || 1;
     const qty = quantity || 0;
     const uv = unitValue || 0;
-    const value = qty * uv;
+    const value = isFirearmType(typeId) ? uv : qty * uv;
 
     const item = insert('items', {
       name: name || '',
@@ -368,7 +412,7 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
       location: location || '',
       barcode: barcode || '',
       reorderPoint: reorderPoint || 0,
-      inventoryTypeId: inventoryTypeId || 1,
+      inventoryTypeId: typeId,
       customFields: customFields || {},
       parentItemId: parentItemId || null,
       createdAt: now,
@@ -381,6 +425,11 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
       [created.id, name || '', 'created', 0, qty, 0, value, null, category || '', 'Item created', req.user?.userId ?? null, req.user?.email ?? null, now]
     );
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.created', resourceType: 'item', resourceId: created.id as number, details: { name: name || '' } });
+
+    // Recalc parent firearm value when adding a child
+    if (parentItemId) {
+      recalcFirearmValue(parentItemId);
+    }
 
     res.status(201).json(item);
   } catch (error) {
@@ -403,8 +452,14 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
     const merged = { ...existing, ...req.body, updatedAt: now };
     const qty = merged.quantity || 0;
     const uv = merged.unitValue || 0;
-    merged.value = qty * uv;
+    const firearm = isFirearmType(merged.inventoryTypeId as number);
+    // Firearms: value = unitValue (children added separately via recalc)
+    // Others: value = quantity * unitValue
+    merged.value = firearm ? uv : qty * uv;
     delete merged.id;
+
+    const oldParentId = existing.parentItemId as number | null;
+    const newParentId = merged.parentItemId as number | null;
 
     const updated = update('items', id, merged, JSON_FIELDS);
 
@@ -424,6 +479,17 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
 
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.updated', resourceType: 'item', resourceId: id, details: { name: merged.name } });
 
+    // Recalc parent firearm values when child value/parent changes
+    if (firearm) {
+      recalcFirearmValue(id);
+    }
+    if (oldParentId && oldParentId !== newParentId) {
+      recalcFirearmValue(oldParentId);
+    }
+    if (newParentId) {
+      recalcFirearmValue(newParentId);
+    }
+
     res.json(updated);
   } catch (error) {
     console.error('Error updating item:', error);
@@ -442,6 +508,8 @@ router.delete('/:id', (req: Request, res: Response) => {
     }
 
     const now = new Date().toISOString();
+    const parentId = existing.parentItemId as number | null;
+
     // Unlink children before deleting parent
     run('UPDATE items SET parent_item_id = NULL WHERE parent_item_id = ?', [id]);
 
@@ -454,6 +522,12 @@ router.delete('/:id', (req: Request, res: Response) => {
     cleanupPhotoFiles(id);
     deleteById('items', id);
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.deleted', resourceType: 'item', resourceId: id, details: { name: existing.name as string } });
+
+    // Recalc parent firearm value after removing a child
+    if (parentId) {
+      recalcFirearmValue(parentId);
+    }
+
     res.json({ message: 'Item deleted' });
   } catch (error) {
     console.error('Error deleting item:', error);
