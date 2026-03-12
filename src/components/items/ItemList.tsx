@@ -467,6 +467,18 @@ export default function ItemList() {
           onFilterLowStock={handleFilterLowStock}
         />
 
+        <div className="d-flex gap-3 mb-3 small">
+          <span><strong>{totalItems}</strong> items</span>
+          <span><strong>{totalQuantity.toLocaleString()}</strong> total qty</span>
+          <span><strong>{formatCurrency(totalValue)}</strong> value</span>
+          {lowStockCounts.lowStock > 0 && (
+            <span className="text-warning"><strong>{lowStockCounts.lowStock}</strong> low stock</span>
+          )}
+          {lowStockCounts.outOfStock > 0 && (
+            <span className="text-danger"><strong>{lowStockCounts.outOfStock}</strong> out of stock</span>
+          )}
+        </div>
+
         <ItemFilters
           searchTerm={searchTerm}
           onSearchChange={handleSearchChange}
