@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ItemService } from '../../../core/services/item.service';
+import { InventoryTypeService } from '../../../core/services/inventory-type.service';
 import { Item } from '../../../types/item';
+import { InventoryType, FieldDefinition } from '../../../types/inventory-type';
 
 @Component({
   selector: 'app-inventory-form',
@@ -180,6 +182,25 @@ import { Item } from '../../../types/item';
             </div>
           </div>
 
+          <!-- Inventory Type -->
+          <div>
+            <label for="inventoryTypeId" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+              Inventory Type
+            </label>
+            <select
+              id="inventoryTypeId"
+              formControlName="inventoryTypeId"
+              class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="">Select inventory type...</option>
+              @for (type of inventoryTypes(); track type.id) {
+                <option [value]="type.id">{{ type.name }}</option>
+              }
+            </select>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Select type to enable custom fields (Firearms, Accessories, Ammunition)
+            </p>
+          </div>
+
           <!-- Notes -->
           <div>
             <label for="notes" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
@@ -194,6 +215,111 @@ import { Item } from '../../../types/item';
             </textarea>
           </div>
         </div>
+
+        <!-- Custom Fields Section -->
+        @if (selectedInventoryType() && getCustomFieldGroupKeys().length > 0) {
+          <div class="space-y-4">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2">{{ selectedInventoryType()?.name }} Details</h2>
+            
+            <!-- Tabs (only show if multiple groups) -->
+            @if (hasMultipleGroups()) {
+              <nav class="flex space-x-8 border-b border-slate-200 dark:border-slate-700">
+                @for (groupKey of getCustomFieldGroupKeys(); track groupKey) {
+                  <button 
+                    type="button"
+                    (click)="activeCustomFieldTab.set(groupKey)"
+                    [class]="activeCustomFieldTab() === groupKey ? 'border-amber-500 text-amber-500' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'"
+                    class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                    {{ groupKey }}
+                  </button>
+                }
+              </nav>
+            }
+            
+            <!-- Custom Field Forms -->
+            @for (groupKey of getCustomFieldGroupKeys(); track groupKey) {
+              @if (!hasMultipleGroups() || activeCustomFieldTab() === groupKey) {
+                <div class="space-y-4">
+                  @for (field of customFieldGroups()[groupKey]; track field.key) {
+                    <div>
+                      <label [for]="'custom-' + field.key" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+                        {{ field.label }}
+                        @if (field.required) {
+                          <span class="text-red-400">*</span>
+                        }
+                      </label>
+                      
+                      <!-- Text Input -->
+                      @if (field.type === 'text') {
+                        <input
+                          [id]="'custom-' + field.key"
+                          type="text"
+                          [value]="getCustomFieldValue(field.key)"
+                          (input)="onCustomFieldTextChange(field.key, $event)"
+                          [placeholder]="field.placeholder || ''"
+                          class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                        />
+                      }
+                      
+                      <!-- Number Input -->
+                      @if (field.type === 'number') {
+                        <input
+                          [id]="'custom-' + field.key"
+                          type="number"
+                          [value]="getCustomFieldValue(field.key)"
+                          (input)="onCustomFieldNumberChange(field.key, $event)"
+                          [placeholder]="field.placeholder || ''"
+                          class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                        />
+                      }
+                      
+                      <!-- Select Input -->
+                      @if (field.type === 'select' && field.options) {
+                        <select
+                          [id]="'custom-' + field.key"
+                          [value]="getCustomFieldValue(field.key)"
+                          (change)="onCustomFieldSelectChange(field.key, $event)"
+                          class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                          <option value="">{{ field.placeholder || 'Select an option...' }}</option>
+                          @for (option of field.options; track option) {
+                            <option [value]="option">{{ option }}</option>
+                          }
+                        </select>
+                      }
+                      
+                      <!-- Date Input -->
+                      @if (field.type === 'date') {
+                        <input
+                          [id]="'custom-' + field.key"
+                          type="date"
+                          [value]="getCustomFieldValue(field.key)"
+                          (input)="onCustomFieldDateChange(field.key, $event)"
+                          class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                        />
+                      }
+                      
+                      <!-- Boolean Input -->
+                      @if (field.type === 'boolean') {
+                        <div class="flex items-center space-x-3">
+                          <input
+                            [id]="'custom-' + field.key"
+                            type="checkbox"
+                            [checked]="getCustomFieldValue(field.key)"
+                            (change)="onCustomFieldBooleanChange(field.key, $event)"
+                            class="w-4 h-4 text-amber-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded focus:ring-amber-500 focus:ring-2"
+                          />
+                          <label [for]="'custom-' + field.key" class="text-sm text-slate-600 dark:text-slate-300">
+                            {{ field.placeholder || 'Yes' }}
+                          </label>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
 
         <!-- Form actions -->
         <div class="flex items-center justify-end space-x-4 pt-6 border-t border-slate-200 dark:border-slate-700">
@@ -227,6 +353,7 @@ import { Item } from '../../../types/item';
 export class InventoryFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private itemService = inject(ItemService);
+  private inventoryTypeService = inject(InventoryTypeService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -236,6 +363,10 @@ export class InventoryFormComponent implements OnInit {
   isEditMode = signal(false);
   itemId: string | null = null;
   availableParents = signal<Item[]>([]);
+  inventoryTypes = signal<InventoryType[]>([]);
+  selectedInventoryType = signal<InventoryType | null>(null);
+  customFieldGroups = signal<{[key: string]: FieldDefinition[]}>({});
+  activeCustomFieldTab = signal<string>('Details');
 
   constructor() {
     this.itemForm = this.fb.group({
@@ -246,6 +377,7 @@ export class InventoryFormComponent implements OnInit {
       location: [''],
       notes: [''],
       parentItemId: [null],
+      inventoryTypeId: [null],
       customFields: [{}],
       expirationDate: [null],
       expirationNotes: ['']
@@ -255,6 +387,16 @@ export class InventoryFormComponent implements OnInit {
   ngOnInit(): void {
     this.itemId = this.route.snapshot.paramMap.get('id');
     this.loadAvailableParents();
+    this.loadInventoryTypes();
+    
+    // Watch for inventory type changes
+    this.itemForm.get('inventoryTypeId')?.valueChanges.subscribe((typeId) => {
+      if (typeId) {
+        this.loadCustomFieldSchema(typeId);
+      } else {
+        this.clearCustomFieldSchema();
+      }
+    });
     
     if (this.itemId) {
       this.isEditMode.set(true);
@@ -279,6 +421,81 @@ export class InventoryFormComponent implements OnInit {
     });
   }
 
+  private loadInventoryTypes(): void {
+    this.inventoryTypeService.getInventoryTypes().subscribe({
+      next: (types) => {
+        this.inventoryTypes.set(types);
+      },
+      error: (error) => {
+        console.error('Failed to load inventory types:', error);
+        this.errorMessage.set('Failed to load inventory types. Please try again.');
+      }
+    });
+  }
+
+  private loadCustomFieldSchema(typeId: number): void {
+    const type = this.inventoryTypes().find(t => t.id === typeId);
+    if (!type) return;
+    
+    this.selectedInventoryType.set(type);
+    
+    // Group fields by their group property (default to "Details")
+    const grouped: {[key: string]: FieldDefinition[]} = {};
+    
+    type.schema.forEach(field => {
+      const group = field.group || 'Details';
+      if (!grouped[group]) {
+        grouped[group] = [];
+      }
+      grouped[group].push(field);
+    });
+    
+    this.customFieldGroups.set(grouped);
+    
+    // Set active tab to first group
+    const groups = Object.keys(grouped);
+    if (groups.length > 0) {
+      this.activeCustomFieldTab.set(groups[0]);
+    }
+    
+    // Initialize custom fields form group with existing values or defaults
+    this.initializeCustomFieldsForm(type.schema);
+  }
+
+  private clearCustomFieldSchema(): void {
+    this.selectedInventoryType.set(null);
+    this.customFieldGroups.set({});
+    this.activeCustomFieldTab.set('Details');
+    // Clear custom fields from form
+    this.itemForm.patchValue({ customFields: {} });
+  }
+
+  private initializeCustomFieldsForm(schema: FieldDefinition[]): void {
+    const currentCustomFields = this.itemForm.get('customFields')?.value || {};
+    const updatedCustomFields: any = {};
+    
+    schema.forEach(field => {
+      // Preserve existing values or set defaults
+      if (currentCustomFields[field.key] !== undefined) {
+        updatedCustomFields[field.key] = currentCustomFields[field.key];
+      } else {
+        // Set default values based on field type
+        switch (field.type) {
+          case 'boolean':
+            updatedCustomFields[field.key] = false;
+            break;
+          case 'number':
+            updatedCustomFields[field.key] = null;
+            break;
+          default:
+            updatedCustomFields[field.key] = '';
+        }
+      }
+    });
+    
+    this.itemForm.patchValue({ customFields: updatedCustomFields });
+  }
+
   private loadItem(): void {
     if (!this.itemId) return;
     
@@ -291,6 +508,12 @@ export class InventoryFormComponent implements OnInit {
           cost: item.unitValue || null
         };
         this.itemForm.patchValue(formData);
+        
+        // Load custom field schema if inventory type is set
+        if (item.inventoryTypeId) {
+          this.loadCustomFieldSchema(item.inventoryTypeId);
+        }
+        
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -350,5 +573,57 @@ export class InventoryFormComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/inventory']);
+  }
+
+  // Helper method to get custom field value
+  getCustomFieldValue(fieldKey: string): any {
+    const customFields = this.itemForm.get('customFields')?.value || {};
+    return customFields[fieldKey];
+  }
+
+  // Helper method to update custom field value
+  updateCustomFieldValue(fieldKey: string, value: any): void {
+    const currentCustomFields = this.itemForm.get('customFields')?.value || {};
+    const updatedCustomFields = {
+      ...currentCustomFields,
+      [fieldKey]: value
+    };
+    this.itemForm.patchValue({ customFields: updatedCustomFields });
+  }
+
+  // Helper method to check if field has group tabs
+  hasMultipleGroups(): boolean {
+    return Object.keys(this.customFieldGroups()).length > 1;
+  }
+
+  // Helper method to get available groups
+  getCustomFieldGroupKeys(): string[] {
+    return Object.keys(this.customFieldGroups());
+  }
+
+  // Event handlers for custom fields
+  onCustomFieldTextChange(fieldKey: string, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.updateCustomFieldValue(fieldKey, target.value);
+  }
+
+  onCustomFieldNumberChange(fieldKey: string, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.updateCustomFieldValue(fieldKey, target.value ? +target.value : null);
+  }
+
+  onCustomFieldSelectChange(fieldKey: string, event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.updateCustomFieldValue(fieldKey, target.value);
+  }
+
+  onCustomFieldDateChange(fieldKey: string, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.updateCustomFieldValue(fieldKey, target.value);
+  }
+
+  onCustomFieldBooleanChange(fieldKey: string, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.updateCustomFieldValue(fieldKey, target.checked);
   }
 }
