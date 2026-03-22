@@ -327,6 +327,18 @@ export class InventoryListComponent implements OnInit {
     this.isLoading.set(true);
     this.itemService.getItems(this.currentFilters).subscribe({
       next: (data) => {
+        // Compute child_count and parent_name client-side
+        const items = data.data;
+        const itemMap = new Map(items.map(i => [i.id, i]));
+        for (const item of items) {
+          // Count children
+          (item as any).child_count = items.filter(i => i.parentItemId === item.id).length;
+          // Resolve parent name
+          if (item.parentItemId) {
+            const parent = itemMap.get(item.parentItemId);
+            (item as any).parent_name = parent?.name || null;
+          }
+        }
         this.itemsData.set(data);
         this.isLoading.set(false);
         // Clear selections when data changes
