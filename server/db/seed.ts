@@ -182,11 +182,26 @@ async function migrateUnhashedPasswords(): Promise<void> {
   }
 }
 
+/**
+ * Seed initial data only when database is empty (first run).
+ * Migrations are handled separately in migrations.ts via version tracking.
+ */
 export async function seedDatabase(): Promise<void> {
+  const db = getDatabase();
+
+  // Always run structural ensures (idempotent, no data mutation)
   ensureParentItemIdColumn();
-  ensureInventoryTypes();
+
+  // Seed inventory types and categories only if none exist
+  const typeCount = db.prepare('SELECT COUNT(*) as count FROM inventory_types').get() as { count: number };
+  if (typeCount.count === 0) {
+    console.log('🌱 First run detected — seeding inventory types and categories');
+    ensureInventoryTypes();
+    ensureCategories();
+  }
+
+  // Data fixups (idempotent — safe to run always)
   migrateOpticsAndLights();
   fixOrphanedItems();
-  ensureCategories();
   await migrateUnhashedPasswords();
 }
