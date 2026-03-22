@@ -132,7 +132,7 @@ describe('AlertContext', () => {
     expect(screen.getByTestId('alert-count')).toHaveTextContent('0');
   });
 
-  it('auto-dismisses alerts after 5 seconds', () => {
+  it('does not auto-dismiss alerts (handled by CToast)', () => {
     render(
       <AlertProvider>
         <TestComponent />
@@ -145,11 +145,12 @@ describe('AlertContext', () => {
 
     expect(screen.getByTestId('alert-count')).toHaveTextContent('1');
 
+    // Alerts are no longer auto-dismissed by the context - CToast handles that
     act(() => {
       vi.advanceTimersByTime(5000);
     });
 
-    expect(screen.getByTestId('alert-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('alert-count')).toHaveTextContent('1');
   });
 
   it('handles multiple alerts', () => {

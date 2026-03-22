@@ -27,11 +27,9 @@ export function AlertProvider({ children }: { children: ReactNode }) {
   const showAlert = useCallback((message: string, type: AlertType = 'info') => {
     const id = ++alertId;
     setAlerts((prev) => [...prev, { id, type, message }]);
-
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-      setAlerts((prev) => prev.filter((alert) => alert.id !== id));
-    }, 5000);
+    
+    // Note: CToast component handles auto-dismiss with autohide prop
+    // Manual dismissal happens via dismissAlert function
   }, []);
 
   const showSuccess = useCallback((message: string) => {
