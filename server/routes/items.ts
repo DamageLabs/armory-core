@@ -233,6 +233,52 @@ router.get('/low-stock-counts', (req: Request, res: Response) => {
   }
 });
 
+// GET /expiring — Items expiring within N days
+router.get('/expiring', (req: Request, res: Response) => {
+  try {
+    const days = parseInt(req.query.days as string, 10) || 30;
+    const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [days, req.user?.userId] : [days];
+    
+    const items = queryAll(
+      `SELECT * FROM items 
+       WHERE expiration_date IS NOT NULL 
+         AND expiration_date != '' 
+         AND expiration_date <= date('now', '+' || ? || ' days')
+         ${userFilter}
+       ORDER BY expiration_date ASC`,
+      userValues,
+      JSON_FIELDS
+    );
+
+    // Add expiration status to each item
+    const itemsWithStatus = items.map((item: any) => {
+      const expirationDate = new Date(item.expirationDate);
+      const today = new Date();
+      const diffDays = Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      let expirationStatus: 'expired' | 'warning' | 'good';
+      if (diffDays < 0) {
+        expirationStatus = 'expired';
+      } else if (diffDays <= 30) {
+        expirationStatus = 'warning';
+      } else {
+        expirationStatus = 'good';
+      }
+      
+      return {
+        ...item,
+        expirationStatus
+      };
+    });
+
+    res.json(itemsWithStatus);
+  } catch (error) {
+    console.error('Error fetching expiring items:', error);
+    res.status(500).json({ error: 'Failed to fetch expiring items' });
+  }
+});
+
 // POST /bulk-create — Create multiple items with parent-child remapping
 router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Response) => {
   try {
@@ -270,6 +316,8 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
           customFields: item.customFields || {},
           parentItemId: null,
           userId: req.user?.userId, // Set to current user
+          expirationDate: item.expirationDate || null,
+          expirationNotes: item.expirationNotes || '',
           createdAt: now,
           updatedAt: now,
         }, JSON_FIELDS) as Record<string, unknown>;
@@ -305,6 +353,8 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
           customFields: item.customFields || {},
           parentItemId: newParentId,
           userId: req.user?.userId, // Set to current user
+          expirationDate: item.expirationDate || null,
+          expirationNotes: item.expirationNotes || '',
           createdAt: now,
           updatedAt: now,
         }, JSON_FIELDS) as Record<string, unknown>;
@@ -568,7 +618,7 @@ router.get('/:id', (req: Request, res: Response) => {
 router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
   try {
     const now = new Date().toISOString();
-    const { name, description, quantity, unitValue, picture, category, location, barcode, reorderPoint, inventoryTypeId, customFields, parentItemId } = req.body;
+    const { name, description, quantity, unitValue, picture, category, location, barcode, reorderPoint, inventoryTypeId, customFields, parentItemId, expirationDate, expirationNotes } = req.body;
     const typeId = inventoryTypeId || 1;
     const qty = quantity || 0;
     const uv = unitValue || 0;
@@ -598,6 +648,8 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
       customFields: customFields || {},
       parentItemId: parentItemId || null,
       userId: req.user?.userId, // Always set to the current user
+      expirationDate: expirationDate || null,
+      expirationNotes: expirationNotes || '',
       createdAt: now,
       updatedAt: now,
     }, JSON_FIELDS);

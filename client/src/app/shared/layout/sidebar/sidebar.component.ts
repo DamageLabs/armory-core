@@ -73,6 +73,7 @@ export class SidebarComponent {
     { label: 'BOMs', icon: '📋', route: '/boms' },
     { label: 'Portfolio Value', icon: '💰', route: '/reports/portfolio' },
     { label: 'Insurance Report', icon: '🛡️', route: '/reports/insurance' },
+    { label: 'Expirations', icon: '⏰', route: '/reports/expiration' },
     { label: 'Import/Export', icon: '🔄', route: '/settings/data' },
     { label: 'Users', icon: '👥', route: '/admin/users', adminOnly: true },
     { label: 'Categories', icon: '🏷️', route: '/admin/categories', adminOnly: true },

@@ -146,6 +146,40 @@ import { Item } from '../../../types/item';
             </p>
           </div>
 
+          <!-- Expiration Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="expirationDate" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+                Expiration Date
+              </label>
+              <input
+                id="expirationDate"
+                type="date"
+                formControlName="expirationDate"
+                class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Optional expiration date for warranties, certifications, etc.
+              </p>
+            </div>
+            
+            <div>
+              <label for="expirationNotes" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+                Expiration Notes
+              </label>
+              <input
+                id="expirationNotes"
+                type="text"
+                formControlName="expirationNotes"
+                class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                placeholder="e.g., Insurance policy renewal"
+              />
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Optional notes about what expires
+              </p>
+            </div>
+          </div>
+
           <!-- Notes -->
           <div>
             <label for="notes" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
@@ -212,7 +246,9 @@ export class InventoryFormComponent implements OnInit {
       location: [''],
       notes: [''],
       parentItemId: [null],
-      customFields: [{}]
+      customFields: [{}],
+      expirationDate: [null],
+      expirationNotes: ['']
     });
   }
 
@@ -283,6 +319,16 @@ export class InventoryFormComponent implements OnInit {
         formData.parentItemId = null;
       } else if (formData.parentItemId) {
         formData.parentItemId = Number(formData.parentItemId);
+      }
+
+      // Convert empty expiration date to null
+      if (formData.expirationDate === '' || formData.expirationDate === undefined) {
+        formData.expirationDate = null;
+      }
+
+      // Convert empty expiration notes to empty string
+      if (!formData.expirationNotes) {
+        formData.expirationNotes = '';
       }
       
       const request = this.isEditMode() && this.itemId 

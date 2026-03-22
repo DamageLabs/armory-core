@@ -329,6 +329,16 @@ export function runMigrations(db: Database.Database): void {
     migrateFieldGroups(db);
   });
 
+  // v005: Add expiration tracking columns
+  runOnce(db, 'v005', 'Add expiration tracking columns', (db) => {
+    if (!hasColumn(db, 'items', 'expiration_date')) {
+      db.exec('ALTER TABLE items ADD COLUMN expiration_date TEXT');
+    }
+    if (!hasColumn(db, 'items', 'expiration_notes')) {
+      db.exec('ALTER TABLE items ADD COLUMN expiration_notes TEXT DEFAULT ""');
+    }
+  });
+
   // Always recalc firearm values to ensure consistency (not a migration, just maintenance)
   recalcAllFirearmValues(db);
 }

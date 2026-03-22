@@ -13,6 +13,8 @@ export const createItemSchema = z.object({
   inventoryTypeId: z.number().int().positive().default(1),
   customFields: z.record(z.string(), z.unknown()).default({}),
   parentItemId: z.number().int().positive().nullable().default(null),
+  expirationDate: z.string().nullable().default(null),
+  expirationNotes: z.string().default(''),
 });
 
 export const updateItemSchema = z.object({
@@ -28,6 +30,8 @@ export const updateItemSchema = z.object({
   inventoryTypeId: z.number().int().positive().optional(),
   customFields: z.record(z.string(), z.unknown()).optional(),
   parentItemId: z.number().int().positive().nullable().optional(),
+  expirationDate: z.string().nullable().optional(),
+  expirationNotes: z.string().optional(),
 });
 
 const bulkItemSchema = z.object({
@@ -43,6 +47,8 @@ const bulkItemSchema = z.object({
   inventoryTypeId: z.number().default(1),
   customFields: z.record(z.string(), z.unknown()).default({}),
   parentItemId: z.number().nullable().default(null),
+  expirationDate: z.string().nullable().default(null),
+  expirationNotes: z.string().default(''),
   id: z.number().optional(),
 });
 
