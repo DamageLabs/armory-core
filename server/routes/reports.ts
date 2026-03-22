@@ -85,7 +85,7 @@ router.get('/insurance', (req: Request, res: Response) => {
     });
 
     const totalItems = items.length;
-    const totalValue = items.reduce((sum, item) => sum + item.value, 0);
+    const totalValue = items.reduce((sum, item) => sum + (item.unitValue || 0), 0);
 
     const response: InsuranceReportResponse = {
       generatedAt: new Date().toISOString(),
