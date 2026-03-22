@@ -64,6 +64,7 @@ import { User } from '../../../types/user';
                     <tr class="hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors duration-150">
                       <td class="px-6 py-4">
                         <div class="font-medium text-slate-900 dark:text-slate-100">{{ user.email }}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">ID: {{ user.id }}</div>
                       </td>
                       <td class="px-6 py-4">
                         <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full"
@@ -85,6 +86,11 @@ import { User } from '../../../types/user';
                             <option value="user">user</option>
                             <option value="admin">admin</option>
                           </select>
+                          <button
+                            (click)="promptResetPassword(user)"
+                            class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                            Reset PW
+                          </button>
                           <button
                             (click)="deleteUser(user)"
                             class="text-red-400 hover:text-red-300 text-sm font-medium">
@@ -255,6 +261,26 @@ export class UserListComponent implements OnInit {
         error: (error: any) => {
           console.error('Failed to delete user:', error);
           alert('Failed to delete user. Please try again.');
+        }
+      });
+    }
+  }
+
+  promptResetPassword(user: User): void {
+    const newPassword = window.prompt(`Enter new password for ${user.email} (min 8 characters):`);
+    if (!newPassword) return;
+    if (newPassword.length < 8) {
+      alert('Password must be at least 8 characters.');
+      return;
+    }
+    if (window.confirm(`Reset password for ${user.email}?`)) {
+      this.userService.resetPassword(user.id, newPassword).subscribe({
+        next: () => {
+          alert(`Password for ${user.email} has been reset.`);
+        },
+        error: (error: any) => {
+          console.error('Failed to reset password:', error);
+          alert('Failed to reset password. Please try again.');
         }
       });
     }
