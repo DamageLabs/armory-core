@@ -39,6 +39,30 @@ export const routes: Routes = [
         loadComponent: () => import('./features/inventory/inventory-form/inventory-form.component').then(m => m.InventoryFormComponent)
       },
       
+      // BOM routes
+      {
+        path: 'boms',
+        loadComponent: () => import('./features/bom/bom-list/bom-list.component').then(m => m.BomListComponent)
+      },
+      {
+        path: 'boms/new',
+        loadComponent: () => import('./features/bom/bom-form/bom-form.component').then(m => m.BomFormComponent)
+      },
+      {
+        path: 'boms/:id',
+        loadComponent: () => import('./features/bom/bom-detail/bom-detail.component').then(m => m.BomDetailComponent)
+      },
+      {
+        path: 'boms/:id/edit',
+        loadComponent: () => import('./features/bom/bom-form/bom-form.component').then(m => m.BomFormComponent)
+      },
+      
+      // Settings routes
+      {
+        path: 'settings/data',
+        loadComponent: () => import('./features/settings/data-management/data-management.component').then(m => m.DataManagementComponent)
+      },
+      
       // Admin routes
       {
         path: 'admin/users',
@@ -53,6 +77,11 @@ export const routes: Routes = [
       {
         path: 'admin/inventory-types',
         loadComponent: () => import('./features/admin/inventory-type-management/inventory-type-management.component').then(m => m.InventoryTypeManagementComponent),
+        canActivate: [adminGuard]
+      },
+      {
+        path: 'admin/audit-log',
+        loadComponent: () => import('./features/admin/audit-log/audit-log.component').then(m => m.AuditLogComponent),
         canActivate: [adminGuard]
       }
     ]

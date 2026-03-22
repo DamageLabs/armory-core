@@ -1,10 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { ItemService } from '../../../core/services/item.service';
+import { SavedFilterService } from '../../../core/services/saved-filter.service';
 import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
+import { SavedFilter } from '../../../types/saved-filter';
 
 @Component({
   selector: 'app-inventory-list',
@@ -27,29 +29,65 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
 
       <!-- Search and filters -->
       <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
-        <form [formGroup]="filterForm" class="flex flex-col lg:flex-row gap-4">
+        <form [formGroup]="filterForm" class="space-y-4">
           
-          <!-- Search -->
-          <div class="flex-1">
-            <input
-              type="text"
-              formControlName="search"
-              placeholder="Search items..."
-              class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-            />
+          <!-- Main search and controls row -->
+          <div class="flex flex-col lg:flex-row gap-4">
+            
+            <!-- Search -->
+            <div class="flex-1">
+              <input
+                type="text"
+                formControlName="search"
+                placeholder="Search items..."
+                class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
+
+            <!-- Save current filter -->
+            <button
+              type="button"
+              (click)="showSaveFilterModal()"
+              [disabled]="!hasActiveFilters()"
+              class="bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white disabled:text-slate-500 px-4 py-2 rounded-lg transition-colors duration-200 whitespace-nowrap">
+              Save Filter
+            </button>
+
+            <!-- Per page selector -->
+            <div class="w-full lg:w-auto">
+              <select 
+                formControlName="pageSize"
+                class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <option value="10">10 per page</option>
+                <option value="25">25 per page</option>
+                <option value="50">50 per page</option>
+                <option value="100">100 per page</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Per page selector -->
-          <div class="w-full lg:w-auto">
-            <select 
-              formControlName="pageSize"
-              class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
-              <option value="10">10 per page</option>
-              <option value="25">25 per page</option>
-              <option value="50">50 per page</option>
-              <option value="100">100 per page</option>
-            </select>
-          </div>
+          <!-- Saved filters -->
+          @if (savedFilters().length > 0) {
+            <div class="flex flex-wrap gap-2">
+              <span class="text-sm text-slate-500 dark:text-slate-400 py-1">Saved filters:</span>
+              @for (filter of savedFilters(); track filter.id) {
+                <div class="inline-flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg">
+                  <button
+                    type="button"
+                    (click)="applySavedFilter(filter)"
+                    class="px-3 py-1 text-sm text-slate-700 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
+                    {{ filter.name }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="deleteSavedFilter(filter)"
+                    class="px-2 py-1 text-slate-400 hover:text-red-500 transition-colors">
+                    ×
+                  </button>
+                </div>
+              }
+            </div>
+          }
         </form>
       </div>
 
@@ -283,21 +321,67 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
         </div>
       }
     </div>
+
+    <!-- Save Filter Modal -->
+    @if (showSaveFilter()) {
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 w-full max-w-md mx-4">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Save Current Filter</h3>
+          
+          <form [formGroup]="saveFilterForm" (ngSubmit)="saveCurrentFilter()">
+            <div class="mb-4">
+              <label for="filterName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Filter Name
+              </label>
+              <input
+                type="text"
+                id="filterName"
+                formControlName="name"
+                placeholder="Enter filter name..."
+                class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
+
+            <div class="flex items-center justify-end space-x-3">
+              <button
+                type="button"
+                (click)="hideSaveFilterModal()"
+                class="text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 px-4 py-2 transition-colors">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                [disabled]="saveFilterForm.invalid"
+                class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-slate-900 disabled:text-slate-500 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+                Save Filter
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
   `
 })
 export class InventoryListComponent implements OnInit {
   private itemService = inject(ItemService);
+  private savedFilterService = inject(SavedFilterService);
   private fb = inject(FormBuilder);
 
   itemsData = signal<PaginatedItems | null>(null);
   isLoading = signal(false);
   selectedItems = signal<number[]>([]);
+  savedFilters = signal<SavedFilter[]>([]);
+  showSaveFilter = signal(false);
 
   Math = Math; // Make Math available in template
 
   filterForm = this.fb.group({
     search: [''],
     pageSize: [25]
+  });
+
+  saveFilterForm = this.fb.group({
+    name: ['', [Validators.required]]
   });
 
   private currentFilters: ItemFilters = {
@@ -308,6 +392,7 @@ export class InventoryListComponent implements OnInit {
   ngOnInit(): void {
     this.setupFilterSubscriptions();
     this.loadItems();
+    this.loadSavedFilters();
   }
 
   private setupFilterSubscriptions(): void {
@@ -424,5 +509,77 @@ export class InventoryListComponent implements OnInit {
       style: 'currency',
       currency: 'USD'
     }).format(value);
+  }
+
+  // Saved filter methods
+  private loadSavedFilters(): void {
+    this.savedFilterService.getSavedFilters().subscribe({
+      next: (filters) => {
+        this.savedFilters.set(filters);
+      },
+      error: (error) => {
+        console.error('Failed to load saved filters:', error);
+      }
+    });
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.currentFilters.search && this.currentFilters.search.trim().length > 0);
+  }
+
+  showSaveFilterModal(): void {
+    this.showSaveFilter.set(true);
+    this.saveFilterForm.reset();
+  }
+
+  hideSaveFilterModal(): void {
+    this.showSaveFilter.set(false);
+  }
+
+  saveCurrentFilter(): void {
+    if (this.saveFilterForm.valid) {
+      const name = this.saveFilterForm.get('name')?.value;
+      if (name) {
+        this.savedFilterService.createSavedFilter({
+          name,
+          filterConfig: { ...this.currentFilters }
+        }).subscribe({
+          next: () => {
+            this.loadSavedFilters();
+            this.hideSaveFilterModal();
+          },
+          error: (error) => {
+            console.error('Failed to save filter:', error);
+            alert('Failed to save filter. Please try again.');
+          }
+        });
+      }
+    }
+  }
+
+  applySavedFilter(filter: SavedFilter): void {
+    this.currentFilters = { ...filter.filterConfig, page: 1 };
+    
+    // Update form controls
+    this.filterForm.patchValue({
+      search: filter.filterConfig.search || '',
+      pageSize: filter.filterConfig.pageSize || 25
+    });
+    
+    this.loadItems();
+  }
+
+  deleteSavedFilter(filter: SavedFilter): void {
+    if (confirm(`Are you sure you want to delete the saved filter "${filter.name}"?`)) {
+      this.savedFilterService.deleteSavedFilter(filter.id).subscribe({
+        next: () => {
+          this.loadSavedFilters();
+        },
+        error: (error) => {
+          console.error('Failed to delete saved filter:', error);
+          alert('Failed to delete saved filter. Please try again.');
+        }
+      });
+    }
   }
 }
