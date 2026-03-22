@@ -14,6 +14,7 @@ import BulkActions from './BulkActions';
 import LowStockAlert from '../common/LowStockAlert';
 import EmptyState from '../common/EmptyState';
 import ItemCardGrid from './ItemCardGrid';
+import HighlightText from '../common/HighlightText';
 import SavedFilterChips from './SavedFilterChips';
 import { exportToCSV, exportToPDF, backupItemsToCSV, backupItemsToJSON } from '../../utils/export';
 import { formatCurrency } from '../../utils/formatters';
@@ -583,7 +584,9 @@ export default function ItemList() {
                           </span>
                         )}
                         <div>
-                          <Link to={`/items/${item.id}`}>{item.name}</Link>
+                          <Link to={`/items/${item.id}`}>
+                            <HighlightText text={item.name} highlight={searchTerm} />
+                          </Link>
                           {(item.childCount ?? 0) > 0 && (
                             <CBadge color="info" className="ms-1" title={`${item.childCount} attached item(s)`}>
                               {item.childCount}
@@ -615,8 +618,12 @@ export default function ItemList() {
                     </td>
                     <td className="text-center">{formatCurrency(item.unitValue)}</td>
                     <td className="text-center">{formatCurrency(item.value)}</td>
-                    <td className="text-center">{item.location}</td>
-                    <td className="text-center">{item.category}</td>
+                    <td className="text-center">
+                      <HighlightText text={item.location} highlight={searchTerm} />
+                    </td>
+                    <td className="text-center">
+                      <HighlightText text={item.category} highlight={searchTerm} />
+                    </td>
                     <td className="text-center text-nowrap">
                       <Link
                         to={`/items/${item.id}/edit`}
