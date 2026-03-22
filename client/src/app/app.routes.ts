@@ -57,6 +57,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/bom/bom-form/bom-form.component').then(m => m.BomFormComponent)
       },
       
+      // Reports routes
+      {
+        path: 'reports/portfolio',
+        loadComponent: () => import('./features/reports/portfolio/portfolio.component').then(m => m.PortfolioComponent),
+        canActivate: [authGuard]
+      },
+      
       // Settings routes
       {
         path: 'settings/data',

@@ -71,6 +71,7 @@ export class SidebarComponent {
     { label: 'Dashboard', icon: '📊', route: '/' },
     { label: 'Inventory', icon: '📦', route: '/inventory' },
     { label: 'BOMs', icon: '📋', route: '/boms' },
+    { label: 'Portfolio Value', icon: '💰', route: '/reports/portfolio' },
     { label: 'Import/Export', icon: '🔄', route: '/settings/data' },
     { label: 'Users', icon: '👥', route: '/admin/users', adminOnly: true },
     { label: 'Categories', icon: '🏷️', route: '/admin/categories', adminOnly: true },
