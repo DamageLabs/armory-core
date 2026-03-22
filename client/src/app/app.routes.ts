@@ -39,6 +39,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/inventory/inventory-form/inventory-form.component').then(m => m.InventoryFormComponent)
       },
       
+      // Settings routes
+      {
+        path: 'settings/data',
+        loadComponent: () => import('./features/settings/data-management/data-management.component').then(m => m.DataManagementComponent)
+      },
+      
       // Admin routes
       {
         path: 'admin/users',
