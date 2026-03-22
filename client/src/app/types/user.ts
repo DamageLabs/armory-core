@@ -1,4 +1,15 @@
 export interface User {
+  id: number;
+  email: string;
+  role: 'admin' | 'user';
+  signInCount: number;
+  lastSignInAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Legacy interface for backward compatibility
+export interface LegacyUser {
   id: string;
   email: string;
   username: string;
