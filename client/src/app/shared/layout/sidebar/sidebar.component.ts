@@ -66,7 +66,8 @@ export class SidebarComponent {
   isOpen = signal(false);
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', icon: '📊', route: '/' },
+    { label: 'Home', icon: '🏠', route: '/' },
+    { label: 'Dashboard', icon: '📊', route: '/dashboard' },
     { label: 'Inventory', icon: '📦', route: '/inventory' },
     { label: 'BOMs', icon: '📋', route: '/boms' },
     { label: 'Portfolio Value', icon: '💰', route: '/reports/portfolio' },
