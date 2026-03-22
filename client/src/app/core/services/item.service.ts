@@ -1,13 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Item, PaginatedItems, ItemFilters } from '../../types/item';
+import { InventoryTypeService } from './inventory-type.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ItemService {
   private apiUrl = '/api/items';
+  private inventoryTypeService = inject(InventoryTypeService);
 
   constructor(private http: HttpClient) {}
 
@@ -39,6 +42,22 @@ export class ItemService {
 
   deleteItem(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getChildren(id: number): Observable<Item[]> {
+    return this.http.get<Item[]>(`${this.apiUrl}/${id}/children`);
+  }
+
+  getFirearms(): Observable<Item[]> {
+    // Get firearms (inventoryTypeId = 1) for parent selection
+    const params = new HttpParams()
+      .set('typeId', '1')
+      .set('pageSize', '1000'); // Get all firearms for selection
+
+    return this.http.get<PaginatedItems>(this.apiUrl, { params })
+      .pipe(
+        map(response => response.data)
+      );
   }
 
   getStats(): Observable<{ totalItems: number; totalValue: number; totalQuantity: number }> {

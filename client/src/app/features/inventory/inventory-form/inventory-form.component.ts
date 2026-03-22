@@ -127,6 +127,25 @@ import { Item } from '../../../types/item';
             />
           </div>
 
+          <!-- Parent Item -->
+          <div>
+            <label for="parentItemId" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+              Attach To (Parent Firearm)
+            </label>
+            <select
+              id="parentItemId"
+              formControlName="parentItemId"
+              class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="">None (standalone item)</option>
+              @for (parent of availableParents(); track parent.id) {
+                <option [value]="parent.id">{{ parent.name }}</option>
+              }
+            </select>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Select a firearm to attach this accessory to. Only firearms can be parent items.
+            </p>
+          </div>
+
           <!-- Notes -->
           <div>
             <label for="notes" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
@@ -182,6 +201,7 @@ export class InventoryFormComponent implements OnInit {
   errorMessage = signal('');
   isEditMode = signal(false);
   itemId: string | null = null;
+  availableParents = signal<Item[]>([]);
 
   constructor() {
     this.itemForm = this.fb.group({
@@ -191,17 +211,36 @@ export class InventoryFormComponent implements OnInit {
       cost: [null, Validators.min(0)],
       location: [''],
       notes: [''],
+      parentItemId: [null],
       customFields: [{}]
     });
   }
 
   ngOnInit(): void {
     this.itemId = this.route.snapshot.paramMap.get('id');
+    this.loadAvailableParents();
     
     if (this.itemId) {
       this.isEditMode.set(true);
       this.loadItem();
     }
+  }
+
+  private loadAvailableParents(): void {
+    // Load firearms that can be parent items
+    this.itemService.getFirearms().subscribe({
+      next: (firearms) => {
+        // Filter out the current item if editing
+        const filtered = firearms.filter(firearm => 
+          !this.itemId || firearm.id !== Number(this.itemId)
+        );
+        this.availableParents.set(filtered);
+      },
+      error: (error) => {
+        console.error('Failed to load available parents:', error);
+        // Don't show error for this - it's not critical
+      }
+    });
   }
 
   private loadItem(): void {
@@ -226,7 +265,14 @@ export class InventoryFormComponent implements OnInit {
       this.isLoading.set(true);
       this.errorMessage.set('');
 
-      const formData = this.itemForm.value;
+      const formData = { ...this.itemForm.value };
+      
+      // Convert empty string to null for parentItemId
+      if (formData.parentItemId === '' || formData.parentItemId === undefined) {
+        formData.parentItemId = null;
+      } else if (formData.parentItemId) {
+        formData.parentItemId = Number(formData.parentItemId);
+      }
       
       const request = this.isEditMode() && this.itemId 
         ? this.itemService.updateItem(Number(this.itemId), formData)

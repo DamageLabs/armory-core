@@ -132,6 +132,56 @@ import { Item } from '../../../types/item';
                 </div>
               </div>
             }
+
+            <!-- Attached accessories/children -->
+            @if (children().length > 0) {
+              <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div class="flex items-center justify-between mb-4">
+                  <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    Attached Accessories ({{ children().length }})
+                  </h2>
+                  <div class="text-sm text-slate-500 dark:text-slate-400">
+                    Total Value: {{ formatCurrency(children().reduce((sum, child) => sum + (child.unitValue * child.quantity), 0)) }}
+                  </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="border-b border-slate-200 dark:border-slate-700">
+                      <tr>
+                        <th class="text-left py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
+                        <th class="text-left py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                        <th class="text-right py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
+                        <th class="text-right py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                        <th class="text-right py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                      @for (child of children(); track child.id) {
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                          <td class="py-3 px-3">
+                            <a [routerLink]="['/inventory', child.id]" class="text-amber-400 hover:text-amber-300 font-medium">
+                              {{ child.name }}
+                            </a>
+                          </td>
+                          <td class="py-3 px-3 text-slate-600 dark:text-slate-300">{{ child.category || '-' }}</td>
+                          <td class="py-3 px-3 text-right text-slate-600 dark:text-slate-300">{{ child.quantity | number }}</td>
+                          <td class="py-3 px-3 text-right text-slate-600 dark:text-slate-300">
+                            {{ child.unitValue ? formatCurrency(child.unitValue * child.quantity) : '-' }}
+                          </td>
+                          <td class="py-3 px-3 text-right">
+                            <a [routerLink]="['/inventory', child.id, 'edit']" 
+                               class="text-amber-400 hover:text-amber-300 text-sm font-medium">
+                              Edit
+                            </a>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
           </div>
 
           <!-- Sidebar -->
@@ -153,15 +203,30 @@ import { Item } from '../../../types/item';
                 </div>
                 
                 @if (itemData.unitValue && itemData.quantity) {
-                  <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                  <div class="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-2">
                     <div class="flex justify-between">
-                      <span class="text-slate-500 dark:text-slate-400">Individual Value</span>
+                      <span class="text-slate-500 dark:text-slate-400">Unit Value</span>
                       <span class="text-slate-900 dark:text-slate-100">{{ formatCurrency(itemData.unitValue) }}</span>
                     </div>
-                    <div class="flex justify-between font-medium">
-                      <span class="text-slate-600 dark:text-slate-300">Total Value</span>
-                      <span class="text-amber-400">{{ formatCurrency(itemData.unitValue * itemData.quantity) }}</span>
+                    <div class="flex justify-between">
+                      <span class="text-slate-500 dark:text-slate-400">Item Value</span>
+                      <span class="text-slate-900 dark:text-slate-100">{{ formatCurrency(itemData.unitValue * itemData.quantity) }}</span>
                     </div>
+                    @if (children().length > 0) {
+                      <div class="flex justify-between">
+                        <span class="text-slate-500 dark:text-slate-400">Accessories Value</span>
+                        <span class="text-slate-900 dark:text-slate-100">{{ formatCurrency(children().reduce((sum, child) => sum + (child.unitValue * child.quantity), 0)) }}</span>
+                      </div>
+                      <div class="flex justify-between font-medium border-t border-slate-200 dark:border-slate-700 pt-2">
+                        <span class="text-slate-600 dark:text-slate-300">Total Value</span>
+                        <span class="text-amber-400">{{ formatCurrency(getTotalValueWithChildren()) }}</span>
+                      </div>
+                    } @else {
+                      <div class="flex justify-between font-medium border-t border-slate-200 dark:border-slate-700 pt-2">
+                        <span class="text-slate-600 dark:text-slate-300">Total Value</span>
+                        <span class="text-amber-400">{{ formatCurrency(itemData.unitValue * itemData.quantity) }}</span>
+                      </div>
+                    }
                   </div>
                 }
               </div>
@@ -196,6 +261,7 @@ export class InventoryDetailComponent implements OnInit {
   private router = inject(Router);
 
   item = signal<Item | null>(null);
+  children = signal<Item[]>([]);
   isLoading = signal(false);
   errorMessage = signal('');
 
@@ -211,12 +277,25 @@ export class InventoryDetailComponent implements OnInit {
     this.itemService.getItem(Number(id)).subscribe({
       next: (item) => {
         this.item.set(item);
+        this.loadChildren(item.id);
         this.isLoading.set(false);
       },
       error: (error) => {
         this.errorMessage.set('Failed to load item details. Please try again.');
         this.isLoading.set(false);
         console.error('Failed to load item:', error);
+      }
+    });
+  }
+
+  private loadChildren(itemId: number): void {
+    this.itemService.getChildren(itemId).subscribe({
+      next: (children) => {
+        this.children.set(children);
+      },
+      error: (error) => {
+        console.error('Failed to load child items:', error);
+        // Don't show error for children - it's not critical
       }
     });
   }
@@ -289,5 +368,17 @@ export class InventoryDetailComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     }).format(new Date(dateString));
+  }
+
+  getTotalValueWithChildren(): number {
+    const item = this.item();
+    if (!item) return 0;
+    
+    const itemValue = item.unitValue * item.quantity;
+    const childrenValue = this.children().reduce((sum, child) => 
+      sum + (child.unitValue * child.quantity), 0
+    );
+    
+    return itemValue + childrenValue;
   }
 }

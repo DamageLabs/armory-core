@@ -109,9 +109,24 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                         />
                       </td>
                       <td class="px-6 py-4">
-                        <a [routerLink]="['/inventory', item.id]" class="font-medium text-amber-400 hover:text-amber-300">
-                          {{ item.name }}
-                        </a>
+                        <div class="flex items-center space-x-2">
+                          @if (item.parentItemId) {
+                            <span class="text-slate-400 dark:text-slate-500 text-sm">↳</span>
+                          }
+                          <a [routerLink]="['/inventory', item.id]" class="font-medium text-amber-400 hover:text-amber-300">
+                            {{ item.name }}
+                          </a>
+                          @if (item.child_count && item.child_count > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                              {{ item.child_count }} {{ item.child_count === 1 ? 'accessory' : 'accessories' }}
+                            </span>
+                          }
+                        </div>
+                        @if (item.parent_name) {
+                          <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Attached to: {{ item.parent_name }}
+                          </div>
+                        }
                       </td>
                       <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
                         <div class="max-w-xs truncate">{{ item.description || '-' }}</div>
@@ -152,7 +167,24 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                         (change)="toggleItem(item.id)"
                         class="rounded border-slate-600 bg-slate-600 text-amber-500 focus:ring-amber-500"
                       />
-                      <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ item.name }}</h3>
+                      <div>
+                        <div class="flex items-center space-x-2">
+                          @if (item.parentItemId) {
+                            <span class="text-slate-400 dark:text-slate-500 text-sm">↳</span>
+                          }
+                          <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ item.name }}</h3>
+                          @if (item.child_count && item.child_count > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300">
+                              {{ item.child_count }}
+                            </span>
+                          }
+                        </div>
+                        @if (item.parent_name) {
+                          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Attached to: {{ item.parent_name }}
+                          </p>
+                        }
+                      </div>
                     </div>
                     <div class="flex space-x-2">
                       <a [routerLink]="['/inventory', item.id, 'edit']"

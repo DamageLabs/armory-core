@@ -16,6 +16,9 @@ export interface Item {
   userId: number;
   createdAt: string;
   updatedAt: string;
+  // Additional fields from API joins
+  child_count?: number;
+  parent_name?: string;
 }
 
 export interface PaginatedItems {
