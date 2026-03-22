@@ -24,7 +24,9 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { Item } from '../../types/Item';
 import { StockHistoryEntry } from '../../types/StockHistory';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
+// Dark mode optimized color palette - vibrant and readable
+const LIGHT_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
+const DARK_COLORS = ['#60A5FA', '#34D399', '#FBBF24', '#FB7185', '#A78BFA', '#6EE7B7', '#FDE047', '#F87171', '#22D3EE', '#38BDF8', '#86EFAC', '#FEF08A', '#DDA0DD', '#7DD3FC', '#FEF3C7', '#C084FC', '#93C5FD'];
 
 interface StatCardProps {
   title: string;
@@ -136,6 +138,7 @@ export default function Dashboard() {
   }, [items]);
 
   const textColor = isDark ? '#e9ecef' : '#212529';
+  const chartColors = isDark ? DARK_COLORS : LIGHT_COLORS;
 
   return (
     <div>
@@ -208,7 +211,7 @@ export default function Dashboard() {
                       labelLine={false}
                     >
                       {categoryData.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                       ))}
                     </Pie>
                     <Tooltip
@@ -247,7 +250,7 @@ export default function Dashboard() {
                         color: textColor,
                       }}
                     />
-                    <Bar dataKey="value" fill="#0d6efd" />
+                    <Bar dataKey="value" fill={isDark ? '#fbbf24' : '#0d6efd'} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
