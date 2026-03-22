@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Chart, registerables, ChartConfiguration } from 'chart.js';
 import { DashboardService } from '../../core/services/dashboard.service';
-import { DashboardStats, CategoryStats, InventoryTypeStats } from '../../types/dashboard';
+import { DashboardStats, CategoryStats, InventoryTypeStats, ValueByTypeStats, TopValuedItem, CategoryBreakdown } from '../../types/dashboard';
 import { Item } from '../../types/item';
 
 Chart.register(...registerables);
@@ -112,6 +112,83 @@ Chart.register(...registerables);
             </div>
           }
         </div>
+
+        <!-- Value by Type Chart -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Value by Type</h3>
+          @if (valueByTypeStats().length > 0) {
+            <div class="h-64">
+              <canvas #valueByTypeChart></canvas>
+            </div>
+          } @else {
+            <div class="text-slate-500 dark:text-slate-400 text-sm">
+              <p class="text-center py-8">Loading chart...</p>
+            </div>
+          }
+        </div>
+
+        <!-- Top 5 Most Valuable Items Chart -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Top 5 Most Valuable Items</h3>
+          @if (topValuedItems().length > 0) {
+            <div class="h-64">
+              <canvas #topValuedChart></canvas>
+            </div>
+          } @else {
+            <div class="text-slate-500 dark:text-slate-400 text-sm">
+              <p class="text-center py-8">Loading chart...</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Category Breakdown Table -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Category Breakdown</h3>
+        @if (categoryBreakdown().length > 0) {
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+              <thead class="bg-slate-50 dark:bg-slate-700">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Item Count
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Total Value
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    Avg Value
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                @for (category of categoryBreakdown(); track category.category) {
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {{ category.category }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {{ category.itemCount | number }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100 font-medium">
+                      {{ formatCurrency(category.totalValue) }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {{ formatCurrency(category.avgValue) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="text-slate-500 dark:text-slate-400 text-sm">
+            <p class="text-center py-8">Loading category breakdown...</p>
+          </div>
+        }
       </div>
 
       <!-- Recent Activity -->
@@ -161,19 +238,29 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   
   @ViewChild('categoryChart', { static: false }) categoryChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('typeChart', { static: false }) typeChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('valueByTypeChart', { static: false }) valueByTypeChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('topValuedChart', { static: false }) topValuedChartRef!: ElementRef<HTMLCanvasElement>;
   
   stats = signal<DashboardStats | null>(null);
   categoryStats = signal<CategoryStats[]>([]);
   inventoryTypeStats = signal<InventoryTypeStats[]>([]);
+  valueByTypeStats = signal<ValueByTypeStats[]>([]);
+  topValuedItems = signal<TopValuedItem[]>([]);
+  categoryBreakdown = signal<CategoryBreakdown[]>([]);
   recentItems = signal<Item[]>([]);
 
   private categoryChart: Chart | null = null;
   private typeChart: Chart | null = null;
+  private valueByTypeChart: Chart | null = null;
+  private topValuedChart: Chart | null = null;
 
   ngOnInit(): void {
     this.loadStats();
     this.loadCategoryStats();
     this.loadInventoryTypeStats();
+    this.loadValueByTypeStats();
+    this.loadTopValuedItems();
+    this.loadCategoryBreakdown();
     this.loadRecentItems();
   }
 
@@ -212,6 +299,41 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
       error: (error) => {
         console.error('Failed to load inventory type stats:', error);
+      }
+    });
+  }
+
+  private loadValueByTypeStats(): void {
+    this.dashboardService.getValueByTypeStats().subscribe({
+      next: (data) => {
+        this.valueByTypeStats.set(data);
+        setTimeout(() => this.initializeValueByTypeChart(), 0);
+      },
+      error: (error) => {
+        console.error('Failed to load value by type stats:', error);
+      }
+    });
+  }
+
+  private loadTopValuedItems(): void {
+    this.dashboardService.getTopValuedItems().subscribe({
+      next: (data) => {
+        this.topValuedItems.set(data);
+        setTimeout(() => this.initializeTopValuedChart(), 0);
+      },
+      error: (error) => {
+        console.error('Failed to load top valued items:', error);
+      }
+    });
+  }
+
+  private loadCategoryBreakdown(): void {
+    this.dashboardService.getCategoryBreakdown().subscribe({
+      next: (data) => {
+        this.categoryBreakdown.set(data);
+      },
+      error: (error) => {
+        console.error('Failed to load category breakdown:', error);
       }
     });
   }
@@ -340,6 +462,133 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     };
 
     this.typeChart = new Chart(this.typeChartRef.nativeElement, config);
+  }
+
+  private initializeValueByTypeChart(): void {
+    if (!this.valueByTypeChartRef?.nativeElement || this.valueByTypeChart) return;
+
+    const data = this.valueByTypeStats();
+    const colors = {
+      'Firearms': '#f59e0b', // amber
+      'Accessories': '#3b82f6', // blue
+      'Ammunition': '#10b981', // green
+      'Other': '#8b5cf6' // purple
+    };
+
+    const config: ChartConfiguration<'bar'> = {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.name),
+        datasets: [{
+          label: 'Value',
+          data: data.map(d => d.value),
+          backgroundColor: data.map(d => colors[d.name as keyof typeof colors] || '#8b5cf6'),
+          borderWidth: 0,
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const typeData = data[context.dataIndex];
+                return `${context.label}: ${this.formatCurrency(context.parsed.y || 0)} (${typeData.count} items)`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: (value) => this.formatCurrency(value as number),
+              color: this.getTextColor()
+            },
+            grid: {
+              color: this.getGridColor()
+            }
+          },
+          x: {
+            ticks: {
+              color: this.getTextColor()
+            },
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    };
+
+    this.valueByTypeChart = new Chart(this.valueByTypeChartRef.nativeElement, config);
+  }
+
+  private initializeTopValuedChart(): void {
+    if (!this.topValuedChartRef?.nativeElement || this.topValuedChart) return;
+
+    const data = this.topValuedItems();
+
+    const config: ChartConfiguration<'bar'> = {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.name.length > 20 ? d.name.substring(0, 20) + '...' : d.name),
+        datasets: [{
+          label: 'Value',
+          data: data.map(d => d.value),
+          backgroundColor: '#f59e0b', // amber
+          borderWidth: 0,
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        indexAxis: 'y', // This makes it horizontal
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const item = data[context.dataIndex];
+                return `${item.name}: ${this.formatCurrency(context.parsed.x || 0)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              callback: (value) => this.formatCurrency(value as number),
+              color: this.getTextColor()
+            },
+            grid: {
+              color: this.getGridColor()
+            }
+          },
+          y: {
+            ticks: {
+              color: this.getTextColor()
+            },
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    };
+
+    this.topValuedChart = new Chart(this.topValuedChartRef.nativeElement, config);
   }
 
   private getTextColor(): string {
