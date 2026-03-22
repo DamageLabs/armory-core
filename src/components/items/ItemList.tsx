@@ -520,7 +520,7 @@ export default function ItemList() {
         {viewMode === 'table' ? (
           <div className="table-responsive">
             <table className="table table-hover">
-              <thead>
+              <thead className="sticky-header">
                 <tr>
                   <th className="text-center" style={{ width: '40px' }}>
                     <CFormCheck
