@@ -339,6 +339,29 @@ export function runMigrations(db: Database.Database): void {
     }
   });
 
+  // v006: Create wishlist_items table
+  runOnce(db, 'v006', 'Create wishlist_items table', (db) => {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS wishlist_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        name TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        target_price REAL NOT NULL DEFAULT 0,
+        vendor_url TEXT NOT NULL DEFAULT '',
+        priority TEXT NOT NULL DEFAULT 'medium',
+        inventory_type_id INTEGER DEFAULT 1 REFERENCES inventory_types(id),
+        notes TEXT NOT NULL DEFAULT '',
+        purchased INTEGER NOT NULL DEFAULT 0,
+        purchased_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    `);
+    db.exec('CREATE INDEX IF NOT EXISTS idx_wishlist_user_id ON wishlist_items(user_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_wishlist_priority ON wishlist_items(priority)');
+  });
+
   // Always recalc firearm values to ensure consistency (not a migration, just maintenance)
   recalcAllFirearmValues(db);
 }

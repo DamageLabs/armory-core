@@ -75,6 +75,7 @@ export class SidebarComponent {
     { label: 'Insurance Report', icon: '🛡️', route: '/reports/insurance' },
     { label: 'Expirations', icon: '⏰', route: '/reports/expiration' },
     { label: 'Import/Export', icon: '🔄', route: '/settings/data' },
+    { label: 'Wishlist', icon: '🛒', route: '/wishlist' },
     { label: 'Users', icon: '👥', route: '/admin/users', adminOnly: true },
     { label: 'Categories', icon: '🏷️', route: '/admin/categories', adminOnly: true },
     { label: 'Types', icon: '⚙️', route: '/admin/inventory-types', adminOnly: true },
