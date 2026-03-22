@@ -1,25 +1,30 @@
-import { CAlert } from '@coreui/react';
+import { CToaster, CToast, CToastHeader, CToastBody } from '@coreui/react';
 import { useAlert } from '../../contexts/AlertContext';
 
 export default function AlertDisplay() {
   const { alerts, dismissAlert } = useAlert();
 
-  if (alerts.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="alert-container">
+    <CToaster className="position-fixed top-0 end-0 p-3" style={{ zIndex: 1080 }}>
       {alerts.map((alert) => (
-        <CAlert
+        <CToast
           key={alert.id}
-          color={alert.type}
-          dismissible
+          visible
+          autohide
+          delay={5000}
           onClose={() => dismissAlert(alert.id)}
         >
-          {alert.message}
-        </CAlert>
+          <CToastHeader closeButton>
+            <div className="fw-bold me-auto">
+              {alert.type === 'success' && '✓ Success'}
+              {alert.type === 'danger' && '✗ Error'}
+              {alert.type === 'warning' && '⚠ Warning'}
+              {alert.type === 'info' && 'ℹ Info'}
+            </div>
+          </CToastHeader>
+          <CToastBody>{alert.message}</CToastBody>
+        </CToast>
       ))}
-    </div>
+    </CToaster>
   );
 }
