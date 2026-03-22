@@ -113,6 +113,19 @@ router.get('/:id/cost', (req: Request, res: Response) => {
       return;
     }
 
+    const bomItems = bom.items || [];
+    const itemIds = bomItems.map((bi: { itemId: number }) => bi.itemId);
+
+    // Single batch query instead of N+1
+    const items = itemIds.length > 0
+      ? queryAll<{ id: number; name: string; unitValue: number; quantity: number }>(
+          `SELECT id, name, unit_value as unitValue, quantity FROM items WHERE id IN (${itemIds.map(() => '?').join(',')})`,
+          itemIds
+        )
+      : [];
+
+    const itemMap = new Map(items.map(item => [item.id, item]));
+
     const breakdown: Array<{
       itemId: number;
       name: string;
@@ -122,11 +135,8 @@ router.get('/:id/cost', (req: Request, res: Response) => {
     }> = [];
     let totalCost = 0;
 
-    for (const bomItem of (bom.items || [])) {
-      const item = queryOne<{ id: number; name: string; unitValue: number; quantity: number }>(
-        'SELECT * FROM items WHERE id = ?',
-        [bomItem.itemId]
-      );
+    for (const bomItem of bomItems) {
+      const item = itemMap.get(bomItem.itemId);
       if (item) {
         const lineCost = item.unitValue * bomItem.quantity;
         breakdown.push({

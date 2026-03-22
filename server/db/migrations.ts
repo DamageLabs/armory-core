@@ -232,49 +232,103 @@ export function migrateFieldGroups(db: Database.Database): void {
 /**
  * Run all pending migrations. Idempotent — skips tables that already have FK constraints.
  */
+/**
+ * Check if a migration has already been applied.
+ */
+/**
+ * Ensure app_metadata table exists for migration tracking.
+ */
+function ensureMetadataTable(db: Database.Database): void {
+  db.exec('CREATE TABLE IF NOT EXISTS app_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+}
+
+/**
+ * Check if a migration has already been applied.
+ */
+function isMigrationApplied(db: Database.Database, version: string): boolean {
+  try {
+    ensureMetadataTable(db);
+    const row = db.prepare('SELECT value FROM app_metadata WHERE key = ?').get(`migration:${version}`) as { value: string } | undefined;
+    return !!row;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Mark a migration as applied.
+ */
+function markMigrationApplied(db: Database.Database, version: string): void {
+  ensureMetadataTable(db);
+  db.prepare('INSERT OR REPLACE INTO app_metadata (key, value) VALUES (?, ?)').run(
+    `migration:${version}`,
+    new Date().toISOString()
+  );
+}
+
+/**
+ * Run a named migration exactly once. Logs clearly on success or error.
+ */
+function runOnce(db: Database.Database, version: string, name: string, fn: (db: Database.Database) => void): void {
+  if (isMigrationApplied(db, version)) return;
+
+  try {
+    fn(db);
+    markMigrationApplied(db, version);
+    console.log(`✅ Migration ${version} applied: ${name}`);
+  } catch (error) {
+    console.error(`❌ Migration ${version} failed: ${name}`, error);
+    throw error; // Don't silently swallow
+  }
+}
+
+/**
+ * Run all pending migrations. Each migration runs exactly once,
+ * tracked by version in app_metadata.
+ */
 export function runMigrations(db: Database.Database): void {
-  // Column migrations that must run before schema indexes
-  migrateReceiptsCategory(db);
-  if (tableExists(db, 'receipts') && hasColumn(db, 'receipts', 'category')) {
-    db.exec('CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category)');
-  }
-  
-  // Add user_id column for RBAC
-  migrateItemsUserColumn(db);
-
-  const needsItems = !hasForeignKey(db, 'items', 'inventory_type_id');
-  const needsCategories = !hasForeignKey(db, 'categories', 'inventory_type_id');
-
-  if (needsItems || needsCategories) {
-    // Must disable FK checks during table recreation to avoid issues
-    // with self-referencing FKs and cross-table references
-    db.pragma('foreign_keys = OFF');
-
-    const txn = db.transaction(() => {
-      cleanOrphanedRecords(db);
-
-      if (needsItems) {
-        migrateItemsTable(db);
-      }
-
-      if (needsCategories) {
-        migrateCategoriesTable(db);
-      }
-    });
-    txn();
-
-    // Verify integrity after migration
-    const check = db.pragma('foreign_key_check') as unknown[];
-    if (check.length > 0) {
-      console.error('Foreign key violations found after migration:', check);
+  // v001: Add category column to receipts
+  runOnce(db, 'v001', 'Add receipts category column', (db) => {
+    migrateReceiptsCategory(db);
+    if (tableExists(db, 'receipts') && hasColumn(db, 'receipts', 'category')) {
+      db.exec('CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category)');
     }
+  });
 
-    db.pragma('foreign_keys = ON');
-  }
+  // v002: Add user_id column for RBAC
+  runOnce(db, 'v002', 'Add user_id column for RBAC', (db) => {
+    migrateItemsUserColumn(db);
+  });
 
-  // Always recalc firearm values to ensure consistency
+  // v003: Add FK constraints to items and categories tables
+  runOnce(db, 'v003', 'Add FK constraints to items and categories', (db) => {
+    const needsItems = !hasForeignKey(db, 'items', 'inventory_type_id');
+    const needsCategories = !hasForeignKey(db, 'categories', 'inventory_type_id');
+
+    if (needsItems || needsCategories) {
+      db.pragma('foreign_keys = OFF');
+
+      const txn = db.transaction(() => {
+        cleanOrphanedRecords(db);
+        if (needsItems) migrateItemsTable(db);
+        if (needsCategories) migrateCategoriesTable(db);
+      });
+      txn();
+
+      const check = db.pragma('foreign_key_check') as unknown[];
+      if (check.length > 0) {
+        console.error('Foreign key violations found after migration:', check);
+      }
+
+      db.pragma('foreign_keys = ON');
+    }
+  });
+
+  // v004: Add field groups to inventory type schemas
+  runOnce(db, 'v004', 'Add field groups to schemas', (db) => {
+    migrateFieldGroups(db);
+  });
+
+  // Always recalc firearm values to ensure consistency (not a migration, just maintenance)
   recalcAllFirearmValues(db);
-
-  // Add field groups to existing schemas
-  migrateFieldGroups(db);
 }
