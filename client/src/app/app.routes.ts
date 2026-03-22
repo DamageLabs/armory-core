@@ -63,6 +63,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reports/portfolio/portfolio.component').then(m => m.PortfolioComponent),
         canActivate: [authGuard]
       },
+      {
+        path: 'reports/insurance',
+        loadComponent: () => import('./features/reports/insurance/insurance-report.component').then(m => m.InsuranceReportComponent),
+        canActivate: [authGuard]
+      },
       
       // Settings routes
       {
