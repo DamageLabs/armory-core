@@ -153,6 +153,83 @@ function recalcAllFirearmValues(db: Database.Database): void {
 }
 
 /**
+ * Add group property to field definitions in inventory_types schema.
+ * This is NON-DESTRUCTIVE — only adds the group property, doesn't remove anything.
+ */
+export function migrateFieldGroups(db: Database.Database): void {
+  const groupAssignments: Record<string, Record<string, string>> = {
+    'Firearms': {
+      'serialNumber': 'Identification',
+      'manufacturer': 'Identification', 
+      'condition': 'Identification',
+      'caliber': 'Specifications',
+      'barrelLength': 'Specifications',
+      'action': 'Specifications',
+      'frame': 'Specifications',
+      'weight': 'Specifications',
+      'triggerPull': 'Specifications',
+      'fflRequired': 'Compliance'
+    },
+    'Accessories': {
+      'accessoryType': 'General',
+      'manufacturer': 'General',
+      'condition': 'General',
+      'compatibility': 'General',
+      'magnification': 'Optics',
+      'reticleType': 'Optics',
+      'tubeDiameter': 'Optics',
+      'objectiveLens': 'Optics',
+      'eyeRelief': 'Optics',
+      'lumens': 'Illumination',
+      'candela': 'Illumination',
+      'beamDistance': 'Illumination',
+      'runtime': 'Illumination',
+      'activationMethod': 'Illumination',
+      'mountType': 'Physical',
+      'batteryType': 'Physical',
+      'weight': 'Physical'
+    },
+    'Ammunition': {
+      'caliber': 'Details',
+      'grainWeight': 'Details',
+      'cartridgeType': 'Details',
+      'roundCount': 'Details',
+      'casing': 'Details',
+      'manufacturer': 'Details'
+    }
+  };
+
+  const inventoryTypes = db.prepare('SELECT id, name, schema FROM inventory_types').all() as { id: number; name: string; schema: string }[];
+
+  const updateSchema = db.prepare('UPDATE inventory_types SET schema = ? WHERE id = ?');
+
+  for (const type of inventoryTypes) {
+    const assignments = groupAssignments[type.name];
+    if (!assignments) continue;
+
+    try {
+      const schema = JSON.parse(type.schema) as Array<Record<string, unknown>>;
+      let hasChanges = false;
+
+      for (const field of schema) {
+        const key = field.key as string;
+        if (key && assignments[key] && !field.group) {
+          field.group = assignments[key];
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges) {
+        updateSchema.run(JSON.stringify(schema), type.id);
+        console.log(`Updated field groups for inventory type: ${type.name}`);
+      }
+    } catch (error) {
+      console.error(`Failed to parse schema for ${type.name}:`, error);
+    }
+  }
+}
+
+/**
  * Run all pending migrations. Idempotent — skips tables that already have FK constraints.
  */
 export function runMigrations(db: Database.Database): void {
@@ -197,4 +274,7 @@ export function runMigrations(db: Database.Database): void {
 
   // Always recalc firearm values to ensure consistency
   recalcAllFirearmValues(db);
+
+  // Add field groups to existing schemas
+  migrateFieldGroups(db);
 }

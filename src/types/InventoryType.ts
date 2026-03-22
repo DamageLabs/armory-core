@@ -7,6 +7,7 @@ export interface FieldDefinition {
   required: boolean;
   options?: string[];
   placeholder?: string;
+  group?: string;  // NEW — defaults to "Details"
 }
 
 export interface InventoryType {
