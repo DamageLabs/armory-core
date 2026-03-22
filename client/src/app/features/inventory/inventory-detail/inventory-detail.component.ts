@@ -738,15 +738,13 @@ export class InventoryDetailComponent implements OnInit {
   private itemService = inject(ItemService);
   private noteService = inject(NoteService);
   private maintenanceService = inject(MaintenanceService);
-  private photoService = inject(PhotoService);
-  private receiptService = inject(ReceiptService);
+  public photoService = inject(PhotoService);
+  public receiptService = inject(ReceiptService);
   private stockHistoryService = inject(StockHistoryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  // Expose services to template
-  photoService = inject(PhotoService);
-  receiptService = inject(ReceiptService);
+  // Expose services to template (duplicate removed)
 
   item = signal<Item | null>(null);
   children = signal<Item[]>([]);
@@ -755,7 +753,7 @@ export class InventoryDetailComponent implements OnInit {
   isSubmitting = signal(false);
 
   // Tab state
-  activeTab = signal<'details' | 'notes' | 'maintenance' | 'photos' | 'receipts' | 'history'>('details');
+  activeTab = 'details' as 'details' | 'notes' | 'maintenance' | 'photos' | 'receipts' | 'history';
 
   // Notes
   notes = signal<Note[]>([]);

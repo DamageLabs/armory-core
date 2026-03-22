@@ -24,9 +24,9 @@ export interface MaintenanceSummary {
 export interface CreateMaintenanceRequest {
   serviceType: MaintenanceLog['serviceType'];
   description: string;
-  roundsFired?: number;
-  serviceProvider?: string;
-  cost?: number;
+  roundsFired?: number | null;
+  serviceProvider?: string | null;
+  cost?: number | null;
   performedAt: string;
 }
 
