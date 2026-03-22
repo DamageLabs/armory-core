@@ -686,7 +686,8 @@ import { Item } from '../../../types/item';
                             <img 
                               [src]="receiptImageUrls()[receipt.id]" 
                               [alt]="receipt.originalName"
-                              class="max-w-full max-h-96 rounded-lg border border-slate-200 dark:border-slate-700 object-contain" />
+                              (click)="openLightbox(receiptImageUrls()[receipt.id], receipt.originalName)"
+                              class="max-w-xs max-h-64 rounded-lg border border-slate-200 dark:border-slate-700 object-contain cursor-pointer hover:opacity-90 transition-opacity" />
                           </div>
                         }
                       </div>
@@ -755,6 +756,26 @@ import { Item } from '../../../types/item';
         </div>
       }
     </div>
+
+    <!-- Lightbox overlay -->
+    @if (lightboxUrl()) {
+      <div 
+        class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+        (click)="closeLightbox()">
+        <div class="relative max-w-4xl max-h-[90vh]" (click)="$event.stopPropagation()">
+          <button 
+            (click)="closeLightbox()"
+            class="absolute -top-10 right-0 text-white hover:text-slate-300 text-2xl font-bold">
+            ✕
+          </button>
+          <img 
+            [src]="lightboxUrl()" 
+            [alt]="lightboxAlt()"
+            class="max-w-full max-h-[85vh] rounded-lg object-contain" />
+          <p class="text-center text-white/70 text-sm mt-2">{{ lightboxAlt() }}</p>
+        </div>
+      </div>
+    }
   `
 })
 export class InventoryDetailComponent implements OnInit {
@@ -803,6 +824,8 @@ export class InventoryDetailComponent implements OnInit {
   // Receipts
   receipts = signal<Receipt[]>([]);
   receiptImageUrls = signal<Record<number, string>>({});
+  lightboxUrl = signal<string>('');
+  lightboxAlt = signal<string>('');
   selectedReceipt: File | null = null;
 
   // History
@@ -1297,5 +1320,15 @@ export class InventoryDetailComponent implements OnInit {
       default:
         return '';
     }
+  }
+
+  openLightbox(url: string, alt: string): void {
+    this.lightboxUrl.set(url);
+    this.lightboxAlt.set(alt);
+  }
+
+  closeLightbox(): void {
+    this.lightboxUrl.set('');
+    this.lightboxAlt.set('');
   }
 }
