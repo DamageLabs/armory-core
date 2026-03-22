@@ -13,6 +13,7 @@ export interface AuditLogEntry {
 export interface AuditLogFilters {
   action?: string;
   userId?: number;
+  userEmail?: string;
   resourceType?: string;
   from?: string; // ISO date
   to?: string; // ISO date

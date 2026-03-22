@@ -16,6 +16,7 @@ export class AuditLogService {
     
     if (filters.action) params = params.set('action', filters.action);
     if (filters.userId) params = params.set('userId', filters.userId.toString());
+    if (filters.userEmail) params = params.set('userEmail', filters.userEmail);
     if (filters.resourceType) params = params.set('resourceType', filters.resourceType);
     if (filters.from) params = params.set('from', filters.from);
     if (filters.to) params = params.set('to', filters.to);

@@ -334,8 +334,7 @@ export class AuditLogComponent implements OnInit {
 
     // User email changes  
     this.filterForm.get('userEmail')?.valueChanges.subscribe(userEmail => {
-      // Since the API expects userId but we have userEmail in the dropdown,
-      // we'll need to handle this differently or adjust the API call
+      this.currentFilters.userEmail = userEmail || undefined;
       this.currentFilters.page = 1;
       this.loadAuditLogs();
     });
@@ -375,14 +374,7 @@ export class AuditLogComponent implements OnInit {
   private loadAuditLogs(): void {
     this.isLoading.set(true);
     
-    // Handle userEmail filter - we'll send it as a query param even though API expects userId
-    const filters = { ...this.currentFilters };
-    const userEmailValue = this.filterForm.get('userEmail')?.value;
-    if (userEmailValue) {
-      (filters as any).userEmail = userEmailValue;
-    }
-
-    this.auditLogService.getAuditLogs(filters).subscribe({
+    this.auditLogService.getAuditLogs(this.currentFilters).subscribe({
       next: (data) => {
         this.auditData.set(data);
         this.isLoading.set(false);
