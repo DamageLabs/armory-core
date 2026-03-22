@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { CRow, CCol, CButton, CInputGroup, CInputGroupText, CFormInput, CFormSelect, CCollapse } from '@coreui/react';
+import { useState, useEffect, useRef } from 'react';
+import { CRow, CCol, CButton, CInputGroup, CInputGroupText, CFormInput, CFormSelect, CCollapse, CBadge } from '@coreui/react';
 import { FaSearch, FaTimes, FaFilter } from 'react-icons/fa';
 import * as categoryService from '../../services/categoryService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
@@ -33,7 +33,13 @@ export default function ItemFilters({
   const [categories, setCategories] = useState<string[]>([]);
   const [inventoryTypes, setInventoryTypes] = useState<InventoryType[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const hasFilters = searchTerm || categoryFilter || typeFilter || advancedFilters.length > 0;
+
+  // Detect if Mac (show ⌘K) or PC (show Ctrl+K)
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const shortcutKey = isMac ? '⌘K' : 'Ctrl+K';
 
   useEffect(() => {
     async function loadTypes() {
@@ -69,6 +75,19 @@ export default function ItemFilters({
     if (advancedFilters.length > 0) setShowAdvanced(true);
   }, [advancedFilters.length]);
 
+  // Keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const selectedType = inventoryTypes.find((t) => t.id === parseInt(typeFilter));
   const typeSchema = selectedType?.schema || [];
 
@@ -81,11 +100,31 @@ export default function ItemFilters({
               <FaSearch />
             </CInputGroupText>
             <CFormInput
+              ref={searchInputRef}
               type="text"
               placeholder="Search by name, description, custom fields..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              style={{ position: 'relative' }}
             />
+            {!searchFocused && !searchTerm && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 10,
+                  pointerEvents: 'none'
+                }}
+              >
+                <CBadge color="secondary" className="text-muted" style={{ fontSize: '0.7rem', opacity: 0.7 }}>
+                  {shortcutKey}
+                </CBadge>
+              </div>
+            )}
           </CInputGroup>
         </CCol>
         <CCol md={2}>

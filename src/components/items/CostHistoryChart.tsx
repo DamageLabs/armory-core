@@ -3,6 +3,7 @@ import { CCard, CCardHeader, CCardBody, CBadge, CRow, CCol } from '@coreui/react
 import { FaArrowUp, FaArrowDown, FaMinus } from 'react-icons/fa';
 import * as costHistoryService from '../../services/costHistoryService';
 import { CostHistoryEntry, CostStats } from '../../types/CostHistory';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface CostHistoryChartProps {
   itemId: number;
@@ -10,6 +11,7 @@ interface CostHistoryChartProps {
 }
 
 export default function CostHistoryChart({ itemId, currentValue }: CostHistoryChartProps) {
+  const { isDark } = useTheme();
   const [history, setHistory] = useState<CostHistoryEntry[]>([]);
   const [stats, setStats] = useState<CostStats | null>(null);
 
@@ -77,7 +79,7 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
 
   const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
 
-  // Simple SVG line chart
+  // Simple SVG line chart with dark mode support
   const chartWidth = 400;
   const chartHeight = 100;
   const padding = 10;
@@ -96,6 +98,13 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
   const pathD = chartPoints
     .map((point, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(point.value)}`)
     .join(' ');
+
+  // Chart colors optimized for dark mode readability
+  const chartColors = {
+    line: isDark ? '#fbbf24' : '#f59e0b',  // Amber/gold for primary chart accent
+    points: isDark ? '#fbbf24' : '#f59e0b',
+    grid: isDark ? '#6b7280' : '#e5e7eb'  // More visible grid lines
+  };
 
   return (
     <CCard className="mt-3">
@@ -137,7 +146,7 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
               y1={padding + (1 - pct) * (chartHeight - 2 * padding)}
               x2={chartWidth - padding}
               y2={padding + (1 - pct) * (chartHeight - 2 * padding)}
-              stroke="#e0e0e0"
+              stroke={chartColors.grid}
               strokeWidth={1}
             />
           ))}
@@ -146,7 +155,7 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
           <path
             d={pathD}
             fill="none"
-            stroke="#0d6efd"
+            stroke={chartColors.line}
             strokeWidth={2}
           />
 
@@ -157,7 +166,9 @@ export default function CostHistoryChart({ itemId, currentValue }: CostHistoryCh
               cx={getX(i)}
               cy={getY(point.value)}
               r={4}
-              fill="#0d6efd"
+              fill={chartColors.points}
+              stroke={isDark ? '#1f2937' : '#ffffff'}
+              strokeWidth={1}
             >
               <title>
                 {formatDate(point.date)}: {formatCurrency(point.value)}
