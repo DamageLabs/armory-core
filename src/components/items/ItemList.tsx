@@ -18,10 +18,12 @@ import HighlightText from '../common/HighlightText';
 import SavedFilterChips from './SavedFilterChips';
 import { exportToCSV, exportToPDF, backupItemsToCSV, backupItemsToJSON } from '../../utils/export';
 import { formatCurrency } from '../../utils/formatters';
+import { getCategoryColor, getCategoryColorLight } from '../../utils/categoryColors';
 import { ITEMS_PER_PAGE, LOW_STOCK_TYPE_NAMES, FIREARMS_TYPE_NAME, AMMUNITION_TYPE_NAME } from '../../constants/config';
 import { ItemFormData } from '../../types/Item';
 import { FilterCriterion, SavedFilter } from '../../types/SavedFilter';
 import * as savedFilterService from '../../services/savedFilterService';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type ViewMode = 'table' | 'card';
 const VIEW_MODE_KEY = 'armory-view-mode';
@@ -51,6 +53,7 @@ function SortHeader({ field, currentField, direction, onSort, children }: SortHe
 }
 
 export default function ItemList() {
+  const { isDark } = useTheme();
   const [items, setItems] = useState<Item[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -679,7 +682,30 @@ export default function ItemList() {
                       <HighlightText text={item.location} highlight={searchTerm} />
                     </td>
                     <td className="text-center">
-                      <HighlightText text={item.category} highlight={searchTerm} />
+                      {item.category ? (
+                        <div className="d-flex align-items-center justify-content-center gap-1">
+                          <div 
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: getCategoryColor(item.category, isDark),
+                              flexShrink: 0
+                            }}
+                          />
+                          <CBadge 
+                            style={{
+                              backgroundColor: getCategoryColorLight(item.category, isDark),
+                              color: getCategoryColor(item.category, isDark),
+                              border: `1px solid ${getCategoryColor(item.category, isDark)}`
+                            }}
+                          >
+                            <HighlightText text={item.category} highlight={searchTerm} />
+                          </CBadge>
+                        </div>
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
                     </td>
                     <td className="text-center text-nowrap">
                       <Link

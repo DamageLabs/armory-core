@@ -5,6 +5,8 @@ import { Item } from '../../types/Item';
 import { InventoryType } from '../../types/InventoryType';
 import { formatCurrency } from '../../utils/formatters';
 import { LOW_STOCK_THRESHOLD } from '../../constants/config';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getCategoryColor, getCategoryColorLight } from '../../utils/categoryColors';
 
 interface ItemCardGridProps {
   items: Item[];
@@ -47,6 +49,8 @@ function CardEmptyState({ hasFilters, onClearFilters }: { hasFilters?: boolean; 
 }
 
 export default function ItemCardGrid({ items, allItems, inventoryTypes, lowStockTypeIds, onDelete, hasFilters, onClearFilters }: ItemCardGridProps) {
+  const { isDark } = useTheme();
+  
   // Show empty state if no items
   if (items.length === 0) {
     return <CardEmptyState hasFilters={hasFilters} onClearFilters={onClearFilters} />;
@@ -93,8 +97,25 @@ export default function ItemCardGrid({ items, allItems, inventoryTypes, lowStock
                 )}
 
                 {item.category && (
-                  <div className="mb-2">
-                    <CBadge color="secondary">{item.category}</CBadge>
+                  <div className="mb-2 d-flex align-items-center gap-1">
+                    <div 
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: getCategoryColor(item.category, isDark),
+                        flexShrink: 0
+                      }}
+                    />
+                    <CBadge 
+                      style={{
+                        backgroundColor: getCategoryColorLight(item.category, isDark),
+                        color: getCategoryColor(item.category, isDark),
+                        border: `1px solid ${getCategoryColor(item.category, isDark)}`
+                      }}
+                    >
+                      {item.category}
+                    </CBadge>
                   </div>
                 )}
 
