@@ -8,9 +8,9 @@ export interface Receipt {
   filename: string;
   originalName: string;
   mimeType: string;
-  size: number;
+  sizeBytes: number;
+  category: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 @Injectable({
@@ -27,12 +27,16 @@ export class ReceiptService {
 
   uploadReceipt(itemId: number, file: File): Observable<Receipt> {
     const formData = new FormData();
-    formData.append('receipt', file);
+    formData.append('file', file);
     return this.http.post<Receipt>(`${this.apiUrl}/${itemId}/receipts`, formData);
   }
 
   getReceiptDownloadUrl(receiptId: number): string {
     return `${this.apiUrl}/download/${receiptId}`;
+  }
+
+  getReceiptBlob(receiptId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/download/${receiptId}`, { responseType: 'blob' });
   }
 
   deleteReceipt(receiptId: number): Observable<void> {

@@ -658,27 +658,38 @@ import { Item } from '../../../types/item';
                 <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                   <div class="divide-y divide-slate-200 dark:divide-slate-700">
                     @for (receipt of receipts(); track receipt.id) {
-                      <div class="p-4 flex items-center justify-between">
-                        <div class="flex-1">
-                          <h4 class="text-slate-900 dark:text-slate-100 font-medium">{{ receipt.originalName }}</h4>
-                          <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center space-x-4">
-                            <span>{{ formatFileSize(receipt.size) }}</span>
-                            <span>{{ formatDate(receipt.createdAt) }}</span>
+                      <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                          <div class="flex-1">
+                            <h4 class="text-slate-900 dark:text-slate-100 font-medium">{{ receipt.originalName }}</h4>
+                            <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center space-x-4">
+                              <span>{{ formatFileSize(receipt.sizeBytes) }}</span>
+                              <span>{{ formatDate(receipt.createdAt) }}</span>
+                            </div>
+                          </div>
+                          <div class="flex items-center space-x-3">
+                            <a
+                              [href]="receiptService.getReceiptDownloadUrl(receipt.id)"
+                              download
+                              class="text-amber-500 hover:text-amber-600 text-sm font-medium">
+                              Download
+                            </a>
+                            <button
+                              (click)="deleteReceipt(receipt.id)"
+                              class="text-red-500 hover:text-red-600 text-sm font-medium">
+                              Delete
+                            </button>
                           </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                          <a
-                            [href]="receiptService.getReceiptDownloadUrl(receipt.id)"
-                            download
-                            class="text-amber-500 hover:text-amber-600 text-sm font-medium">
-                            Download
-                          </a>
-                          <button
-                            (click)="deleteReceipt(receipt.id)"
-                            class="text-red-500 hover:text-red-600 text-sm font-medium">
-                            Delete
-                          </button>
-                        </div>
+                        @if (receipt.mimeType?.startsWith('image/') && receiptImageUrls()[receipt.id]) {
+                          <div class="mt-2">
+                            <img 
+                              [src]="receiptImageUrls()[receipt.id]" 
+                              [alt]="receipt.originalName"
+                              (click)="openLightbox(receiptImageUrls()[receipt.id], receipt.originalName)"
+                              class="max-w-xs max-h-64 rounded-lg border border-slate-200 dark:border-slate-700 object-contain cursor-pointer hover:opacity-90 transition-opacity" />
+                          </div>
+                        }
                       </div>
                     }
                   </div>
@@ -745,6 +756,26 @@ import { Item } from '../../../types/item';
         </div>
       }
     </div>
+
+    <!-- Lightbox overlay -->
+    @if (lightboxUrl()) {
+      <div 
+        class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+        (click)="closeLightbox()">
+        <div class="relative max-w-4xl max-h-[90vh]" (click)="$event.stopPropagation()">
+          <button 
+            (click)="closeLightbox()"
+            class="absolute -top-10 right-0 text-white hover:text-slate-300 text-2xl font-bold">
+            ✕
+          </button>
+          <img 
+            [src]="lightboxUrl()" 
+            [alt]="lightboxAlt()"
+            class="max-w-full max-h-[85vh] rounded-lg object-contain" />
+          <p class="text-center text-white/70 text-sm mt-2">{{ lightboxAlt() }}</p>
+        </div>
+      </div>
+    }
   `
 })
 export class InventoryDetailComponent implements OnInit {
@@ -792,6 +823,9 @@ export class InventoryDetailComponent implements OnInit {
 
   // Receipts
   receipts = signal<Receipt[]>([]);
+  receiptImageUrls = signal<Record<number, string>>({});
+  lightboxUrl = signal<string>('');
+  lightboxAlt = signal<string>('');
   selectedReceipt: File | null = null;
 
   // History
@@ -905,6 +939,15 @@ export class InventoryDetailComponent implements OnInit {
     this.receiptService.getItemReceipts(item.id).subscribe({
       next: (receipts) => {
         this.receipts.set(receipts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        // Load image blob URLs for image receipts
+        receipts.filter(r => r.mimeType?.startsWith('image/')).forEach(r => {
+          this.receiptService.getReceiptBlob(r.id).subscribe({
+            next: (blob) => {
+              const url = URL.createObjectURL(blob);
+              this.receiptImageUrls.set({ ...this.receiptImageUrls(), [r.id]: url });
+            }
+          });
+        });
       },
       error: (error) => {
         console.error('Failed to load receipts:', error);
@@ -1277,5 +1320,15 @@ export class InventoryDetailComponent implements OnInit {
       default:
         return '';
     }
+  }
+
+  openLightbox(url: string, alt: string): void {
+    this.lightboxUrl.set(url);
+    this.lightboxAlt.set(alt);
+  }
+
+  closeLightbox(): void {
+    this.lightboxUrl.set('');
+    this.lightboxAlt.set('');
   }
 }

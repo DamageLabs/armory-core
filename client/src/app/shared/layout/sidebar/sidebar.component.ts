@@ -22,9 +22,7 @@ interface NavItem {
       <!-- Logo Section -->
       <div class="p-6 border-b border-slate-200 dark:border-slate-700">
         <a routerLink="/" class="flex items-center space-x-3">
-          <div class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
-            <span class="text-slate-900 font-bold text-lg">A</span>
-          </div>
+          <img src="/logo.svg" alt="Armory Core" class="w-8 h-8" />
           <span class="text-xl font-semibold">Armory Core</span>
         </a>
       </div>
@@ -68,7 +66,8 @@ export class SidebarComponent {
   isOpen = signal(false);
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', icon: '📊', route: '/' },
+    { label: 'Home', icon: '🏠', route: '/' },
+    { label: 'Dashboard', icon: '📊', route: '/dashboard' },
     { label: 'Inventory', icon: '📦', route: '/inventory' },
     { label: 'BOMs', icon: '📋', route: '/boms' },
     { label: 'Portfolio Value', icon: '💰', route: '/reports/portfolio' },
