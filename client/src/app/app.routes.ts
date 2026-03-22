@@ -54,6 +54,11 @@ export const routes: Routes = [
         path: 'admin/inventory-types',
         loadComponent: () => import('./features/admin/inventory-type-management/inventory-type-management.component').then(m => m.InventoryTypeManagementComponent),
         canActivate: [adminGuard]
+      },
+      {
+        path: 'admin/audit-log',
+        loadComponent: () => import('./features/admin/audit-log/audit-log.component').then(m => m.AuditLogComponent),
+        canActivate: [adminGuard]
       }
     ]
   },

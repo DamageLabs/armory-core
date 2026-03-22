@@ -72,7 +72,8 @@ export class SidebarComponent {
     { label: 'Inventory', icon: '📦', route: '/inventory' },
     { label: 'Users', icon: '👥', route: '/admin/users', adminOnly: true },
     { label: 'Categories', icon: '🏷️', route: '/admin/categories', adminOnly: true },
-    { label: 'Types', icon: '⚙️', route: '/admin/inventory-types', adminOnly: true }
+    { label: 'Types', icon: '⚙️', route: '/admin/inventory-types', adminOnly: true },
+    { label: 'Audit Log', icon: '📋', route: '/admin/audit-log', adminOnly: true }
   ];
 
   toggle(): void {
