@@ -65,6 +65,8 @@ function ensureParentItemIdColumn(): void {
   }
 }
 
+
+
 function ensureInventoryTypes(): void {
   const db = getDatabase();
   const now = new Date().toISOString();

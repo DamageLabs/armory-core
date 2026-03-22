@@ -66,7 +66,9 @@ async function main() {
   // Routes — auth is public (with stricter rate limit), everything else requires authentication
   app.use('/api/auth', authLimiter, authRoutes);
   app.use('/api/items', requireAuth, itemRoutes);
+  // Inventory types: read-only for all authenticated users, admin-only for modifications
   app.use('/api/inventory-types', requireAuth, inventoryTypeRoutes);
+  // Categories: read-only for all authenticated users, admin-only for modifications
   app.use('/api/categories', requireAuth, categoryRoutes);
   app.use('/api/stock-history', requireAuth, stockHistoryRoutes);
   app.use('/api/cost-history', requireAuth, costHistoryRoutes);

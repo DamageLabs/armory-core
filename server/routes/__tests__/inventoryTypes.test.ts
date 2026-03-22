@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import { createApp } from './setup';
+import { createApp, createProtectedApp, authHeader, adminAuthHeader } from './setup';
 
 vi.mock('../../db/index', () => ({
   queryAll: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('../../db/index', () => ({
 import inventoryTypeRoutes from '../inventoryTypes';
 import * as db from '../../db/index';
 
-const app = createApp(inventoryTypeRoutes, '/api/inventory-types');
+const app = createProtectedApp(inventoryTypeRoutes, '/api/inventory-types');
 
 const mockType = {
   id: 1, name: 'Firearms', icon: 'FaCrosshairs',
@@ -29,7 +29,7 @@ describe('inventoryTypes routes', () => {
   describe('GET /', () => {
     it('returns all types', async () => {
       vi.mocked(db.queryAll).mockReturnValue([mockType]);
-      const res = await request(app).get('/api/inventory-types');
+      const res = await request(app).get('/api/inventory-types').set(authHeader());
       expect(res.status).toBe(200);
       expect(res.body).toEqual([mockType]);
     });
@@ -38,13 +38,13 @@ describe('inventoryTypes routes', () => {
   describe('GET /:id', () => {
     it('returns type when found', async () => {
       vi.mocked(db.queryOne).mockReturnValue(mockType);
-      const res = await request(app).get('/api/inventory-types/1');
+      const res = await request(app).get('/api/inventory-types/1').set(authHeader());
       expect(res.status).toBe(200);
     });
 
     it('returns 404 when not found', async () => {
       vi.mocked(db.queryOne).mockReturnValue(null);
-      const res = await request(app).get('/api/inventory-types/999');
+      const res = await request(app).get('/api/inventory-types/999').set(authHeader());
       expect(res.status).toBe(404);
     });
   });
@@ -53,18 +53,18 @@ describe('inventoryTypes routes', () => {
     it('creates type and returns 201', async () => {
       vi.mocked(db.queryOne).mockReturnValue(null);
       vi.mocked(db.insert).mockReturnValue({ ...mockType, id: 2, name: 'Tools' });
-      const res = await request(app).post('/api/inventory-types').send({ name: 'Tools', icon: 'FaWrench', schema: [] });
+      const res = await request(app).post('/api/inventory-types').set(adminAuthHeader()).send({ name: 'Tools', icon: 'FaWrench', schema: [] });
       expect(res.status).toBe(201);
     });
 
     it('returns 400 when name missing', async () => {
-      const res = await request(app).post('/api/inventory-types').send({ icon: 'X' });
+      const res = await request(app).post('/api/inventory-types').set(adminAuthHeader()).send({ icon: 'X' });
       expect(res.status).toBe(400);
     });
 
     it('returns 400 for duplicate name', async () => {
       vi.mocked(db.queryOne).mockReturnValue({ id: 1 });
-      const res = await request(app).post('/api/inventory-types').send({ name: 'Firearms' });
+      const res = await request(app).post('/api/inventory-types').set(adminAuthHeader()).send({ name: 'Firearms' });
       expect(res.status).toBe(400);
     });
   });
@@ -73,14 +73,14 @@ describe('inventoryTypes routes', () => {
     it('updates type', async () => {
       vi.mocked(db.queryOne).mockReturnValue(null);
       vi.mocked(db.update).mockReturnValue({ ...mockType, name: 'Updated' });
-      const res = await request(app).put('/api/inventory-types/1').send({ name: 'Updated' });
+      const res = await request(app).put('/api/inventory-types/1').set(adminAuthHeader()).send({ name: 'Updated' });
       expect(res.status).toBe(200);
     });
 
     it('returns 404 when not found', async () => {
       vi.mocked(db.queryOne).mockReturnValue(null);
       vi.mocked(db.update).mockReturnValue(null);
-      const res = await request(app).put('/api/inventory-types/999').send({ icon: 'X' });
+      const res = await request(app).put('/api/inventory-types/999').set(adminAuthHeader()).send({ icon: 'X' });
       expect(res.status).toBe(404);
     });
   });
@@ -89,20 +89,20 @@ describe('inventoryTypes routes', () => {
     it('deletes type when not in use', async () => {
       vi.mocked(db.count).mockReturnValue(0);
       vi.mocked(db.deleteById).mockReturnValue(true);
-      const res = await request(app).delete('/api/inventory-types/1');
+      const res = await request(app).delete('/api/inventory-types/1').set(adminAuthHeader());
       expect(res.status).toBe(200);
     });
 
     it('returns 400 when type is in use', async () => {
       vi.mocked(db.count).mockReturnValue(5);
-      const res = await request(app).delete('/api/inventory-types/1');
+      const res = await request(app).delete('/api/inventory-types/1').set(adminAuthHeader());
       expect(res.status).toBe(400);
     });
 
     it('returns 404 when not found', async () => {
       vi.mocked(db.count).mockReturnValue(0);
       vi.mocked(db.deleteById).mockReturnValue(false);
-      const res = await request(app).delete('/api/inventory-types/999');
+      const res = await request(app).delete('/api/inventory-types/999').set(adminAuthHeader());
       expect(res.status).toBe(404);
     });
   });

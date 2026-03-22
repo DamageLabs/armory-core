@@ -52,3 +52,21 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
 
   next();
 }
+
+export function requireOwnerOrAdmin(req: Request, res: Response, next: NextFunction): void {
+  if (!req.user) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+
+  // Admins can access anything
+  if (req.user.role === 'admin') {
+    next();
+    return;
+  }
+
+  // For non-admins, we need to check ownership in the route handler
+  // This middleware just ensures they're authenticated and not admin
+  // The actual ownership check happens in individual routes
+  next();
+}

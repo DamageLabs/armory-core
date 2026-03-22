@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById, count, run } from '../db/index';
 import { validate } from '../middleware/validate';
+import { requireAdmin } from '../middleware/auth';
 import { createCategorySchema, updateCategorySchema, reorderCategoriesSchema } from '../schemas/categories';
 import { logAudit } from '../services/auditService';
 
@@ -27,10 +28,15 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // GET /counts — category item counts
-router.get('/counts', (_req: Request, res: Response) => {
+router.get('/counts', (req: Request, res: Response) => {
   try {
+    // Scope counts by user for non-admin users
+    const userFilter = req.user?.role !== 'admin' ? 'AND i.user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [req.user?.userId] : [];
+    
     const counts = queryAll(
-      'SELECT c.name, COUNT(i.id) as count FROM categories c LEFT JOIN items i ON c.name = i.category GROUP BY c.name'
+      `SELECT c.name, COUNT(i.id) as count FROM categories c LEFT JOIN items i ON c.name = i.category ${userFilter !== '' ? 'WHERE 1=1 ' + userFilter : ''} GROUP BY c.name`,
+      userValues
     );
     res.json(counts);
   } catch (error) {
@@ -40,7 +46,7 @@ router.get('/counts', (_req: Request, res: Response) => {
 });
 
 // PUT /reorder — reorder categories
-router.put('/reorder', validate(reorderCategoriesSchema), (req: Request, res: Response) => {
+router.put('/reorder', requireAdmin, validate(reorderCategoriesSchema), (req: Request, res: Response) => {
   try {
     const { orderedIds } = req.body as { orderedIds: number[] };
     for (let i = 0; i < orderedIds.length; i++) {
@@ -54,7 +60,7 @@ router.put('/reorder', validate(reorderCategoriesSchema), (req: Request, res: Re
 });
 
 // POST / — create category
-router.post('/', validate(createCategorySchema), (req: Request, res: Response) => {
+router.post('/', requireAdmin, validate(createCategorySchema), (req: Request, res: Response) => {
   try {
     const { name, sortOrder, inventoryTypeId } = req.body;
 
@@ -80,7 +86,7 @@ router.post('/', validate(createCategorySchema), (req: Request, res: Response) =
 });
 
 // PUT /:id — update category
-router.put('/:id', validate(updateCategorySchema), (req: Request, res: Response) => {
+router.put('/:id', requireAdmin, validate(updateCategorySchema), (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { name, sortOrder, inventoryTypeId } = req.body;
@@ -117,7 +123,7 @@ router.put('/:id', validate(updateCategorySchema), (req: Request, res: Response)
 });
 
 // DELETE /:id — delete category if not in use
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', requireAdmin, (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const cat = queryOne<{ name: string }>('SELECT * FROM categories WHERE id = ?', [id]);
