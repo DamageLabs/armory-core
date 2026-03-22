@@ -306,6 +306,8 @@ export default function ItemList() {
     setSelectedIds(new Set());
   };
 
+  const hasActiveFilters = searchTerm || categoryFilter || typeFilter || showLowStockOnly || advancedFilters.length > 0;
+
   const handleAdvancedFiltersChange = useCallback((filters: FilterCriterion[]) => {
     setAdvancedFilters(filters);
     setActiveFilterId(null);
@@ -730,6 +732,8 @@ export default function ItemList() {
               inventoryTypes={inventoryTypes}
               lowStockTypeIds={lowStockTypeIds}
               onDelete={setDeleteModalItem}
+              hasFilters={hasActiveFilters}
+              onClearFilters={handleResetFilters}
             />
             <div className="text-muted text-center mt-3 small">
               <strong>{totalItems}</strong> items &middot; <strong>{totalQuantity}</strong> total qty &middot; <strong>{formatCurrency(totalValue)}</strong> total value
