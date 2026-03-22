@@ -109,4 +109,54 @@ describe('CustomFieldRenderer', () => {
     );
     expect(screen.getByPlaceholderText('e.g., R3')).toBeDisabled();
   });
+
+  it('renders tabs when multiple groups exist', () => {
+    const fieldsWithGroups: FieldDefinition[] = [
+      { ...textField, group: 'Identification' },
+      { ...selectField, group: 'Specifications' },
+    ];
+    
+    render(
+      <CustomFieldRenderer schema={fieldsWithGroups} values={{}} onChange={vi.fn()} />
+    );
+    
+    // Should see tab navigation
+    expect(screen.getByText('Identification')).toBeInTheDocument();
+    expect(screen.getByText('Specifications')).toBeInTheDocument();
+  });
+
+  it('renders flat when only one group exists', () => {
+    const fieldsWithSameGroup: FieldDefinition[] = [
+      { ...textField, group: 'Details' },
+      { ...selectField, group: 'Details' },
+    ];
+    
+    render(
+      <CustomFieldRenderer schema={fieldsWithSameGroup} values={{}} onChange={vi.fn()} />
+    );
+    
+    // Should not see tab navigation, just legend
+    expect(screen.queryByText('Details')).not.toBeInTheDocument();
+    expect(screen.getByText('Type-Specific Fields')).toBeInTheDocument();
+  });
+
+  it('switches between tabs when clicked', () => {
+    const fieldsWithGroups: FieldDefinition[] = [
+      { ...textField, group: 'Identification' },
+      { ...selectField, group: 'Specifications' },
+    ];
+    
+    render(
+      <CustomFieldRenderer schema={fieldsWithGroups} values={{}} onChange={vi.fn()} />
+    );
+    
+    // Initially first tab should be active and its content visible
+    expect(screen.getByDisplayValue('')).toBeInTheDocument(); // text field
+
+    // Click on second tab
+    fireEvent.click(screen.getByText('Specifications'));
+    
+    // Should now see the select field content
+    expect(screen.getByText('-- Select --')).toBeInTheDocument();
+  });
 });
