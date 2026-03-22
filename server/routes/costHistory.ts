@@ -168,7 +168,9 @@ router.get('/portfolio', (req: Request, res: Response) => {
       }
       
       // Revert this event to get the state before it
-      if (event.change_type === 'created') {
+      if (!event.change_type) {
+        return; // Skip events with no change_type
+      } else if (event.change_type === 'created') {
         // Item was created, so it didn't exist before
         if (itemValues[event.item_id]) {
           itemValues[event.item_id].exists = false;
