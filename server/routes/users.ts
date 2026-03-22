@@ -85,4 +85,31 @@ router.delete('/:id', (req: Request, res: Response) => {
   }
 });
 
+// PUT /:id/password — admin reset user password
+router.put('/:id/password', async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { password } = req.body;
+
+    if (!password || password.length < 8) {
+      res.status(400).json({ error: 'Password must be at least 8 characters' });
+      return;
+    }
+
+    const { hashPassword } = await import('../utils/password');
+    const hashedPassword = await hashPassword(password);
+
+    const user = update<UserRow>('users', id, { password: hashedPassword, updatedAt: new Date().toISOString() });
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'user.password_reset', resourceType: 'user', resourceId: id, details: { targetEmail: user.email } });
+    res.json({ message: 'Password updated' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
 export default router;
