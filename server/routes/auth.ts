@@ -49,19 +49,24 @@ router.post('/register', validate(registerSchema), async (req: Request, res: Res
     });
 
     // Send verification email
+    let emailSent = true;
     try {
       await sendVerificationEmail(email, verificationToken);
       rateLimitQueries.recordEmailSent(email);
     } catch (emailError) {
+      emailSent = false;
       console.error('Failed to send verification email:', emailError);
-      // Don't fail registration if email fails - user can resend
+      logAudit({ userId: user.id, userEmail: email, action: 'email.verification_failed', resourceType: 'user', resourceId: user.id, details: { error: String(emailError) } });
     }
 
-    logAudit({ userId: user.id, userEmail: email, action: 'user.registered', resourceType: 'user', resourceId: user.id, details: { email } });
+    logAudit({ userId: user.id, userEmail: email, action: 'user.registered', resourceType: 'user', resourceId: user.id, details: { email, emailSent } });
 
     res.status(201).json({
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: emailSent
+        ? 'Registration successful. Please check your email to verify your account.'
+        : 'Registration successful, but the verification email could not be sent. Please use the "Resend Verification" option to try again.',
       userId: user.id,
+      emailSent,
     });
   } catch (error) {
     console.error('Registration error:', error);
