@@ -35,6 +35,10 @@ export class ReceiptService {
     return `${this.apiUrl}/download/${receiptId}`;
   }
 
+  getReceiptBlob(receiptId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/download/${receiptId}`, { responseType: 'blob' });
+  }
+
   deleteReceipt(receiptId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${receiptId}`);
   }

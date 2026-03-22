@@ -681,10 +681,10 @@ import { Item } from '../../../types/item';
                             </button>
                           </div>
                         </div>
-                        @if (receipt.mimeType?.startsWith('image/')) {
+                        @if (receipt.mimeType?.startsWith('image/') && receiptImageUrls()[receipt.id]) {
                           <div class="mt-2">
                             <img 
-                              [src]="receiptService.getReceiptDownloadUrl(receipt.id)" 
+                              [src]="receiptImageUrls()[receipt.id]" 
                               [alt]="receipt.originalName"
                               class="max-w-full max-h-96 rounded-lg border border-slate-200 dark:border-slate-700 object-contain" />
                           </div>
@@ -802,6 +802,7 @@ export class InventoryDetailComponent implements OnInit {
 
   // Receipts
   receipts = signal<Receipt[]>([]);
+  receiptImageUrls = signal<Record<number, string>>({});
   selectedReceipt: File | null = null;
 
   // History
@@ -915,6 +916,15 @@ export class InventoryDetailComponent implements OnInit {
     this.receiptService.getItemReceipts(item.id).subscribe({
       next: (receipts) => {
         this.receipts.set(receipts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        // Load image blob URLs for image receipts
+        receipts.filter(r => r.mimeType?.startsWith('image/')).forEach(r => {
+          this.receiptService.getReceiptBlob(r.id).subscribe({
+            next: (blob) => {
+              const url = URL.createObjectURL(blob);
+              this.receiptImageUrls.set({ ...this.receiptImageUrls(), [r.id]: url });
+            }
+          });
+        });
       },
       error: (error) => {
         console.error('Failed to load receipts:', error);
