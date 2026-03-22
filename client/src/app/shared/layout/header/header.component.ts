@@ -1,5 +1,6 @@
 import { Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -46,17 +47,24 @@ import { ThemeService } from '../../services/theme.service';
           <!-- User info -->
           @if (currentUser$ | async; as user) {
             <div class="flex items-center space-x-3">
-              <div class="hidden sm:block text-sm">
-                <div class="font-medium text-slate-900 dark:text-slate-100">{{ user.email }}</div>
-                <div class="text-xs text-slate-500 dark:text-slate-400 capitalize">{{ user.role }}</div>
-              </div>
-              
-              <!-- User avatar -->
-              <div class="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
-                <span class="text-slate-900 font-medium text-sm">
-                  {{ user.email.charAt(0).toUpperCase() }}
-                </span>
-              </div>
+              <!-- Clickable user info -->
+              <button 
+                (click)="navigateToProfile()"
+                class="flex items-center space-x-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition-colors duration-200"
+                title="View Profile">
+                
+                <div class="hidden sm:block text-sm text-left">
+                  <div class="font-medium text-slate-900 dark:text-slate-100">{{ user.email }}</div>
+                  <div class="text-xs text-slate-500 dark:text-slate-400 capitalize">{{ user.role }}</div>
+                </div>
+                
+                <!-- User avatar -->
+                <div class="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
+                  <span class="text-slate-900 font-medium text-sm">
+                    {{ user.email.charAt(0).toUpperCase() }}
+                  </span>
+                </div>
+              </button>
               
               <!-- Logout button -->
               <button
@@ -78,12 +86,17 @@ import { ThemeService } from '../../services/theme.service';
 export class HeaderComponent {
   private authService = inject(AuthService);
   private themeService = inject(ThemeService);
+  private router = inject(Router);
   
   currentUser$ = this.authService.currentUser$;
   toggleSidebar = output<void>();
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(['/profile']);
   }
 
   logout(): void {
