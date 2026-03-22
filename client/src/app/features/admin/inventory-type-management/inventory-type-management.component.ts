@@ -137,7 +137,7 @@ import { InventoryType, FieldDefinition, FieldType } from '../../../types/invent
                     <button
                       type="submit"
                       [disabled]="addFieldForm.invalid || isUpdating()"
-                      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200">
+                      class="px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-400 disabled:cursor-not-allowed text-slate-900 font-medium rounded-lg transition-colors duration-200">
                       {{ isUpdating() ? 'Adding...' : 'Add Field' }}
                     </button>
                   </div>

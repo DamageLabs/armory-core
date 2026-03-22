@@ -23,7 +23,7 @@ Chart.register(...registerables);
           <p class="mt-1 text-slate-500 dark:text-slate-400">Overview of your inventory</p>
         </div>
         <a routerLink="/inventory/new" 
-           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+           class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
           Add Item
         </a>
       </div>

@@ -21,7 +21,7 @@ import { InventoryType } from '../../../types/inventory-type';
         </div>
         <button
           (click)="showCreateForm.set(!showCreateForm())"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200 text-center">
+          class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200 text-center">
           {{ showCreateForm() ? 'Cancel' : 'Add Category' }}
         </button>
       </div>
@@ -52,7 +52,7 @@ import { InventoryType } from '../../../types/inventory-type';
             <button
               type="submit"
               [disabled]="createForm.invalid || isCreating()"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200">
+              class="px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-400 disabled:cursor-not-allowed text-slate-900 font-medium rounded-lg transition-colors duration-200">
               {{ isCreating() ? 'Creating...' : 'Create' }}
             </button>
           </form>

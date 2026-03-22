@@ -134,7 +134,7 @@ import { AuthService } from '../../../core/services/auth.service';
           <button
             type="submit"
             [disabled]="registerForm.invalid || isLoading()"
-            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+            class="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-slate-900 font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
             @if (isLoading()) {
               <span class="flex items-center justify-center space-x-2">
                 <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">

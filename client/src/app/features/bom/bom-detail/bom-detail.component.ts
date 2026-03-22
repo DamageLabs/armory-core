@@ -33,7 +33,7 @@ import { Bom, BomCostResponse } from '../../../types/bom';
               Duplicate
             </button>
             <a [routerLink]="['/boms', bomData.id, 'edit']" 
-               class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+               class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
               Edit BOM
             </a>
           </div>

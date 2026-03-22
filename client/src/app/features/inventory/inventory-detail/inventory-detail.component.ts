@@ -56,7 +56,7 @@ import { Item } from '../../../types/item';
           <!-- Actions -->
           <div class="flex items-center space-x-3">
             <a [routerLink]="['/inventory', itemData.id, 'edit']"
-               class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+               class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
               Edit
             </a>
             <button
@@ -305,7 +305,7 @@ import { Item } from '../../../types/item';
                   
                   <div class="space-y-3">
                     <a [routerLink]="['/inventory', itemData.id, 'edit']"
-                       class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-3 rounded-lg transition-colors duration-200">
+                       class="block w-full text-center bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-3 rounded-lg transition-colors duration-200">
                       Edit Item
                     </a>
                     
@@ -337,7 +337,7 @@ import { Item } from '../../../types/item';
                   <button
                     (click)="createNote()"
                     [disabled]="!newNoteContent.trim() || isSubmitting()"
-                    class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+                    class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-400 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
                     {{ isSubmitting() ? 'Adding...' : 'Add Note' }}
                   </button>
                 </div>
@@ -479,7 +479,7 @@ import { Item } from '../../../types/item';
                       <button
                         (click)="createMaintenanceLog()"
                         [disabled]="!isMaintenanceFormValid() || isSubmitting()"
-                        class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold px-4 py-2 rounded-lg">
+                        class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-400 text-slate-900 font-semibold px-4 py-2 rounded-lg">
                         {{ isSubmitting() ? 'Adding...' : 'Add Log' }}
                       </button>
                     </div>
@@ -560,7 +560,7 @@ import { Item } from '../../../types/item';
                   <button
                     (click)="photoInput.click()"
                     [disabled]="isSubmitting()"
-                    class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+                    class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-400 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
                     {{ isSubmitting() ? 'Uploading...' : 'Choose Photo' }}
                   </button>
                   @if (selectedPhoto) {
@@ -638,7 +638,7 @@ import { Item } from '../../../types/item';
                   <button
                     (click)="receiptInput.click()"
                     [disabled]="isSubmitting()"
-                    class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+                    class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-400 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
                     {{ isSubmitting() ? 'Uploading...' : 'Choose File' }}
                   </button>
                   @if (selectedReceipt) {

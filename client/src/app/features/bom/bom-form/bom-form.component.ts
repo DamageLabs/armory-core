@@ -76,7 +76,7 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
             <button
               type="button"
               (click)="addItem()"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200">
+              class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-medium px-4 py-2 rounded-lg transition-colors duration-200">
               Add Item
             </button>
           </div>
@@ -178,7 +178,7 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
             <button
               type="submit"
               [disabled]="bomForm.invalid || isSubmitting()"
-              class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white disabled:text-slate-200 font-semibold px-6 py-2 rounded-lg transition-colors duration-200">
+              class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-slate-900 disabled:text-slate-500 font-semibold px-6 py-2 rounded-lg transition-colors duration-200">
               @if (isSubmitting()) {
                 <span class="flex items-center">
                   <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
