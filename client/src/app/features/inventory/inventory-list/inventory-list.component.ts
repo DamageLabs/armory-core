@@ -117,8 +117,8 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                             {{ item.name }}
                           </a>
                           @if (item.child_count && item.child_count > 0) {
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                              {{ item.child_count }} {{ item.child_count === 1 ? 'accessory' : 'accessories' }}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              🔗 {{ item.child_count }} {{ item.child_count === 1 ? 'accessory' : 'accessories' }}
                             </span>
                           }
                         </div>
@@ -174,8 +174,8 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                           }
                           <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ item.name }}</h3>
                           @if (item.child_count && item.child_count > 0) {
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300">
-                              {{ item.child_count }}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              🔗 {{ item.child_count }}
                             </span>
                           }
                         </div>
