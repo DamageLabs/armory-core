@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body { 
+  height: 100%; 
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body { 
+  margin: 0; 
+  background: #0f1629;
+  color: #f1f5f9;
+}
