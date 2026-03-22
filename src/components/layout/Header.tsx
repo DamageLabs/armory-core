@@ -62,7 +62,9 @@ export default function Header({ onToggleSidebar, sidebarVisible }: HeaderProps)
           </CNavItem>
           {isAuthenticated ? (
             <CDropdown variant="nav-item" alignment="end">
-              <CDropdownToggle caret={false}>{user?.email}</CDropdownToggle>
+              <CDropdownToggle caret={false}>
+                {user?.email} <span className="badge bg-secondary ms-1">{user?.role}</span>
+              </CDropdownToggle>
               <CDropdownMenu>
                 <CDropdownItem as={Link} to="/profile">Edit Profile</CDropdownItem>
                 <CDropdownDivider />

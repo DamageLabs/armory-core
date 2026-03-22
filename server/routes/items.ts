@@ -71,14 +71,27 @@ router.get('/', (req: Request, res: Response) => {
     const sortCol = getSortColumn(params.sortBy);
     const sortDir = params.sortDir.toUpperCase();
 
+    // Add user_id filtering for non-admin users
+    let userWhere = where;
+    let userValues = values;
+    if (req.user?.role !== 'admin') {
+      if (where === '') {
+        userWhere = 'WHERE user_id = ?';
+        userValues = [req.user?.userId];
+      } else {
+        userWhere = where + ' AND user_id = ?';
+        userValues = [...values, req.user?.userId];
+      }
+    }
+
     const db = getDatabase();
-    const countRow = db.prepare(`SELECT COUNT(*) as count FROM items ${where}`).get(...values) as { count: number };
+    const countRow = db.prepare(`SELECT COUNT(*) as count FROM items ${userWhere}`).get(...userValues) as { count: number };
     const totalItems = countRow.count;
 
     const offset = (params.page - 1) * params.pageSize;
     const rows = queryAll(
-      `SELECT items.*, (SELECT COUNT(*) FROM items c WHERE c.parent_item_id = items.id) AS child_count, (SELECT p.name FROM items p WHERE p.id = items.parent_item_id) AS parent_name FROM items ${where} ORDER BY ${sortCol} ${sortDir} LIMIT ? OFFSET ?`,
-      [...values, params.pageSize, offset],
+      `SELECT items.*, (SELECT COUNT(*) FROM items c WHERE c.parent_item_id = items.id${req.user?.role !== 'admin' ? ' AND c.user_id = ?' : ''}) AS child_count, (SELECT p.name FROM items p WHERE p.id = items.parent_item_id) AS parent_name FROM items ${userWhere} ORDER BY ${sortCol} ${sortDir} LIMIT ? OFFSET ?`,
+      req.user?.role !== 'admin' ? [...userValues, req.user?.userId, params.pageSize, offset] : [...userValues, params.pageSize, offset],
       JSON_FIELDS
     );
 
@@ -98,9 +111,23 @@ router.get('/stats', (req: Request, res: Response) => {
     const db = getDatabase();
     const params = parsePaginationParams(req.query as Record<string, unknown>);
     const { where, values } = buildItemWhereClause(params);
+    
+    // Add user_id filtering for non-admin users
+    let userWhere = where;
+    let userValues = values;
+    if (req.user?.role !== 'admin') {
+      if (where === '') {
+        userWhere = 'WHERE user_id = ?';
+        userValues = [req.user?.userId];
+      } else {
+        userWhere = where + ' AND user_id = ?';
+        userValues = [...values, req.user?.userId];
+      }
+    }
+    
     const row = db.prepare(
-      `SELECT COALESCE(SUM(quantity), 0) as totalQuantity, COALESCE(SUM(quantity * unit_value), 0) as totalValue, COUNT(*) as totalItems FROM items ${where}`
-    ).get(...values) as { totalQuantity: number; totalValue: number; totalItems: number };
+      `SELECT COALESCE(SUM(quantity), 0) as totalQuantity, COALESCE(SUM(quantity * unit_value), 0) as totalValue, COUNT(*) as totalItems FROM items ${userWhere}`
+    ).get(...userValues) as { totalQuantity: number; totalValue: number; totalItems: number };
     res.json(row);
   } catch (error) {
     console.error('Error fetching stats:', error);
@@ -109,15 +136,20 @@ router.get('/stats', (req: Request, res: Response) => {
 });
 
 // GET /locations — Return distinct locations including gun safe names
-router.get('/locations', (_req: Request, res: Response) => {
+router.get('/locations', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
+    
+    // Add user_id filtering for non-admin users
+    const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [req.user?.userId, req.user?.userId] : [];
+    
     const safes = db.prepare(
-      `SELECT name FROM items WHERE category = 'Gun Safes' ORDER BY name`
-    ).all() as { name: string }[];
+      `SELECT name FROM items WHERE category = 'Gun Safes' ${userFilter} ORDER BY name`
+    ).all(...(req.user?.role !== 'admin' ? [req.user?.userId] : [])) as { name: string }[];
     const existing = db.prepare(
-      `SELECT DISTINCT location FROM items WHERE location != '' ORDER BY location`
-    ).all() as { location: string }[];
+      `SELECT DISTINCT location FROM items WHERE location != '' ${userFilter} ORDER BY location`
+    ).all(...(req.user?.role !== 'admin' ? [req.user?.userId] : [])) as { location: string }[];
 
     const locationSet = new Set<string>();
     for (const s of safes) locationSet.add(s.name);
@@ -131,15 +163,19 @@ router.get('/locations', (_req: Request, res: Response) => {
 });
 
 // GET /reorder — Items needing reorder (Ammunition only)
-router.get('/reorder', (_req: Request, res: Response) => {
+router.get('/reorder', (req: Request, res: Response) => {
   try {
+    const userFilter = req.user?.role !== 'admin' ? 'AND items.user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [req.user?.userId] : [];
+    
     const items = queryAll(
       `SELECT items.* FROM items
        JOIN inventory_types ON items.inventory_type_id = inventory_types.id
        WHERE items.quantity <= items.reorder_point AND items.reorder_point > 0
          AND inventory_types.name IN ('Ammunition')
+         ${userFilter}
        ORDER BY items.name`,
-      [],
+      userValues,
       JSON_FIELDS
     );
     res.json(items);
@@ -153,13 +189,17 @@ router.get('/reorder', (_req: Request, res: Response) => {
 router.get('/low-stock', (req: Request, res: Response) => {
   try {
     const threshold = parseInt(req.query.threshold as string, 10) || 10;
+    const userFilter = req.user?.role !== 'admin' ? 'AND items.user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [threshold, req.user?.userId] : [threshold];
+    
     const items = queryAll(
       `SELECT items.* FROM items
        JOIN inventory_types ON items.inventory_type_id = inventory_types.id
        WHERE items.quantity < ?
          AND inventory_types.name IN ('Ammunition')
+         ${userFilter}
        ORDER BY items.name`,
-      [threshold],
+      userValues,
       JSON_FIELDS
     );
     res.json(items);
@@ -170,9 +210,12 @@ router.get('/low-stock', (req: Request, res: Response) => {
 });
 
 // GET /low-stock-counts — Per-item reorder point based counts
-router.get('/low-stock-counts', (_req: Request, res: Response) => {
+router.get('/low-stock-counts', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
+    const userFilter = req.user?.role !== 'admin' ? 'AND items.user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [req.user?.userId] : [];
+    
     const row = db.prepare(
       `SELECT
          COALESCE(SUM(CASE WHEN items.quantity <= items.reorder_point AND items.quantity > 0 THEN 1 ELSE 0 END), 0) as lowStock,
@@ -180,8 +223,9 @@ router.get('/low-stock-counts', (_req: Request, res: Response) => {
        FROM items
        JOIN inventory_types ON items.inventory_type_id = inventory_types.id
        WHERE items.reorder_point > 0
-         AND inventory_types.name IN ('Ammunition')`
-    ).get() as { lowStock: number; outOfStock: number };
+         AND inventory_types.name IN ('Ammunition')
+         ${userFilter}`
+    ).get(...userValues) as { lowStock: number; outOfStock: number };
     res.json(row);
   } catch (error) {
     console.error('Error fetching low stock counts:', error);
@@ -225,6 +269,7 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
           inventoryTypeId: typeId,
           customFields: item.customFields || {},
           parentItemId: null,
+          userId: req.user?.userId, // Set to current user
           createdAt: now,
           updatedAt: now,
         }, JSON_FIELDS) as Record<string, unknown>;
@@ -259,6 +304,7 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
           inventoryTypeId: Number(item.inventoryTypeId) || 1,
           customFields: item.customFields || {},
           parentItemId: newParentId,
+          userId: req.user?.userId, // Set to current user
           createdAt: now,
           updatedAt: now,
         }, JSON_FIELDS) as Record<string, unknown>;
@@ -289,13 +335,23 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
 });
 
 // DELETE /all — Delete all items and related history
-router.delete('/all', (_req: Request, res: Response) => {
+router.delete('/all', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
-    // Clean up all receipt files before deleting
+    
+    // For admin users, delete everything. For non-admin users, only delete their own items.
+    const userFilter = req.user?.role !== 'admin' ? 'WHERE user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [req.user?.userId] : [];
+    
+    // Clean up receipt files for items to be deleted
     try {
-      const allReceipts = queryAll<{ filename: string }>('SELECT filename FROM receipts', []);
-      for (const r of allReceipts) {
+      const receiptsToDelete = queryAll<{ filename: string }>(`
+        SELECT r.filename FROM receipts r
+        JOIN items i ON r.item_id = i.id 
+        ${userFilter}
+      `, userValues);
+      
+      for (const r of receiptsToDelete) {
         if (r.filename) {
           fs.unlink(path.join(RECEIPTS_DIR, r.filename), () => {});
         }
@@ -304,15 +360,44 @@ router.delete('/all', (_req: Request, res: Response) => {
       // receipts table may not exist yet during tests
     }
 
+    // Clean up photo files for items to be deleted
+    try {
+      const photosToDelete = queryAll<{ filename: string }>(`
+        SELECT p.filename FROM item_photos p
+        JOIN items i ON p.item_id = i.id 
+        ${userFilter}
+      `, userValues);
+      
+      for (const p of photosToDelete) {
+        if (p.filename) {
+          fs.unlink(path.join(PHOTOS_DIR, p.filename), () => {});
+        }
+      }
+    } catch {
+      // table may not exist yet during tests
+    }
+
     const txn = db.transaction(() => {
-      try { run('DELETE FROM receipts'); } catch { /* table may not exist */ }
-      run('DELETE FROM stock_history');
-      run('DELETE FROM cost_history');
-      run('DELETE FROM items');
+      if (req.user?.role === 'admin') {
+        // Admin: delete everything
+        try { run('DELETE FROM receipts'); } catch { /* table may not exist */ }
+        try { run('DELETE FROM item_photos'); } catch { /* table may not exist */ }
+        run('DELETE FROM stock_history');
+        run('DELETE FROM cost_history');
+        run('DELETE FROM items');
+      } else {
+        // Non-admin: only delete own items and related data
+        try { run('DELETE FROM receipts WHERE item_id IN (SELECT id FROM items WHERE user_id = ?)', [req.user?.userId]); } catch { /* table may not exist */ }
+        try { run('DELETE FROM item_photos WHERE item_id IN (SELECT id FROM items WHERE user_id = ?)', [req.user?.userId]); } catch { /* table may not exist */ }
+        run('DELETE FROM stock_history WHERE user_id = ?', [req.user?.userId]);
+        run('DELETE FROM cost_history WHERE item_id IN (SELECT id FROM items WHERE user_id = ?)', [req.user?.userId]);
+        run('DELETE FROM items WHERE user_id = ?', [req.user?.userId]);
+      }
     });
     txn();
 
-    res.json({ message: 'All items and history cleared' });
+    const scope = req.user?.role === 'admin' ? 'all' : 'your';
+    res.json({ message: `All ${scope} items and history cleared` });
   } catch (error) {
     console.error('Error deleting all items:', error);
     res.status(500).json({ error: 'Failed to delete all items' });
@@ -324,17 +409,39 @@ router.post('/bulk-delete', validate(bulkDeleteSchema), (req: Request, res: Resp
   try {
     const { ids } = req.body as { ids: number[] };
 
+    // For non-admin users, verify ownership of all items before proceeding
+    if (req.user?.role !== 'admin') {
+      const placeholders = ids.map(() => '?').join(',');
+      const ownedItems = queryAll(`SELECT id FROM items WHERE id IN (${placeholders}) AND user_id = ?`, [...ids, req.user?.userId]);
+      const ownedIds = ownedItems.map((item: any) => item.id);
+      
+      // Check if user owns all requested items
+      const unauthorizedIds = ids.filter(id => !ownedIds.includes(id));
+      if (unauthorizedIds.length > 0) {
+        res.status(403).json({ error: `Access denied to items: ${unauthorizedIds.join(', ')}` });
+        return;
+      }
+    }
+
     const now = new Date().toISOString();
     const db = getDatabase();
     const parentIdsToRecalc = new Set<number>();
     const txn = db.transaction(() => {
       for (const id of ids) {
-        const existing = queryOne<Record<string, unknown>>('SELECT * FROM items WHERE id = ?', [id], JSON_FIELDS);
+        const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+        const userValues = req.user?.role !== 'admin' ? [id, req.user?.userId] : [id];
+        
+        const existing = queryOne<Record<string, unknown>>(`SELECT * FROM items WHERE id = ? ${userFilter}`, userValues, JSON_FIELDS);
         if (existing) {
           if (existing.parentItemId && !ids.includes(existing.parentItemId as number)) {
             parentIdsToRecalc.add(existing.parentItemId as number);
           }
-          run('UPDATE items SET parent_item_id = NULL WHERE parent_item_id = ?', [id]);
+          
+          // Only unlink children owned by the same user
+          const childUserFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+          const childUserValues = req.user?.role !== 'admin' ? [id, req.user?.userId] : [id];
+          run(`UPDATE items SET parent_item_id = NULL WHERE parent_item_id = ? ${childUserFilter}`, childUserValues);
+          
           run(
             'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [id, existing.name, 'deleted', existing.quantity, 0, existing.value, 0, existing.category, null, 'Bulk delete', req.user?.userId ?? null, req.user?.email ?? null, now]
@@ -366,11 +473,28 @@ router.put('/bulk-category', validate(bulkCategorySchema), (req: Request, res: R
   try {
     const { ids, category } = req.body as { ids: number[]; category: string };
 
+    // For non-admin users, verify ownership of all items before proceeding
+    if (req.user?.role !== 'admin') {
+      const placeholders = ids.map(() => '?').join(',');
+      const ownedItems = queryAll(`SELECT id FROM items WHERE id IN (${placeholders}) AND user_id = ?`, [...ids, req.user?.userId]);
+      const ownedIds = ownedItems.map((item: any) => item.id);
+      
+      // Check if user owns all requested items
+      const unauthorizedIds = ids.filter(id => !ownedIds.includes(id));
+      if (unauthorizedIds.length > 0) {
+        res.status(403).json({ error: `Access denied to items: ${unauthorizedIds.join(', ')}` });
+        return;
+      }
+    }
+
     const now = new Date().toISOString();
     const db = getDatabase();
     const txn = db.transaction(() => {
       for (const id of ids) {
-        const existing = queryOne<Record<string, unknown>>('SELECT * FROM items WHERE id = ?', [id], JSON_FIELDS);
+        const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+        const userValues = req.user?.role !== 'admin' ? [id, req.user?.userId] : [id];
+        
+        const existing = queryOne<Record<string, unknown>>(`SELECT * FROM items WHERE id = ? ${userFilter}`, userValues, JSON_FIELDS);
         if (existing) {
           run(
             'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -394,9 +518,25 @@ router.put('/bulk-category', validate(bulkCategorySchema), (req: Request, res: R
 // GET /:id/children — Get child items of a parent
 router.get('/:id/children', (req: Request, res: Response) => {
   try {
+    // First verify the parent item exists and user has access
+    const parent = queryOne('SELECT id, user_id FROM items WHERE id = ?', [req.params.id]);
+    if (!parent) {
+      res.status(404).json({ error: 'Parent item not found' });
+      return;
+    }
+    
+    // Non-admin users can only access their own items
+    if (req.user?.role !== 'admin' && parent.userId !== req.user?.userId) {
+      res.status(403).json({ error: 'Access denied' });
+      return;
+    }
+    
+    const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [req.params.id, req.user?.userId] : [req.params.id];
+    
     const children = queryAll(
-      'SELECT * FROM items WHERE parent_item_id = ? ORDER BY name',
-      [req.params.id],
+      `SELECT * FROM items WHERE parent_item_id = ? ${userFilter} ORDER BY name`,
+      userValues,
       JSON_FIELDS
     );
     res.json(children);
@@ -409,7 +549,10 @@ router.get('/:id/children', (req: Request, res: Response) => {
 // GET /:id — Get item by id
 router.get('/:id', (req: Request, res: Response) => {
   try {
-    const item = queryOne('SELECT * FROM items WHERE id = ?', [req.params.id], JSON_FIELDS);
+    const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [req.params.id, req.user?.userId] : [req.params.id];
+    
+    const item = queryOne(`SELECT * FROM items WHERE id = ? ${userFilter}`, userValues, JSON_FIELDS);
     if (!item) {
       res.status(404).json({ error: 'Item not found' });
       return;
@@ -431,6 +574,15 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
     const uv = unitValue || 0;
     const value = isFirearmType(typeId) ? uv : qty * uv;
 
+    // If creating a child item, verify parent ownership for non-admin users
+    if (parentItemId && req.user?.role !== 'admin') {
+      const parent = queryOne('SELECT user_id FROM items WHERE id = ?', [parentItemId]);
+      if (!parent || parent.userId !== req.user?.userId) {
+        res.status(403).json({ error: 'Parent item not found or access denied' });
+        return;
+      }
+    }
+
     const item = insert('items', {
       name: name || '',
       description: description || '',
@@ -445,6 +597,7 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
       inventoryTypeId: typeId,
       customFields: customFields || {},
       parentItemId: parentItemId || null,
+      userId: req.user?.userId, // Always set to the current user
       createdAt: now,
       updatedAt: now,
     }, JSON_FIELDS);
@@ -475,7 +628,12 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
 router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const existing = queryOne<Record<string, unknown>>('SELECT * FROM items WHERE id = ?', [id], JSON_FIELDS);
+    
+    // Verify ownership for non-admin users
+    const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [id, req.user?.userId] : [id];
+    
+    const existing = queryOne<Record<string, unknown>>(`SELECT * FROM items WHERE id = ? ${userFilter}`, userValues, JSON_FIELDS);
     if (!existing) {
       res.status(404).json({ error: 'Item not found' });
       return;
@@ -493,6 +651,15 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
 
     const oldParentId = existing.parentItemId as number | null;
     const newParentId = merged.parentItemId as number | null;
+
+    // If changing parent, verify new parent ownership for non-admin users
+    if (newParentId && newParentId !== oldParentId && req.user?.role !== 'admin') {
+      const parent = queryOne('SELECT user_id FROM items WHERE id = ?', [newParentId]);
+      if (!parent || parent.userId !== req.user?.userId) {
+        res.status(403).json({ error: 'New parent item not found or access denied' });
+        return;
+      }
+    }
 
     const updated = update('items', id, merged, JSON_FIELDS);
 
@@ -512,7 +679,9 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
 
     // When a Gun Safe is renamed, update all items referencing the old name as their location
     if (existing.category === 'Gun Safes' && existing.name !== merged.name) {
-      run('UPDATE items SET location = ?, updated_at = ? WHERE location = ?', [merged.name, now, existing.name]);
+      const safeUserFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+      const safeUserValues = req.user?.role !== 'admin' ? [merged.name, now, existing.name, req.user?.userId] : [merged.name, now, existing.name];
+      run(`UPDATE items SET location = ?, updated_at = ? WHERE location = ? ${safeUserFilter}`, safeUserValues);
     }
 
     logAudit({ userId: req.user?.userId, userEmail: req.user?.email, action: 'item.updated', resourceType: 'item', resourceId: id, details: { name: merged.name } });
@@ -522,9 +691,11 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
       inheritParentLocation(id, newParentId);
     }
 
-    // When a parent's location changes, update all children
+    // When a parent's location changes, update all children (only user's own items for non-admin)
     if (existing.location !== merged.location) {
-      run('UPDATE items SET location = ?, updated_at = ? WHERE parent_item_id = ?', [merged.location, now, id]);
+      const childUserFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+      const childUserValues = req.user?.role !== 'admin' ? [merged.location, now, id, req.user?.userId] : [merged.location, now, id];
+      run(`UPDATE items SET location = ?, updated_at = ? WHERE parent_item_id = ? ${childUserFilter}`, childUserValues);
     }
 
     // Recalc parent firearm values when child value/parent changes
@@ -551,7 +722,12 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
 router.delete('/:id', (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const existing = queryOne<Record<string, unknown>>('SELECT * FROM items WHERE id = ?', [id], JSON_FIELDS);
+    
+    // Verify ownership for non-admin users
+    const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+    const userValues = req.user?.role !== 'admin' ? [id, req.user?.userId] : [id];
+    
+    const existing = queryOne<Record<string, unknown>>(`SELECT * FROM items WHERE id = ? ${userFilter}`, userValues, JSON_FIELDS);
     if (!existing) {
       res.status(404).json({ error: 'Item not found' });
       return;
@@ -560,8 +736,10 @@ router.delete('/:id', (req: Request, res: Response) => {
     const now = new Date().toISOString();
     const parentId = existing.parentItemId as number | null;
 
-    // Unlink children before deleting parent
-    run('UPDATE items SET parent_item_id = NULL WHERE parent_item_id = ?', [id]);
+    // Unlink children before deleting parent (only user's own children for non-admin)
+    const childUserFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
+    const childUserValues = req.user?.role !== 'admin' ? [id, req.user?.userId] : [id];
+    run(`UPDATE items SET parent_item_id = NULL WHERE parent_item_id = ? ${childUserFilter}`, childUserValues);
 
     run(
       'INSERT INTO stock_history (item_id, item_name, change_type, previous_quantity, new_quantity, previous_value, new_value, previous_category, new_category, notes, user_id, user_email, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',

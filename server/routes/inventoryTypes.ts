@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { queryAll, queryOne, insert, update, deleteById, count } from '../db/index';
 import { validate } from '../middleware/validate';
+import { requireAdmin } from '../middleware/auth';
 import { createInventoryTypeSchema, updateInventoryTypeSchema } from '../schemas/inventoryTypes';
 import { logAudit } from '../services/auditService';
 
@@ -34,7 +35,7 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 // POST / — create inventory type
-router.post('/', validate(createInventoryTypeSchema), (req: Request, res: Response) => {
+router.post('/', requireAdmin, validate(createInventoryTypeSchema), (req: Request, res: Response) => {
   try {
     const { name, icon, schema } = req.body;
 
@@ -55,7 +56,7 @@ router.post('/', validate(createInventoryTypeSchema), (req: Request, res: Respon
 });
 
 // PUT /:id — update inventory type
-router.put('/:id', validate(updateInventoryTypeSchema), (req: Request, res: Response) => {
+router.put('/:id', requireAdmin, validate(updateInventoryTypeSchema), (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { name, icon, schema } = req.body;
@@ -90,7 +91,7 @@ router.put('/:id', validate(updateInventoryTypeSchema), (req: Request, res: Resp
 });
 
 // DELETE /:id — delete inventory type if not in use
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', requireAdmin, (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const itemCount = count('items', 'inventory_type_id = ?', [id]);

@@ -48,7 +48,15 @@ function migrateItemsTable(db: Database.Database): void {
       updated_at TEXT NOT NULL
     );
 
-    INSERT INTO items_new SELECT * FROM items;
+    INSERT INTO items_new (
+      id, name, description, quantity, unit_value, value, picture, category, 
+      location, barcode, reorder_point, inventory_type_id, custom_fields, 
+      parent_item_id, created_at, updated_at
+    ) SELECT 
+      id, name, description, quantity, unit_value, value, picture, category, 
+      location, barcode, reorder_point, inventory_type_id, custom_fields, 
+      parent_item_id, created_at, updated_at 
+    FROM items;
 
     DROP TABLE items;
 
@@ -110,6 +118,26 @@ function migrateReceiptsCategory(db: Database.Database): void {
 }
 
 /**
+ * Add user_id column to items table for RBAC.
+ */
+function migrateItemsUserColumn(db: Database.Database): void {
+  if (!tableExists(db, 'items')) return;
+  if (hasColumn(db, 'items', 'user_id')) return;
+  
+  // Add the user_id column
+  db.exec("ALTER TABLE items ADD COLUMN user_id INTEGER REFERENCES users(id)");
+  
+  // Only backfill if users table exists (not in test scenarios)
+  if (tableExists(db, 'users')) {
+    const result = db.prepare('UPDATE items SET user_id = 2 WHERE user_id IS NULL').run();
+    console.log(`Backfilled ${result.changes} items to user_id = 2`);
+  }
+  
+  // Add index for performance
+  db.exec('CREATE INDEX IF NOT EXISTS idx_items_user_id ON items(user_id)');
+}
+
+/**
  * Recalculate value for all Firearms items: value = unitValue + SUM(children.value).
  * Runs on every startup to ensure consistency.
  */
@@ -133,6 +161,9 @@ export function runMigrations(db: Database.Database): void {
   if (tableExists(db, 'receipts') && hasColumn(db, 'receipts', 'category')) {
     db.exec('CREATE INDEX IF NOT EXISTS idx_receipts_category ON receipts(category)');
   }
+  
+  // Add user_id column for RBAC
+  migrateItemsUserColumn(db);
 
   const needsItems = !hasForeignKey(db, 'items', 'inventory_type_id');
   const needsCategories = !hasForeignKey(db, 'categories', 'inventory_type_id');
