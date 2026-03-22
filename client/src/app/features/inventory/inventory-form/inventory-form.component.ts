@@ -249,7 +249,12 @@ export class InventoryFormComponent implements OnInit {
     this.isLoading.set(true);
     this.itemService.getItem(Number(this.itemId)).subscribe({
       next: (item) => {
-        this.itemForm.patchValue(item);
+        // Map backend fields to form fields
+        const formData = {
+          ...item,
+          cost: item.unitValue || null
+        };
+        this.itemForm.patchValue(formData);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -266,6 +271,12 @@ export class InventoryFormComponent implements OnInit {
       this.errorMessage.set('');
 
       const formData = { ...this.itemForm.value };
+      
+      // Map form fields to backend API fields
+      if (formData.cost !== null && formData.cost !== undefined) {
+        formData.unitValue = formData.cost;
+        delete formData.cost;
+      }
       
       // Convert empty string to null for parentItemId
       if (formData.parentItemId === '' || formData.parentItemId === undefined) {
