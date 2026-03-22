@@ -86,16 +86,15 @@ describe('boms routes', () => {
 
   describe('GET /:id/cost', () => {
     it('returns cost breakdown', async () => {
-      vi.mocked(db.queryOne)
-        .mockReturnValueOnce(mockBOM)
-        .mockReturnValueOnce({ id: 1, name: 'Lower', unitValue: 200, quantity: 5 });
+      vi.mocked(db.queryOne).mockReturnValueOnce(mockBOM);
+      vi.mocked(db.queryAll).mockReturnValueOnce([{ id: 1, name: 'Lower', unitValue: 200, quantity: 5 }]);
       const res = await request(app).get('/api/boms/1/cost');
       expect(res.status).toBe(200);
       expect(res.body.totalCost).toBe(200);
     });
 
     it('returns 404 when BOM not found', async () => {
-      vi.mocked(db.queryOne).mockReturnValue(null);
+      vi.mocked(db.queryOne).mockReturnValueOnce(null);
       const res = await request(app).get('/api/boms/999/cost');
       expect(res.status).toBe(404);
     });
