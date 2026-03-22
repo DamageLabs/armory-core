@@ -54,4 +54,49 @@ describe('costHistory routes', () => {
       expect(res.body.deleted).toBe(3);
     });
   });
+
+  describe('GET /portfolio', () => {
+    it('returns portfolio value over time', async () => {
+      // Mock current items
+      vi.mocked(db.queryAll)
+        .mockReturnValueOnce([
+          { id: 1, name: 'Item 1', category: 'Firearms', value: 500, created_at: '2026-01-01T00:00:00Z' },
+          { id: 2, name: 'Item 2', category: 'Accessories', value: 100, created_at: '2026-01-02T00:00:00Z' }
+        ])
+        // Mock stock history
+        .mockReturnValueOnce([
+          { item_id: 1, item_name: 'Item 1', change_type: 'created', previous_value: null, new_value: 400, timestamp: '2026-01-01T12:00:00Z' },
+          { item_id: 1, item_name: 'Item 1', change_type: 'value_updated', previous_value: 400, new_value: 500, timestamp: '2026-01-15T12:00:00Z' },
+          { item_id: 2, item_name: 'Item 2', change_type: 'created', previous_value: null, new_value: 100, timestamp: '2026-01-02T12:00:00Z' }
+        ]);
+
+      const res = await request(app).get('/api/cost-history/portfolio?period=30d&groupBy=none');
+      
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('snapshots');
+      expect(res.body).toHaveProperty('summary');
+      expect(res.body.summary).toHaveProperty('currentValue');
+      expect(res.body.summary).toHaveProperty('periodStartValue');
+      expect(res.body.summary).toHaveProperty('change');
+      expect(res.body.summary).toHaveProperty('percentChange');
+      expect(Array.isArray(res.body.snapshots)).toBe(true);
+    });
+
+    it('returns portfolio value grouped by type', async () => {
+      vi.mocked(db.queryAll)
+        .mockReturnValueOnce([
+          { id: 1, name: 'Item 1', category: 'Firearms', value: 500, created_at: '2026-01-01T00:00:00Z' },
+          { id: 2, name: 'Item 2', category: 'Accessories', value: 100, created_at: '2026-01-02T00:00:00Z' }
+        ])
+        .mockReturnValueOnce([
+          { item_id: 1, item_name: 'Item 1', change_type: 'created', previous_value: null, new_value: 500, timestamp: '2026-01-01T12:00:00Z' },
+          { item_id: 2, item_name: 'Item 2', change_type: 'created', previous_value: null, new_value: 100, timestamp: '2026-01-02T12:00:00Z' }
+        ]);
+
+      const res = await request(app).get('/api/cost-history/portfolio?period=all&groupBy=type');
+      
+      expect(res.status).toBe(200);
+      expect(res.body.snapshots[0]).toHaveProperty('byType');
+    });
+  });
 });

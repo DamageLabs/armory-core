@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Chart, registerables, ChartConfiguration } from 'chart.js';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { ItemService } from '../../core/services/item.service';
 import { DashboardStats, CategoryStats, InventoryTypeStats, ValueByTypeStats, TopValuedItem, CategoryBreakdown } from '../../types/dashboard';
 import { Item } from '../../types/item';
 
@@ -142,6 +143,43 @@ Chart.register(...registerables);
         </div>
       </div>
 
+      <!-- Expiring Items Widget -->
+      @if (expiringItems().length > 0) {
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Expiring Soon</h3>
+            <div class="text-sm text-slate-500 dark:text-slate-400">
+              {{ expiringItems().length }} {{ expiringItems().length === 1 ? 'item' : 'items' }} expiring within 30 days
+            </div>
+          </div>
+          <div class="space-y-3">
+            @for (item of expiringItems(); track item.id) {
+              <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+                <div class="flex items-center space-x-3">
+                  <span [class]="getExpirationStatusClass(item)">{{ getExpirationStatusIcon(item) }}</span>
+                  <div>
+                    <a [routerLink]="['/inventory', item.id]" class="font-medium text-amber-400 hover:text-amber-300">
+                      {{ item.name }}
+                    </a>
+                    @if (item.expirationNotes) {
+                      <p class="text-sm text-slate-500 dark:text-slate-400">{{ item.expirationNotes }}</p>
+                    }
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {{ formatDate(item.expirationDate!) }}
+                  </div>
+                  <div [class]="getExpirationStatusTextClass(item)" class="text-xs">
+                    {{ getExpirationStatusText(item) }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Category Breakdown Table -->
       <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Category Breakdown</h3>
@@ -235,6 +273,7 @@ Chart.register(...registerables);
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   private dashboardService = inject(DashboardService);
+  private itemService = inject(ItemService);
   
   @ViewChild('categoryChart', { static: false }) categoryChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('typeChart', { static: false }) typeChartRef!: ElementRef<HTMLCanvasElement>;
@@ -248,6 +287,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   topValuedItems = signal<TopValuedItem[]>([]);
   categoryBreakdown = signal<CategoryBreakdown[]>([]);
   recentItems = signal<Item[]>([]);
+  expiringItems = signal<Item[]>([]);
 
   private categoryChart: Chart | null = null;
   private typeChart: Chart | null = null;
@@ -262,6 +302,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.loadTopValuedItems();
     this.loadCategoryBreakdown();
     this.loadRecentItems();
+    this.loadExpiringItems();
   }
 
   ngAfterViewInit(): void {
@@ -345,6 +386,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
       error: (error) => {
         console.error('Failed to load recent items:', error);
+      }
+    });
+  }
+
+  private loadExpiringItems(): void {
+    this.itemService.getExpiringItems(30).subscribe({
+      next: (data) => {
+        this.expiringItems.set(data);
+      },
+      error: (error) => {
+        console.error('Failed to load expiring items:', error);
       }
     });
   }
@@ -621,6 +673,82 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       return `${diffDays - 1} days ago`;
     } else {
       return date.toLocaleDateString();
+    }
+  }
+
+  getExpirationStatus(item: Item): 'expired' | 'warning' | 'good' | null {
+    if (!item.expirationDate) return null;
+    
+    const expirationDate = new Date(item.expirationDate);
+    const today = new Date();
+    const diffDays = Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return 'expired';
+    } else if (diffDays <= 30) {
+      return 'warning';
+    } else {
+      return 'good';
+    }
+  }
+
+  getExpirationStatusIcon(item: Item): string {
+    const status = this.getExpirationStatus(item);
+    switch (status) {
+      case 'expired':
+        return '🔴';
+      case 'warning':
+        return '🟡';
+      case 'good':
+        return '🟢';
+      default:
+        return '';
+    }
+  }
+
+  getExpirationStatusClass(item: Item): string {
+    const status = this.getExpirationStatus(item);
+    switch (status) {
+      case 'expired':
+        return 'text-red-500';
+      case 'warning':
+        return 'text-yellow-500';
+      case 'good':
+        return 'text-green-500';
+      default:
+        return '';
+    }
+  }
+
+  getExpirationStatusText(item: Item): string {
+    if (!item.expirationDate) return '';
+    
+    const expirationDate = new Date(item.expirationDate);
+    const today = new Date();
+    const diffDays = Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return `Expired ${Math.abs(diffDays)} days ago`;
+    } else if (diffDays === 0) {
+      return 'Expires today';
+    } else if (diffDays === 1) {
+      return 'Expires tomorrow';
+    } else {
+      return `Expires in ${diffDays} days`;
+    }
+  }
+
+  getExpirationStatusTextClass(item: Item): string {
+    const status = this.getExpirationStatus(item);
+    switch (status) {
+      case 'expired':
+        return 'text-red-500 font-medium';
+      case 'warning':
+        return 'text-yellow-500 font-medium';
+      case 'good':
+        return 'text-green-500';
+      default:
+        return 'text-slate-500';
     }
   }
 }

@@ -16,6 +16,9 @@ export interface Item {
   userId: number;
   createdAt: string;
   updatedAt: string;
+  expirationDate?: string;
+  expirationNotes?: string;
+  expirationStatus?: 'expired' | 'warning' | 'good';
   // Additional fields from API joins
   child_count?: number;
   parent_name?: string;

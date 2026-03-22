@@ -29,6 +29,10 @@ export interface StockHistoryFilters {
   page?: number;
   pageSize?: number;
   itemId?: number;
+  changeType?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  itemName?: string;
 }
 
 @Injectable({
@@ -50,6 +54,18 @@ export class StockHistoryService {
     }
     if (filters?.itemId) {
       params = params.set('itemId', filters.itemId.toString());
+    }
+    if (filters?.changeType && filters.changeType !== 'all') {
+      params = params.set('changeType', filters.changeType);
+    }
+    if (filters?.dateFrom) {
+      params = params.set('dateFrom', filters.dateFrom);
+    }
+    if (filters?.dateTo) {
+      params = params.set('dateTo', filters.dateTo);
+    }
+    if (filters?.itemName) {
+      params = params.set('itemName', filters.itemName);
     }
 
     return this.http.get<StockHistoryEntry[]>(this.apiUrl, { params });

@@ -57,6 +57,35 @@ export const routes: Routes = [
         loadComponent: () => import('./features/bom/bom-form/bom-form.component').then(m => m.BomFormComponent)
       },
       
+      // Reports routes
+      {
+        path: 'reports/portfolio',
+        loadComponent: () => import('./features/reports/portfolio/portfolio.component').then(m => m.PortfolioComponent),
+        canActivate: [authGuard]
+      },
+      {
+        path: 'reports/insurance',
+        loadComponent: () => import('./features/reports/insurance/insurance-report.component').then(m => m.InsuranceReportComponent),
+        canActivate: [authGuard]
+      },
+      {
+        path: 'reports/expiration',
+        loadComponent: () => import('./features/reports/expiration/expiration-report.component').then(m => m.ExpirationReportComponent),
+        canActivate: [authGuard]
+      },
+      {
+        path: 'reports/stock-history',
+        loadComponent: () => import('./features/reports/stock-history/stock-history-report.component').then(m => m.StockHistoryReportComponent),
+        canActivate: [authGuard]
+      },
+      
+      // Wishlist routes
+      {
+        path: 'wishlist',
+        loadComponent: () => import('./features/wishlist/wishlist.component').then(m => m.WishlistComponent),
+        canActivate: [authGuard]
+      },
+      
       // Settings routes
       {
         path: 'settings/data',

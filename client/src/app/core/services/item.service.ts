@@ -63,4 +63,11 @@ export class ItemService {
   getStats(): Observable<{ totalItems: number; totalValue: number; totalQuantity: number }> {
     return this.http.get<any>(`${this.apiUrl}/stats`);
   }
+
+  getExpiringItems(days?: number): Observable<Item[]> {
+    let params = new HttpParams();
+    if (days) params = params.set('days', days.toString());
+    
+    return this.http.get<Item[]>(`${this.apiUrl}/expiring`, { params });
+  }
 }

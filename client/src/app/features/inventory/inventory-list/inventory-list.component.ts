@@ -151,6 +151,9 @@ import { SavedFilter } from '../../../types/saved-filter';
                           @if (item.parentItemId) {
                             <span class="text-slate-400 dark:text-slate-500 text-sm">↳</span>
                           }
+                          @if (item.expirationDate && getExpirationStatus(item) !== 'good') {
+                            <span [class]="getExpirationStatusClass(item)">{{ getExpirationStatusIcon(item) }}</span>
+                          }
                           <a [routerLink]="['/inventory', item.id]" class="font-medium text-amber-400 hover:text-amber-300">
                             {{ item.name }}
                           </a>
@@ -212,6 +215,9 @@ import { SavedFilter } from '../../../types/saved-filter';
                         <div class="flex items-center space-x-2">
                           @if (item.parentItemId) {
                             <span class="text-slate-400 dark:text-slate-500 text-sm">↳</span>
+                          }
+                          @if (item.expirationDate && getExpirationStatus(item) !== 'good') {
+                            <span [class]="getExpirationStatusClass(item)">{{ getExpirationStatusIcon(item) }}</span>
                           }
                           <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ item.name }}</h3>
                           @if (item.child_count && item.child_count > 0) {
@@ -580,6 +586,50 @@ export class InventoryListComponent implements OnInit {
           alert('Failed to delete saved filter. Please try again.');
         }
       });
+    }
+  }
+
+  getExpirationStatus(item: Item): 'expired' | 'warning' | 'good' | null {
+    if (!item.expirationDate) return null;
+    
+    const expirationDate = new Date(item.expirationDate);
+    const today = new Date();
+    const diffDays = Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return 'expired';
+    } else if (diffDays <= 30) {
+      return 'warning';
+    } else {
+      return 'good';
+    }
+  }
+
+  getExpirationStatusIcon(item: Item): string {
+    const status = this.getExpirationStatus(item);
+    switch (status) {
+      case 'expired':
+        return '🔴';
+      case 'warning':
+        return '🟡';
+      case 'good':
+        return '🟢';
+      default:
+        return '';
+    }
+  }
+
+  getExpirationStatusClass(item: Item): string {
+    const status = this.getExpirationStatus(item);
+    switch (status) {
+      case 'expired':
+        return 'text-red-500';
+      case 'warning':
+        return 'text-yellow-500';
+      case 'good':
+        return 'text-green-500';
+      default:
+        return '';
     }
   }
 }

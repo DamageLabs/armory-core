@@ -161,6 +161,19 @@ import { Item } from '../../../types/item';
                         <p class="text-slate-900 dark:text-slate-100 font-medium">{{ itemData.location }}</p>
                       </div>
                     }
+
+                    @if (itemData.expirationDate) {
+                      <div>
+                        <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Expiration</label>
+                        <div class="flex items-center space-x-2">
+                          <span [class]="getExpirationStatusClass(itemData)">{{ getExpirationStatusIcon(itemData) }}</span>
+                          <span class="text-slate-900 dark:text-slate-100 font-medium">{{ formatDate(itemData.expirationDate) }}</span>
+                        </div>
+                        @if (itemData.expirationNotes) {
+                          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ itemData.expirationNotes }}</p>
+                        }
+                      </div>
+                    }
                   </div>
                   
                   @if (itemData.description) {
@@ -1220,5 +1233,49 @@ export class InventoryDetailComponent implements OnInit {
     );
     
     return itemValue + childrenValue;
+  }
+
+  getExpirationStatus(item: Item): 'expired' | 'warning' | 'good' | null {
+    if (!item.expirationDate) return null;
+    
+    const expirationDate = new Date(item.expirationDate);
+    const today = new Date();
+    const diffDays = Math.ceil((expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return 'expired';
+    } else if (diffDays <= 30) {
+      return 'warning';
+    } else {
+      return 'good';
+    }
+  }
+
+  getExpirationStatusIcon(item: Item): string {
+    const status = this.getExpirationStatus(item);
+    switch (status) {
+      case 'expired':
+        return '🔴';
+      case 'warning':
+        return '🟡';
+      case 'good':
+        return '🟢';
+      default:
+        return '';
+    }
+  }
+
+  getExpirationStatusClass(item: Item): string {
+    const status = this.getExpirationStatus(item);
+    switch (status) {
+      case 'expired':
+        return 'text-red-500';
+      case 'warning':
+        return 'text-yellow-500';
+      case 'good':
+        return 'text-green-500';
+      default:
+        return '';
+    }
   }
 }

@@ -26,3 +26,33 @@ body:is(.dark *) {
   background: #0f1629;
   color: #f1f5f9;
 }
+
+/* Print styles */
+@media print {
+  app-sidebar, app-header, .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+  .grid {
+    break-inside: avoid;
+  }
+  table {
+    font-size: 12px;
+  }
+  th, td {
+    padding: 8px 12px !important;
+  }
+}
