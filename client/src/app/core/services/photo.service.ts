@@ -28,7 +28,7 @@ export class PhotoService {
 
   uploadPhoto(itemId: number, file: File): Observable<Photo> {
     const formData = new FormData();
-    formData.append('photo', file);
+    formData.append('file', file);
     return this.http.post<Photo>(`${this.apiUrl}/${itemId}/photos`, formData);
   }
 

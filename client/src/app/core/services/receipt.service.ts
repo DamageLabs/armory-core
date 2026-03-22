@@ -27,7 +27,7 @@ export class ReceiptService {
 
   uploadReceipt(itemId: number, file: File): Observable<Receipt> {
     const formData = new FormData();
-    formData.append('receipt', file);
+    formData.append('file', file);
     return this.http.post<Receipt>(`${this.apiUrl}/${itemId}/receipts`, formData);
   }
 
