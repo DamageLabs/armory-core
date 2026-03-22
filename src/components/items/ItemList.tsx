@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CCard, CCardHeader, CCardBody, CButton, CButtonGroup, CBadge, CFormCheck, CTable } from '@coreui/react';
+import { CCard, CCardHeader, CCardBody, CButton, CButtonGroup, CBadge, CFormCheck, CTable, CSpinner, CAlert } from '@coreui/react';
 import { FaEdit, FaTrash, FaCopy, FaFileExcel, FaFilePdf, FaBoxOpen, FaLink, FaFileCode, FaDatabase, FaThLarge, FaList, FaImage } from 'react-icons/fa';
 import * as itemService from '../../services/itemService';
 import * as inventoryTypeService from '../../services/inventoryTypeService';
@@ -77,6 +77,10 @@ export default function ItemList() {
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  // Export loading states
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportOperation, setExportOperation] = useState('');
 
   const [inventoryTypes, setInventoryTypes] = useState<InventoryType[]>([]);
   const [typeFilter, setTypeFilter] = useState('');
@@ -373,38 +377,66 @@ export default function ItemList() {
   };
 
   const handleExportCSV = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    setExportOperation('Exporting to CSV...');
     try {
       const allItems = await itemService.getAllItems();
       exportToCSV(allItems);
+      showSuccess('CSV export completed successfully.');
     } catch {
       showError('Failed to export items.');
+    } finally {
+      setIsExporting(false);
+      setExportOperation('');
     }
   };
 
   const handleExportPDF = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    setExportOperation('Exporting to PDF...');
     try {
       const allItems = await itemService.getAllItems();
       exportToPDF(allItems);
+      showSuccess('PDF export completed successfully.');
     } catch {
       showError('Failed to export items.');
+    } finally {
+      setIsExporting(false);
+      setExportOperation('');
     }
   };
 
   const handleBackupCSV = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    setExportOperation('Creating CSV backup...');
     try {
       const allItems = await itemService.getAllItems();
       backupItemsToCSV(allItems);
+      showSuccess('CSV backup completed successfully.');
     } catch {
       showError('Failed to backup items.');
+    } finally {
+      setIsExporting(false);
+      setExportOperation('');
     }
   };
 
   const handleBackupJSON = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    setExportOperation('Creating JSON backup...');
     try {
       const allItems = await itemService.getAllItems();
       backupItemsToJSON(allItems);
+      showSuccess('JSON backup completed successfully.');
     } catch {
       showError('Failed to backup items.');
+    } finally {
+      setIsExporting(false);
+      setExportOperation('');
     }
   };
 
@@ -436,22 +468,38 @@ export default function ItemList() {
               </CButton>
             </CButtonGroup>
             <CButtonGroup size="sm">
-              <CButton color="success" variant="outline" onClick={handleExportCSV}>
-                <FaFileExcel className="me-1" />
+              <CButton color="success" variant="outline" onClick={handleExportCSV} disabled={isExporting}>
+                {isExporting && exportOperation.includes('CSV') ? (
+                  <CSpinner size="sm" className="me-1" />
+                ) : (
+                  <FaFileExcel className="me-1" />
+                )}
                 CSV
               </CButton>
-              <CButton color="danger" variant="outline" onClick={handleExportPDF}>
-                <FaFilePdf className="me-1" />
+              <CButton color="danger" variant="outline" onClick={handleExportPDF} disabled={isExporting}>
+                {isExporting && exportOperation.includes('PDF') ? (
+                  <CSpinner size="sm" className="me-1" />
+                ) : (
+                  <FaFilePdf className="me-1" />
+                )}
                 PDF
               </CButton>
             </CButtonGroup>
             <CButtonGroup size="sm">
-              <CButton color="secondary" variant="outline" onClick={handleBackupCSV} disabled={totalItems === 0} title="Backup all items as CSV">
-                <FaDatabase className="me-1" />
+              <CButton color="secondary" variant="outline" onClick={handleBackupCSV} disabled={totalItems === 0 || isExporting} title="Backup all items as CSV">
+                {isExporting && exportOperation.includes('CSV backup') ? (
+                  <CSpinner size="sm" className="me-1" />
+                ) : (
+                  <FaDatabase className="me-1" />
+                )}
                 Backup CSV
               </CButton>
-              <CButton color="info" variant="outline" onClick={handleBackupJSON} disabled={totalItems === 0} title="Backup all items as JSON">
-                <FaFileCode className="me-1" />
+              <CButton color="info" variant="outline" onClick={handleBackupJSON} disabled={totalItems === 0 || isExporting} title="Backup all items as JSON">
+                {isExporting && exportOperation.includes('JSON backup') ? (
+                  <CSpinner size="sm" className="me-1" />
+                ) : (
+                  <FaFileCode className="me-1" />
+                )}
                 Backup JSON
               </CButton>
             </CButtonGroup>
@@ -467,6 +515,13 @@ export default function ItemList() {
           outOfStockCount={lowStockCounts.outOfStock}
           onFilterLowStock={handleFilterLowStock}
         />
+
+        {isExporting && (
+          <CAlert color="info" className="d-flex align-items-center gap-2 mb-3">
+            <CSpinner size="sm" />
+            <span>{exportOperation}</span>
+          </CAlert>
+        )}
 
         <div className="d-flex gap-3 mb-3 small">
           <span><strong>{totalItems}</strong> items</span>

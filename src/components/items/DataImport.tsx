@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CCard, CCardHeader, CCardBody, CButton, CAlert, CRow, CCol, CBadge, CFormLabel, CFormSelect, CFormInput } from '@coreui/react';
+import { CCard, CCardHeader, CCardBody, CButton, CAlert, CRow, CCol, CBadge, CFormLabel, CFormSelect, CFormInput, CSpinner } from '@coreui/react';
 import { FaFileUpload, FaCheck, FaTimes, FaDownload } from 'react-icons/fa';
 import Papa from 'papaparse';
 import * as itemService from '../../services/itemService';
@@ -385,8 +385,12 @@ export default function DataImport() {
                 disabled={importing || validCount === 0}
                 className="me-2"
               >
-                <FaFileUpload className="me-1" />
-                {importing ? 'Importing...' : `Import ${validCount} Items`}
+                {importing ? (
+                  <CSpinner size="sm" className="me-1" />
+                ) : (
+                  <FaFileUpload className="me-1" />
+                )}
+                {importing ? `Importing ${validCount} items...` : `Import ${validCount} Items`}
               </CButton>
               <CButton
                 color="secondary"
