@@ -16,8 +16,8 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
       <!-- Page header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-slate-100">Inventory</h1>
-          <p class="mt-1 text-slate-400">Manage your inventory items</p>
+          <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Inventory</h1>
+          <p class="mt-1 text-slate-500 dark:text-slate-400">Manage your inventory items</p>
         </div>
         <a routerLink="/inventory/new" 
            class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200 text-center">
@@ -26,7 +26,7 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
       </div>
 
       <!-- Search and filters -->
-      <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+      <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
         <form [formGroup]="filterForm" class="flex flex-col lg:flex-row gap-4">
           
           <!-- Search -->
@@ -35,15 +35,15 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
               type="text"
               formControlName="search"
               placeholder="Search items..."
-              class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             />
           </div>
 
           <!-- Per page selector -->
           <div class="w-full lg:w-auto">
             <select 
-              formControlName="per_page"
-              class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
+              formControlName="pageSize"
+              class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
               <option value="10">10 per page</option>
               <option value="25">25 per page</option>
               <option value="50">50 per page</option>
@@ -55,13 +55,13 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
 
       <!-- Items table -->
       @if (itemsData(); as data) {
-        <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           
           <!-- Table header -->
-          <div class="px-6 py-4 border-b border-slate-700 bg-slate-750">
+          <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-750">
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-slate-100">
-                Items ({{ data.meta.total | number }})
+              <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Items ({{ data.pagination.totalItems | number }})
               </h2>
               @if (selectedItems().length > 0) {
                 <button
@@ -78,7 +78,7 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
             <!-- Desktop table -->
             <div class="hidden md:block overflow-x-auto">
               <table class="w-full">
-                <thead class="bg-slate-750 border-b border-slate-700">
+                <thead class="bg-slate-50 dark:bg-slate-750 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th class="px-6 py-3 text-left">
                       <input
@@ -86,26 +86,26 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                         [checked]="allSelected()"
                         [indeterminate]="someSelected()"
                         (change)="toggleAllItems($event)"
-                        class="rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500"
+                        class="rounded border-slate-600 bg-slate-100 dark:bg-slate-700 text-amber-500 focus:ring-amber-500"
                       />
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Description</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Quantity</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Cost</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Location</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cost</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Location</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-700">
                   @for (item of data.data; track item.id) {
-                    <tr class="hover:bg-slate-700/50 transition-colors duration-150">
+                    <tr class="hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors duration-150">
                       <td class="px-6 py-4">
                         <input
                           type="checkbox"
                           [checked]="isSelected(item.id)"
                           (change)="toggleItem(item.id)"
-                          class="rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500"
+                          class="rounded border-slate-600 bg-slate-100 dark:bg-slate-700 text-amber-500 focus:ring-amber-500"
                         />
                       </td>
                       <td class="px-6 py-4">
@@ -113,14 +113,14 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                           {{ item.name }}
                         </a>
                       </td>
-                      <td class="px-6 py-4 text-slate-300">
+                      <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
                         <div class="max-w-xs truncate">{{ item.description || '-' }}</div>
                       </td>
-                      <td class="px-6 py-4 text-slate-300">{{ item.quantity | number }}</td>
-                      <td class="px-6 py-4 text-slate-300">
-                        {{ item.cost ? formatCurrency(item.cost) : '-' }}
+                      <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.quantity | number }}</td>
+                      <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                        {{ item.unitValue ? formatCurrency(item.unitValue) : '-' }}
                       </td>
-                      <td class="px-6 py-4 text-slate-300">{{ item.location || '-' }}</td>
+                      <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.location || '-' }}</td>
                       <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end space-x-2">
                           <a [routerLink]="['/inventory', item.id, 'edit']"
@@ -143,7 +143,7 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
             <!-- Mobile cards -->
             <div class="md:hidden space-y-4 p-4">
               @for (item of data.data; track item.id) {
-                <div class="bg-slate-700 p-4 rounded-lg">
+                <div class="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
                   <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center space-x-3">
                       <input
@@ -152,7 +152,7 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                         (change)="toggleItem(item.id)"
                         class="rounded border-slate-600 bg-slate-600 text-amber-500 focus:ring-amber-500"
                       />
-                      <h3 class="font-medium text-slate-100">{{ item.name }}</h3>
+                      <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ item.name }}</h3>
                     </div>
                     <div class="flex space-x-2">
                       <a [routerLink]="['/inventory', item.id, 'edit']"
@@ -169,12 +169,12 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                   
                   <div class="space-y-2 text-sm">
                     @if (item.description) {
-                      <p class="text-slate-300">{{ item.description }}</p>
+                      <p class="text-slate-600 dark:text-slate-300">{{ item.description }}</p>
                     }
-                    <div class="flex flex-wrap gap-4 text-slate-400">
+                    <div class="flex flex-wrap gap-4 text-slate-500 dark:text-slate-400">
                       <span>Qty: {{ item.quantity }}</span>
-                      @if (item.cost) {
-                        <span>Cost: {{ formatCurrency(item.cost) }}</span>
+                      @if (item.unitValue) {
+                        <span>Cost: {{ formatCurrency(item.unitValue) }}</span>
                       }
                       @if (item.location) {
                         <span>Location: {{ item.location }}</span>
@@ -193,28 +193,28 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
             </div>
 
             <!-- Pagination -->
-            @if (data.meta.total_pages > 1) {
-              <div class="px-6 py-4 border-t border-slate-700 bg-slate-750">
+            @if (data.pagination.totalPages > 1) {
+              <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-750">
                 <div class="flex items-center justify-between">
-                  <p class="text-sm text-slate-400">
-                    Showing {{ ((data.meta.page - 1) * data.meta.per_page) + 1 }} to 
-                    {{ Math.min(data.meta.page * data.meta.per_page, data.meta.total) }} of 
-                    {{ data.meta.total }} results
+                  <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Showing {{ ((data.pagination.page - 1) * data.pagination.pageSize) + 1 }} to 
+                    {{ Math.min(data.pagination.page * data.pagination.pageSize, data.pagination.totalItems) }} of 
+                    {{ data.pagination.totalItems }} results
                   </p>
                   <div class="flex items-center space-x-2">
                     <button
-                      [disabled]="data.meta.page <= 1"
-                      (click)="changePage(data.meta.page - 1)"
-                      class="px-3 py-2 text-sm bg-slate-700 text-slate-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-600">
+                      [disabled]="data.pagination.page <= 1"
+                      (click)="changePage(data.pagination.page - 1)"
+                      class="px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-600">
                       Previous
                     </button>
-                    <span class="px-4 py-2 text-sm text-slate-300">
-                      Page {{ data.meta.page }} of {{ data.meta.total_pages }}
+                    <span class="px-4 py-2 text-sm text-slate-600 dark:text-slate-300">
+                      Page {{ data.pagination.page }} of {{ data.pagination.totalPages }}
                     </span>
                     <button
-                      [disabled]="data.meta.page >= data.meta.total_pages"
-                      (click)="changePage(data.meta.page + 1)"
-                      class="px-3 py-2 text-sm bg-slate-700 text-slate-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-600">
+                      [disabled]="data.pagination.page >= data.pagination.totalPages"
+                      (click)="changePage(data.pagination.page + 1)"
+                      class="px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-600">
                       Next
                     </button>
                   </div>
@@ -226,8 +226,8 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
             <!-- Empty state -->
             <div class="px-6 py-12 text-center">
               <div class="text-6xl mb-4">📦</div>
-              <h3 class="text-lg font-medium text-slate-100 mb-2">No items found</h3>
-              <p class="text-slate-400 mb-6">Get started by adding your first inventory item.</p>
+              <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">No items found</h3>
+              <p class="text-slate-500 dark:text-slate-400 mb-6">Get started by adding your first inventory item.</p>
               <a routerLink="/inventory/new" 
                  class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-6 py-3 rounded-lg transition-colors duration-200">
                 Add First Item
@@ -239,9 +239,9 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
 
       <!-- Loading state -->
       @if (isLoading()) {
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-12 text-center">
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center">
           <div class="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p class="text-slate-400">Loading items...</p>
+          <p class="text-slate-500 dark:text-slate-400">Loading items...</p>
         </div>
       }
     </div>
@@ -253,18 +253,18 @@ export class InventoryListComponent implements OnInit {
 
   itemsData = signal<PaginatedItems | null>(null);
   isLoading = signal(false);
-  selectedItems = signal<string[]>([]);
+  selectedItems = signal<number[]>([]);
 
   Math = Math; // Make Math available in template
 
   filterForm = this.fb.group({
     search: [''],
-    per_page: [25]
+    pageSize: [25]
   });
 
   private currentFilters: ItemFilters = {
     page: 1,
-    per_page: 25
+    pageSize: 25
   };
 
   ngOnInit(): void {
@@ -284,8 +284,8 @@ export class InventoryListComponent implements OnInit {
     });
 
     // Per page changes
-    this.filterForm.get('per_page')?.valueChanges.subscribe(per_page => {
-      this.currentFilters.per_page = Number(per_page);
+    this.filterForm.get('pageSize')?.valueChanges.subscribe(pageSize => {
+      this.currentFilters.pageSize = Number(pageSize);
       this.currentFilters.page = 1;
       this.loadItems();
     });
@@ -300,7 +300,7 @@ export class InventoryListComponent implements OnInit {
         // Clear selections when data changes
         this.selectedItems.set([]);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Failed to load items:', error);
         this.isLoading.set(false);
       }
@@ -312,11 +312,11 @@ export class InventoryListComponent implements OnInit {
     this.loadItems();
   }
 
-  isSelected(itemId: string): boolean {
+  isSelected(itemId: number): boolean {
     return this.selectedItems().includes(itemId);
   }
 
-  toggleItem(itemId: string): void {
+  toggleItem(itemId: number): void {
     const selected = this.selectedItems();
     if (selected.includes(itemId)) {
       this.selectedItems.set(selected.filter(id => id !== itemId));
@@ -353,7 +353,7 @@ export class InventoryListComponent implements OnInit {
         next: () => {
           this.loadItems();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Failed to delete item:', error);
           alert('Failed to delete item. Please try again.');
         }
@@ -364,16 +364,8 @@ export class InventoryListComponent implements OnInit {
   deleteSelected(): void {
     const count = this.selectedItems().length;
     if (confirm(`Are you sure you want to delete ${count} selected item${count > 1 ? 's' : ''}?`)) {
-      this.itemService.bulkDelete(this.selectedItems()).subscribe({
-        next: () => {
-          this.selectedItems.set([]);
-          this.loadItems();
-        },
-        error: (error) => {
-          console.error('Failed to delete items:', error);
-          alert('Failed to delete items. Please try again.');
-        }
-      });
+      // TODO: implement bulk delete
+      alert('Bulk delete not yet implemented in Angular version');
     }
   }
 

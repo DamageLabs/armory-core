@@ -15,17 +15,17 @@ export class ItemService {
     let params = new HttpParams();
     
     if (filters.search) params = params.set('search', filters.search);
-    if (filters.category_id) params = params.set('category_id', filters.category_id);
-    if (filters.inventory_type_id) params = params.set('inventory_type_id', filters.inventory_type_id);
+    if (filters.category) params = params.set('category', filters.category);
+    if (filters.typeId) params = params.set('typeId', filters.typeId.toString());
     if (filters.page) params = params.set('page', filters.page.toString());
-    if (filters.per_page) params = params.set('per_page', filters.per_page.toString());
-    if (filters.sort) params = params.set('sort', filters.sort);
-    if (filters.order) params = params.set('order', filters.order);
+    if (filters.pageSize) params = params.set('pageSize', filters.pageSize.toString());
+    if (filters.sortBy) params = params.set('sortBy', filters.sortBy);
+    if (filters.sortDir) params = params.set('sortDir', filters.sortDir);
 
     return this.http.get<PaginatedItems>(this.apiUrl, { params });
   }
 
-  getItem(id: string): Observable<Item> {
+  getItem(id: number): Observable<Item> {
     return this.http.get<Item>(`${this.apiUrl}/${id}`);
   }
 
@@ -33,17 +33,15 @@ export class ItemService {
     return this.http.post<Item>(this.apiUrl, item);
   }
 
-  updateItem(id: string, item: Partial<Item>): Observable<Item> {
+  updateItem(id: number, item: Partial<Item>): Observable<Item> {
     return this.http.put<Item>(`${this.apiUrl}/${id}`, item);
   }
 
-  deleteItem(id: string): Observable<void> {
+  deleteItem(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  bulkDelete(ids: string[]): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/bulk`, { 
-      body: { ids }
-    });
+  getStats(): Observable<{ totalItems: number; totalValue: number; totalQuantity: number }> {
+    return this.http.get<any>(`${this.apiUrl}/stats`);
   }
 }

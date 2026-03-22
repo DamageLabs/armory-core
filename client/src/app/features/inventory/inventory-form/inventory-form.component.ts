@@ -16,16 +16,16 @@ import { Item } from '../../../types/item';
       <div class="flex items-center space-x-4">
         <button 
           (click)="goBack()"
-          class="text-slate-400 hover:text-slate-300">
+          class="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:text-slate-300">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
         </button>
         <div>
-          <h1 class="text-3xl font-bold text-slate-100">
+          <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">
             {{ isEditMode() ? 'Edit Item' : 'Add New Item' }}
           </h1>
-          <p class="mt-1 text-slate-400">
+          <p class="mt-1 text-slate-500 dark:text-slate-400">
             {{ isEditMode() ? 'Update item information' : 'Create a new inventory item' }}
           </p>
         </div>
@@ -33,28 +33,28 @@ import { Item } from '../../../types/item';
 
       <!-- Error message -->
       @if (errorMessage()) {
-        <div class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg">
+        <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-50 text-red-200 px-4 py-3 rounded-lg">
           {{ errorMessage() }}
         </div>
       }
 
       <!-- Form -->
-      <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-6">
+      <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 space-y-6">
         
         <!-- Basic Information -->
         <div class="space-y-4">
-          <h2 class="text-lg font-semibold text-slate-100 border-b border-slate-700 pb-2">Basic Information</h2>
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2">Basic Information</h2>
           
           <!-- Name -->
           <div>
-            <label for="name" class="block text-sm font-medium text-slate-300 mb-1">
+            <label for="name" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
               Name <span class="text-red-400">*</span>
             </label>
             <input
               id="name"
               type="text"
               formControlName="name"
-              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               placeholder="Enter item name"
               [class.border-red-500]="itemForm.get('name')?.invalid && itemForm.get('name')?.touched"
             />
@@ -65,14 +65,14 @@ import { Item } from '../../../types/item';
 
           <!-- Description -->
           <div>
-            <label for="description" class="block text-sm font-medium text-slate-300 mb-1">
+            <label for="description" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
               Description
             </label>
             <textarea
               id="description"
               formControlName="description"
               rows="3"
-              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               placeholder="Enter item description">
             </textarea>
           </div>
@@ -80,7 +80,7 @@ import { Item } from '../../../types/item';
           <!-- Quantity and Cost -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label for="quantity" class="block text-sm font-medium text-slate-300 mb-1">
+              <label for="quantity" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
                 Quantity <span class="text-red-400">*</span>
               </label>
               <input
@@ -88,7 +88,7 @@ import { Item } from '../../../types/item';
                 type="number"
                 formControlName="quantity"
                 min="0"
-                class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 placeholder="0"
                 [class.border-red-500]="itemForm.get('quantity')?.invalid && itemForm.get('quantity')?.touched"
               />
@@ -98,7 +98,7 @@ import { Item } from '../../../types/item';
             </div>
             
             <div>
-              <label for="cost" class="block text-sm font-medium text-slate-300 mb-1">
+              <label for="cost" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
                 Cost
               </label>
               <input
@@ -107,7 +107,7 @@ import { Item } from '../../../types/item';
                 formControlName="cost"
                 min="0"
                 step="0.01"
-                class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 placeholder="0.00"
               />
             </div>
@@ -115,39 +115,39 @@ import { Item } from '../../../types/item';
 
           <!-- Location -->
           <div>
-            <label for="location" class="block text-sm font-medium text-slate-300 mb-1">
+            <label for="location" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
               Location
             </label>
             <input
               id="location"
               type="text"
               formControlName="location"
-              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               placeholder="Where is this item stored?"
             />
           </div>
 
           <!-- Notes -->
           <div>
-            <label for="notes" class="block text-sm font-medium text-slate-300 mb-1">
+            <label for="notes" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
               Notes
             </label>
             <textarea
               id="notes"
               formControlName="notes"
               rows="3"
-              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               placeholder="Additional notes about this item">
             </textarea>
           </div>
         </div>
 
         <!-- Form actions -->
-        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-slate-700">
+        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-slate-200 dark:border-slate-700">
           <button
             type="button"
             (click)="goBack()"
-            class="px-6 py-3 text-slate-400 hover:text-slate-300 font-medium transition-colors duration-200">
+            class="px-6 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:text-slate-300 font-medium transition-colors duration-200">
             Cancel
           </button>
           <button
@@ -191,7 +191,7 @@ export class InventoryFormComponent implements OnInit {
       cost: [null, Validators.min(0)],
       location: [''],
       notes: [''],
-      custom_fields: [{}]
+      customFields: [{}]
     });
   }
 
@@ -208,7 +208,7 @@ export class InventoryFormComponent implements OnInit {
     if (!this.itemId) return;
     
     this.isLoading.set(true);
-    this.itemService.getItem(this.itemId).subscribe({
+    this.itemService.getItem(Number(this.itemId)).subscribe({
       next: (item) => {
         this.itemForm.patchValue(item);
         this.isLoading.set(false);
@@ -229,7 +229,7 @@ export class InventoryFormComponent implements OnInit {
       const formData = this.itemForm.value;
       
       const request = this.isEditMode() && this.itemId 
-        ? this.itemService.updateItem(this.itemId, formData)
+        ? this.itemService.updateItem(Number(this.itemId), formData)
         : this.itemService.createItem(formData);
 
       request.subscribe({

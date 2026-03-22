@@ -9,7 +9,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   standalone: true,
   imports: [CommonModule, RouterModule, HeaderComponent, SidebarComponent],
   template: `
-    <div class="min-h-screen bg-slate-900">
+    <div class="min-h-screen bg-slate-100 dark:bg-slate-900">
       
       <!-- Sidebar -->
       <app-sidebar #sidebar></app-sidebar>

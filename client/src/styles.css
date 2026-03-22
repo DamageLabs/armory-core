@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 /* Global styles */
 * {
   box-sizing: border-box;
@@ -10,8 +12,17 @@ html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* Light mode (default) */
 body { 
   margin: 0; 
+  background: #f8fafc;
+  color: #0f172a;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Dark mode */
+.dark body,
+body:is(.dark *) {
   background: #0f1629;
   color: #f1f5f9;
 }

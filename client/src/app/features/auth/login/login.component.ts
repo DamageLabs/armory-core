@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
-    <div class="min-h-screen bg-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div class="max-w-md w-full space-y-8">
         
         <!-- Header -->
@@ -17,13 +17,13 @@ import { AuthService } from '../../../core/services/auth.service';
           <div class="mx-auto w-16 h-16 bg-amber-500 rounded-xl flex items-center justify-center mb-4">
             <span class="text-slate-900 font-bold text-2xl">A</span>
           </div>
-          <h2 class="text-3xl font-bold text-slate-100">Sign in to Armory Core</h2>
-          <p class="mt-2 text-slate-400">Manage your inventory with ease</p>
+          <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Sign in to Armory Core</h2>
+          <p class="mt-2 text-slate-500 dark:text-slate-400">Manage your inventory with ease</p>
         </div>
 
         <!-- Error message -->
         @if (errorMessage()) {
-          <div class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg">
+          <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-50 text-red-200 px-4 py-3 rounded-lg">
             {{ errorMessage() }}
           </div>
         }
@@ -33,14 +33,14 @@ import { AuthService } from '../../../core/services/auth.service';
           
           <!-- Email -->
           <div>
-            <label for="email" class="block text-sm font-medium text-slate-300 mb-1">
+            <label for="email" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
               Email address
             </label>
             <input
               id="email"
               type="email"
               formControlName="email"
-              class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               placeholder="Enter your email"
               [class.border-red-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
             />
@@ -51,14 +51,14 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <!-- Password -->
           <div>
-            <label for="password" class="block text-sm font-medium text-slate-300 mb-1">
+            <label for="password" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
               Password
             </label>
             <input
               id="password"
               type="password"
               formControlName="password"
-              class="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               placeholder="Enter your password"
               [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
             />
@@ -87,7 +87,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <!-- Register link -->
           <div class="text-center">
-            <p class="text-slate-400">
+            <p class="text-slate-500 dark:text-slate-400">
               Don't have an account? 
               <a routerLink="/register" class="text-amber-400 hover:text-amber-300 font-medium">
                 Sign up

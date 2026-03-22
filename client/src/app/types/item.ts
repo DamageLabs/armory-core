@@ -1,35 +1,39 @@
 export interface Item {
-  id: string;
+  id: number;
   name: string;
   description: string;
-  category_id?: string;
-  inventory_type_id?: string;
-  custom_fields: Record<string, any>;
-  cost?: number;
   quantity: number;
-  location?: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
+  unitValue: number;
+  value: number;
+  picture: string | null;
+  category: string;
+  location: string;
+  barcode: string;
+  reorderPoint: number;
+  inventoryTypeId: number;
+  customFields: Record<string, any>;
+  parentItemId: number | null;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PaginatedItems {
   data: Item[];
-  meta: {
-    total: number;
+  pagination: {
     page: number;
-    per_page: number;
-    total_pages: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
   };
 }
 
 export interface ItemFilters {
   search?: string;
-  category_id?: string;
-  inventory_type_id?: string;
+  category?: string;
+  typeId?: number;
   page?: number;
-  per_page?: number;
-  sort?: string;
-  order?: 'asc' | 'desc';
+  pageSize?: number;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
 }
