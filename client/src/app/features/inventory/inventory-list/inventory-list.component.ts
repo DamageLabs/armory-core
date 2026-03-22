@@ -123,8 +123,11 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                           }
                         </div>
                         @if (item.parent_name) {
-                          <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            Attached to: {{ item.parent_name }}
+                          <div class="mt-1">
+                            <span class="text-xs text-slate-500 dark:text-slate-400">Attached to:</span>
+                            <span class="inline-flex items-center px-2 py-0.5 ml-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              {{ item.parent_name }}
+                            </span>
                           </div>
                         }
                       </td>
@@ -180,9 +183,12 @@ import { Item, PaginatedItems, ItemFilters } from '../../../types/item';
                           }
                         </div>
                         @if (item.parent_name) {
-                          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            Attached to: {{ item.parent_name }}
-                          </p>
+                          <div class="mt-1">
+                            <span class="text-xs text-slate-500 dark:text-slate-400">Attached to:</span>
+                            <span class="inline-flex items-center px-2 py-0.5 ml-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              {{ item.parent_name }}
+                            </span>
+                          </div>
                         }
                       </div>
                     </div>
