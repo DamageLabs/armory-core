@@ -658,27 +658,37 @@ import { Item } from '../../../types/item';
                 <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                   <div class="divide-y divide-slate-200 dark:divide-slate-700">
                     @for (receipt of receipts(); track receipt.id) {
-                      <div class="p-4 flex items-center justify-between">
-                        <div class="flex-1">
-                          <h4 class="text-slate-900 dark:text-slate-100 font-medium">{{ receipt.originalName }}</h4>
-                          <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center space-x-4">
-                            <span>{{ formatFileSize(receipt.size) }}</span>
-                            <span>{{ formatDate(receipt.createdAt) }}</span>
+                      <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                          <div class="flex-1">
+                            <h4 class="text-slate-900 dark:text-slate-100 font-medium">{{ receipt.originalName }}</h4>
+                            <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center space-x-4">
+                              <span>{{ formatFileSize(receipt.sizeBytes) }}</span>
+                              <span>{{ formatDate(receipt.createdAt) }}</span>
+                            </div>
+                          </div>
+                          <div class="flex items-center space-x-3">
+                            <a
+                              [href]="receiptService.getReceiptDownloadUrl(receipt.id)"
+                              download
+                              class="text-amber-500 hover:text-amber-600 text-sm font-medium">
+                              Download
+                            </a>
+                            <button
+                              (click)="deleteReceipt(receipt.id)"
+                              class="text-red-500 hover:text-red-600 text-sm font-medium">
+                              Delete
+                            </button>
                           </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                          <a
-                            [href]="receiptService.getReceiptDownloadUrl(receipt.id)"
-                            download
-                            class="text-amber-500 hover:text-amber-600 text-sm font-medium">
-                            Download
-                          </a>
-                          <button
-                            (click)="deleteReceipt(receipt.id)"
-                            class="text-red-500 hover:text-red-600 text-sm font-medium">
-                            Delete
-                          </button>
-                        </div>
+                        @if (receipt.mimeType?.startsWith('image/')) {
+                          <div class="mt-2">
+                            <img 
+                              [src]="receiptService.getReceiptDownloadUrl(receipt.id)" 
+                              [alt]="receipt.originalName"
+                              class="max-w-full max-h-96 rounded-lg border border-slate-200 dark:border-slate-700 object-contain" />
+                          </div>
+                        }
                       </div>
                     }
                   </div>

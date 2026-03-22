@@ -8,9 +8,9 @@ export interface Receipt {
   filename: string;
   originalName: string;
   mimeType: string;
-  size: number;
+  sizeBytes: number;
+  category: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 @Injectable({
