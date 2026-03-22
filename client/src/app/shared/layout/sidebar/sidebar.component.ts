@@ -70,11 +70,12 @@ export class SidebarComponent {
   navItems: NavItem[] = [
     { label: 'Dashboard', icon: '📊', route: '/' },
     { label: 'Inventory', icon: '📦', route: '/inventory' },
+    { label: 'BOMs', icon: '📋', route: '/boms' },
     { label: 'Import/Export', icon: '🔄', route: '/settings/data' },
     { label: 'Users', icon: '👥', route: '/admin/users', adminOnly: true },
     { label: 'Categories', icon: '🏷️', route: '/admin/categories', adminOnly: true },
     { label: 'Types', icon: '⚙️', route: '/admin/inventory-types', adminOnly: true },
-    { label: 'Audit Log', icon: '📋', route: '/admin/audit-log', adminOnly: true }
+    { label: 'Audit Log', icon: '🗂️', route: '/admin/audit-log', adminOnly: true }
   ];
 
   toggle(): void {

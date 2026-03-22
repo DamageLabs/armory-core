@@ -39,6 +39,24 @@ export const routes: Routes = [
         loadComponent: () => import('./features/inventory/inventory-form/inventory-form.component').then(m => m.InventoryFormComponent)
       },
       
+      // BOM routes
+      {
+        path: 'boms',
+        loadComponent: () => import('./features/bom/bom-list/bom-list.component').then(m => m.BomListComponent)
+      },
+      {
+        path: 'boms/new',
+        loadComponent: () => import('./features/bom/bom-form/bom-form.component').then(m => m.BomFormComponent)
+      },
+      {
+        path: 'boms/:id',
+        loadComponent: () => import('./features/bom/bom-detail/bom-detail.component').then(m => m.BomDetailComponent)
+      },
+      {
+        path: 'boms/:id/edit',
+        loadComponent: () => import('./features/bom/bom-form/bom-form.component').then(m => m.BomFormComponent)
+      },
+      
       // Settings routes
       {
         path: 'settings/data',

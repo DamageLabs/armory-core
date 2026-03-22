@@ -703,19 +703,19 @@ import { Item } from '../../../types/item';
                             {{ formatDate(entry.timestamp) }}
                           </td>
                           <td class="py-3 px-4">
-                            <span [class]="getChangeTypeClass(entry.change_amount)" 
+                            <span [class]="getChangeTypeClass(entry)" 
                                   class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
-                              {{ entry.change_type }}
+                              {{ entry.changeType }}
                             </span>
                           </td>
                           <td class="py-3 px-4 text-right text-slate-600 dark:text-slate-300">
-                            {{ entry.old_quantity }}
+                            {{ entry.previousQuantity }}
                           </td>
                           <td class="py-3 px-4 text-right text-slate-600 dark:text-slate-300">
-                            {{ entry.new_quantity }}
+                            {{ entry.newQuantity }}
                           </td>
                           <td class="py-3 px-4 text-slate-600 dark:text-slate-300">
-                            {{ entry.reason || '-' }}
+                            {{ entry.notes || '-' }}
                           </td>
                         </tr>
                       }
@@ -1162,13 +1162,27 @@ export class InventoryDetailComponent implements OnInit {
     return Object.entries(customFields || {}).map(([key, value]) => ({ key, value }));
   }
 
-  getChangeTypeClass(changeAmount: number): string {
-    if (changeAmount > 0) {
-      return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
-    } else if (changeAmount < 0) {
-      return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+  getChangeTypeClass(entry: any): string {
+    switch (entry.changeType) {
+      case 'created':
+        return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+      case 'deleted':
+        return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+      case 'quantity_change':
+        const quantityChange = (entry.newQuantity || 0) - (entry.previousQuantity || 0);
+        if (quantityChange > 0) {
+          return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+        } else if (quantityChange < 0) {
+          return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+        }
+        return 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200';
+      case 'value_change':
+        return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+      case 'category_change':
+        return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
+      default:
+        return 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200';
     }
-    return 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200';
   }
 
   formatCurrency(value: number): string {
