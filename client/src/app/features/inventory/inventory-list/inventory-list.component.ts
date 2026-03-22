@@ -22,7 +22,7 @@ import { SavedFilter } from '../../../types/saved-filter';
           <p class="mt-1 text-slate-500 dark:text-slate-400">Manage your inventory items</p>
         </div>
         <a routerLink="/inventory/new" 
-           class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200 text-center">
+           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200 text-center">
           Add Item
         </a>
       </div>
@@ -311,7 +311,7 @@ import { SavedFilter } from '../../../types/saved-filter';
               <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">No items found</h3>
               <p class="text-slate-500 dark:text-slate-400 mb-6">Get started by adding your first inventory item.</p>
               <a routerLink="/inventory/new" 
-                 class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-6 py-3 rounded-lg transition-colors duration-200">
+                 class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200">
                 Add First Item
               </a>
             </div>
@@ -358,7 +358,7 @@ import { SavedFilter } from '../../../types/saved-filter';
               <button
                 type="submit"
                 [disabled]="saveFilterForm.invalid"
-                class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-slate-900 disabled:text-slate-500 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+                class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white disabled:text-slate-200 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
                 Save Filter
               </button>
             </div>

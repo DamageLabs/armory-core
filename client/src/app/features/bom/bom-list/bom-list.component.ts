@@ -18,7 +18,7 @@ import { Bom } from '../../../types/bom';
           <p class="mt-1 text-slate-500 dark:text-slate-400">Manage your BOMs and track component costs</p>
         </div>
         <a routerLink="/boms/new" 
-           class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200 text-center">
+           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200 text-center">
           Create BOM
         </a>
       </div>
@@ -102,7 +102,7 @@ import { Bom } from '../../../types/bom';
             <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">No BOMs found</h3>
             <p class="text-slate-500 dark:text-slate-400 mb-6">Get started by creating your first Bill of Materials.</p>
             <a routerLink="/boms/new" 
-               class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-6 py-3 rounded-lg transition-colors duration-200">
+               class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200">
               Create First BOM
             </a>
           </div>

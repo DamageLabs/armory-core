@@ -22,7 +22,7 @@ import { InventoryType } from '../../types/inventory-type';
         </div>
         <button
           (click)="showAddForm = true"
-          class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200">
           🛒 Add to Wishlist
         </button>
       </div>
@@ -221,7 +221,7 @@ import { InventoryType } from '../../types/inventory-type';
               <button
                 type="submit"
                 [disabled]="addForm.invalid || isSubmitting()"
-                class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-slate-900 disabled:text-slate-500 px-4 py-2 rounded-lg transition-colors">
+                class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white disabled:text-slate-200 px-4 py-2 rounded-lg transition-colors">
                 {{ isSubmitting() ? 'Adding...' : 'Add to Wishlist' }}
               </button>
             </div>
@@ -242,7 +242,7 @@ import { InventoryType } from '../../types/inventory-type';
             <p class="text-slate-500 dark:text-slate-400 mb-4">Start building your wishlist by adding items you want to purchase.</p>
             <button
               (click)="showAddForm = true"
-              class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-2 rounded-lg transition-colors">
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
               Add First Item
             </button>
           </div>
@@ -455,7 +455,7 @@ import { InventoryType } from '../../types/inventory-type';
                   <button
                     type="submit"
                     [disabled]="editForm.invalid || isSubmitting()"
-                    class="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-slate-900 disabled:text-slate-500 px-4 py-2 rounded-lg transition-colors">
+                    class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white disabled:text-slate-200 px-4 py-2 rounded-lg transition-colors">
                     {{ isSubmitting() ? 'Saving...' : 'Save Changes' }}
                   </button>
                 </div>
