@@ -74,6 +74,7 @@ export class SidebarComponent {
     { label: 'Portfolio Value', icon: '💰', route: '/reports/portfolio' },
     { label: 'Insurance Report', icon: '🛡️', route: '/reports/insurance' },
     { label: 'Expirations', icon: '⏰', route: '/reports/expiration' },
+    { label: 'Stock History', icon: '📜', route: '/reports/stock-history' },
     { label: 'Import/Export', icon: '🔄', route: '/settings/data' },
     { label: 'Wishlist', icon: '🛒', route: '/wishlist' },
     { label: 'Users', icon: '👥', route: '/admin/users', adminOnly: true },

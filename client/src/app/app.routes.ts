@@ -73,6 +73,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reports/expiration/expiration-report.component').then(m => m.ExpirationReportComponent),
         canActivate: [authGuard]
       },
+      {
+        path: 'reports/stock-history',
+        loadComponent: () => import('./features/reports/stock-history/stock-history-report.component').then(m => m.StockHistoryReportComponent),
+        canActivate: [authGuard]
+      },
       
       // Wishlist routes
       {
