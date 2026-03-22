@@ -311,7 +311,7 @@ import { Item } from '../../../types/item';
                     
                     <button
                       (click)="duplicateItem()"
-                      class="block w-full text-center bg-slate-600 hover:bg-slate-500 text-slate-900 dark:text-slate-100 font-semibold px-4 py-3 rounded-lg transition-colors duration-200">
+                      class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-3 rounded-lg transition-colors duration-200">
                       Duplicate
                     </button>
                   </div>
