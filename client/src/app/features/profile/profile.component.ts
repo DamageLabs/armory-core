@@ -91,7 +91,7 @@ import { User } from '../../types/user';
                   <button
                     type="submit"
                     [disabled]="emailForm.invalid || isEmailLoading() || !emailForm.dirty"
-                    class="bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
                     @if (isEmailLoading()) {
                       <span class="flex items-center space-x-2">
                         <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
@@ -179,7 +179,7 @@ import { User } from '../../types/user';
                   <button
                     type="submit"
                     [disabled]="passwordForm.invalid || isPasswordLoading()"
-                    class="bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
                     @if (isPasswordLoading()) {
                       <span class="flex items-center space-x-2">
                         <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
