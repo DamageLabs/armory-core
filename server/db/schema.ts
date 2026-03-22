@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified INTEGER NOT NULL DEFAULT 0,
   email_verification_token TEXT,
   email_verification_token_expires_at TEXT,
+  avatar_filename TEXT DEFAULT '',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

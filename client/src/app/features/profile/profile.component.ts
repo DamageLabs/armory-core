@@ -263,23 +263,67 @@ import { User } from '../../types/user';
             <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
               <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Profile Photo</h2>
               
+              @if (avatarUpdateMessage(); as message) {
+                <div class="mb-4 p-3 rounded-lg" [class]="message.type === 'success' ? 'bg-green-500 bg-opacity-20 border border-green-500 border-opacity-50 text-green-200' : 'bg-red-500 bg-opacity-20 border border-red-500 border-opacity-50 text-red-200'">
+                  {{ message.text }}
+                </div>
+              }
+              
               <!-- Current Avatar -->
               <div class="flex flex-col items-center space-y-4">
-                <div class="w-24 h-24 bg-amber-500 rounded-full flex items-center justify-center">
-                  <span class="text-slate-900 font-bold text-3xl">
-                    {{ currentUser()?.email?.charAt(0)?.toUpperCase() || 'U' }}
-                  </span>
-                </div>
+                @if (currentUser()?.avatarUrl) {
+                  <img 
+                    [src]="currentUser()!.avatarUrl" 
+                    [alt]="currentUser()!.email + ' avatar'"
+                    class="w-24 h-24 bg-amber-500 rounded-full object-cover"
+                    (error)="onAvatarError($event)"
+                  />
+                } @else {
+                  <div class="w-24 h-24 bg-amber-500 rounded-full flex items-center justify-center">
+                    <span class="text-slate-900 font-bold text-3xl">
+                      {{ currentUser()?.email?.charAt(0)?.toUpperCase() || 'U' }}
+                    </span>
+                  </div>
+                }
                 
-                <!-- Upload Button (Disabled) -->
+                <!-- File Input (Hidden) -->
+                <input 
+                  #fileInput 
+                  type="file" 
+                  accept="image/*" 
+                  (change)="onAvatarSelected($event)"
+                  class="hidden"
+                />
+                
+                <!-- Upload Button -->
                 <button
-                  disabled
-                  class="bg-slate-600 opacity-50 cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg">
-                  Upload Photo
+                  (click)="fileInput.click()"
+                  [disabled]="isAvatarLoading()"
+                  class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                  @if (isAvatarLoading()) {
+                    <span class="flex items-center space-x-2">
+                      <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Uploading...</span>
+                    </span>
+                  } @else {
+                    Upload Photo
+                  }
                 </button>
                 
+                <!-- Remove Photo Button (only if avatar exists) -->
+                @if (currentUser()?.avatarUrl && !isAvatarLoading()) {
+                  <button
+                    (click)="removeAvatar()"
+                    class="text-red-500 hover:text-red-700 text-sm font-semibold transition-colors duration-200">
+                    Remove Photo
+                  </button>
+                }
+                
                 <p class="text-xs text-slate-500 dark:text-slate-400 text-center">
-                  Photo upload coming soon
+                  JPG, PNG, GIF or WebP. Max size: 5MB
                 </p>
               </div>
             </div>
@@ -303,6 +347,8 @@ export class ProfileComponent implements OnInit {
   emailUpdateMessage = signal<{type: 'success' | 'error', text: string} | null>(null);
   passwordUpdateMessage = signal<{type: 'success' | 'error', text: string} | null>(null);
   deleteAccountMessage = signal<{type: 'success' | 'error', text: string} | null>(null);
+  isAvatarLoading = signal(false);
+  avatarUpdateMessage = signal<{type: 'success' | 'error', text: string} | null>(null);
 
   constructor() {
     // Initialize forms
@@ -436,6 +482,113 @@ export class ProfileComponent implements OnInit {
           this.showDeleteConfirmation.set(false);
         }
       });
+    }
+  }
+
+  onAvatarSelected(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file size
+    if (file.size > 5 * 1024 * 1024) {
+      this.avatarUpdateMessage.set({
+        type: 'error',
+        text: 'File must be under 5MB'
+      });
+      return;
+    }
+
+    // Validate file type
+    if (!['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(file.type)) {
+      this.avatarUpdateMessage.set({
+        type: 'error',
+        text: 'File must be PNG, JPEG, GIF, or WebP'
+      });
+      return;
+    }
+
+    this.uploadAvatar(file);
+  }
+
+  uploadAvatar(file: File): void {
+    this.isAvatarLoading.set(true);
+    this.avatarUpdateMessage.set(null);
+
+    this.authService.uploadAvatar(file).subscribe({
+      next: (response) => {
+        this.isAvatarLoading.set(false);
+        this.avatarUpdateMessage.set({
+          type: 'success',
+          text: 'Avatar updated successfully!'
+        });
+
+        // Update the current user with new avatar URL
+        const currentUser = this.currentUser();
+        if (currentUser) {
+          const updatedUser = { 
+            ...currentUser, 
+            avatarUrl: response.avatarUrl 
+          };
+          this.authService.updateStoredUser(updatedUser);
+        }
+
+        // Clear message after 3 seconds
+        setTimeout(() => this.avatarUpdateMessage.set(null), 3000);
+      },
+      error: (error) => {
+        this.isAvatarLoading.set(false);
+        this.avatarUpdateMessage.set({
+          type: 'error',
+          text: error.error?.error || 'Failed to upload avatar. Please try again.'
+        });
+      }
+    });
+  }
+
+  removeAvatar(): void {
+    this.isAvatarLoading.set(true);
+    this.avatarUpdateMessage.set(null);
+
+    this.authService.deleteAvatar().subscribe({
+      next: () => {
+        this.isAvatarLoading.set(false);
+        this.avatarUpdateMessage.set({
+          type: 'success',
+          text: 'Avatar removed successfully!'
+        });
+
+        // Update the current user to remove avatar URL
+        const currentUser = this.currentUser();
+        if (currentUser) {
+          const updatedUser = { 
+            ...currentUser, 
+            avatarUrl: null 
+          };
+          this.authService.updateStoredUser(updatedUser);
+        }
+
+        // Clear message after 3 seconds
+        setTimeout(() => this.avatarUpdateMessage.set(null), 3000);
+      },
+      error: (error) => {
+        this.isAvatarLoading.set(false);
+        this.avatarUpdateMessage.set({
+          type: 'error',
+          text: error.error?.error || 'Failed to remove avatar. Please try again.'
+        });
+      }
+    });
+  }
+
+  onAvatarError(event: any): void {
+    // If avatar fails to load, hide it by updating the user
+    const currentUser = this.currentUser();
+    if (currentUser) {
+      const updatedUser = { 
+        ...currentUser, 
+        avatarUrl: null 
+      };
+      this.authService.updateStoredUser(updatedUser);
     }
   }
 }

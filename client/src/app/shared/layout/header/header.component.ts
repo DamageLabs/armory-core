@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { User } from '../../../types/user';
 
 @Component({
   selector: 'app-header',
@@ -59,11 +60,20 @@ import { ThemeService } from '../../services/theme.service';
                 </div>
                 
                 <!-- User avatar -->
-                <div class="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
-                  <span class="text-slate-900 font-medium text-sm">
-                    {{ user.email.charAt(0).toUpperCase() }}
-                  </span>
-                </div>
+                @if (user.avatarUrl) {
+                  <img 
+                    [src]="user.avatarUrl" 
+                    [alt]="user.email + ' avatar'"
+                    class="w-8 h-8 bg-amber-500 rounded-full object-cover"
+                    (error)="onAvatarError($event, user)"
+                  />
+                } @else {
+                  <div class="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
+                    <span class="text-slate-900 font-medium text-sm">
+                      {{ user.email.charAt(0).toUpperCase() }}
+                    </span>
+                  </div>
+                }
               </button>
               
               <!-- Logout button -->
@@ -101,5 +111,14 @@ export class HeaderComponent {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  onAvatarError(event: any, user: User): void {
+    // If avatar fails to load, update the user to remove the avatar URL
+    const updatedUser = { 
+      ...user, 
+      avatarUrl: null 
+    };
+    this.authService.updateStoredUser(updatedUser);
   }
 }

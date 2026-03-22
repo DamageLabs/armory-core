@@ -113,4 +113,23 @@ export class AuthService {
       })
     );
   }
+
+  uploadAvatar(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post('/api/auth/avatar', formData);
+  }
+
+  deleteAvatar(): Observable<any> {
+    return this.http.delete('/api/auth/avatar');
+  }
+
+  getAvatarUrl(userId: number): string {
+    return `/api/auth/avatar/${userId}`;
+  }
+
+  updateStoredUser(user: User): void {
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
 }
