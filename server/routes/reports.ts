@@ -12,6 +12,7 @@ interface ReportItem {
   manufacturer: string | null;
   condition: string | null;
   unitValue: number;
+  quantity: number;
   value: number;
   location: string;
   createdAt: string;
@@ -37,6 +38,7 @@ router.get('/insurance', (req: Request, res: Response) => {
         i.name,
         i.category,
         i.unit_value as unitValue,
+        i.quantity,
         i.value,
         i.location,
         i.custom_fields as customFields,
@@ -77,6 +79,7 @@ router.get('/insurance', (req: Request, res: Response) => {
         manufacturer: customFields.manufacturer || null,
         condition: customFields.condition || null,
         unitValue: item.unitValue || 0,
+        quantity: item.quantity || 1,
         value: item.value || 0,
         location: item.location || '',
         createdAt: item.createdAt,
@@ -85,7 +88,7 @@ router.get('/insurance', (req: Request, res: Response) => {
     });
 
     const totalItems = items.length;
-    const totalValue = items.reduce((sum, item) => sum + (item.unitValue || 0), 0);
+    const totalValue = items.reduce((sum, item) => sum + ((item.unitValue || 0) * (item.quantity || 1)), 0);
 
     const response: InsuranceReportResponse = {
       generatedAt: new Date().toISOString(),

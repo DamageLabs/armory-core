@@ -104,7 +104,7 @@ router.get('/portfolio', (req: Request, res: Response) => {
 
     // Get all current items for baseline
     const currentItems = queryAll(`
-      SELECT id, name, category, unit_value as value, created_at 
+      SELECT id, name, category, (quantity * unit_value) as value, created_at 
       FROM items 
       ORDER BY created_at ASC
     `);
