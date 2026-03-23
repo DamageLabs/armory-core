@@ -1264,12 +1264,18 @@ export class InventoryDetailComponent implements OnInit {
     const itemData = this.item();
     if (!itemData) return;
 
-    const duplicateData = {
-      ...itemData,
+    const duplicateData: any = {
       name: `${itemData.name} (Copy)`,
-      id: undefined,
-      createdAt: undefined,
-      updatedAt: undefined
+      description: itemData.description || '',
+      quantity: itemData.quantity || 1,
+      unitValue: itemData.unitValue || 0,
+      category: itemData.category || '',
+      location: itemData.location || '',
+      inventoryTypeId: itemData.inventoryTypeId || 1,
+      customFields: itemData.customFields || {},
+      parentItemId: itemData.parentItemId || null,
+      expirationDate: itemData.expirationDate || null,
+      expirationNotes: itemData.expirationNotes || '',
     };
 
     this.itemService.createItem(duplicateData).subscribe({
@@ -1288,11 +1294,14 @@ export class InventoryDetailComponent implements OnInit {
   }
 
   hasCustomFields(customFields: Record<string, any>): boolean {
-    return customFields && Object.keys(customFields).length > 0;
+    if (!customFields) return false;
+    return Object.entries(customFields).some(([_, value]) => value !== null && value !== undefined && value !== '' && value !== '-');
   }
 
   getCustomFieldEntries(customFields: Record<string, any>): { key: string; value: any }[] {
-    return Object.entries(customFields || {}).map(([key, value]) => ({ key, value }));
+    return Object.entries(customFields || {})
+      .filter(([_, value]) => value !== null && value !== undefined && value !== '' && value !== '-')
+      .map(([key, value]) => ({ key, value }));
   }
 
   getChangeTypeClass(entry: any): string {
