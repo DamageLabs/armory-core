@@ -19,6 +19,7 @@ export class ItemService {
     
     if (filters.search) params = params.set('search', filters.search);
     if (filters.category) params = params.set('category', filters.category);
+    if (filters.location) params = params.set('location', filters.location);
     if (filters.typeId) params = params.set('typeId', filters.typeId.toString());
     if (filters.page) params = params.set('page', filters.page.toString());
     if (filters.pageSize) params = params.set('pageSize', filters.pageSize.toString());
@@ -62,6 +63,10 @@ export class ItemService {
 
   getStats(): Observable<{ totalItems: number; totalValue: number; totalQuantity: number }> {
     return this.http.get<any>(`${this.apiUrl}/stats`);
+  }
+
+  getLocations(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/locations`);
   }
 
   getExpiringItems(days?: number): Observable<Item[]> {

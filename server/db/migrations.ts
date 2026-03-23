@@ -369,6 +369,13 @@ export function runMigrations(db: Database.Database): void {
     }
   });
 
+  // v008: Add is_location column to items
+  runOnce(db, 'v008', 'Add is_location column to items', (db) => {
+    if (!hasColumn(db, 'items', 'is_location')) {
+      db.exec("ALTER TABLE items ADD COLUMN is_location INTEGER NOT NULL DEFAULT 0");
+    }
+  });
+
   // Always recalc firearm values to ensure consistency (not a migration, just maintenance)
   recalcAllFirearmValues(db);
 }

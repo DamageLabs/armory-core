@@ -135,25 +135,33 @@ router.get('/stats', (req: Request, res: Response) => {
   }
 });
 
-// GET /locations — Return distinct locations including gun safe names
+// GET /locations — Return distinct locations including gun safe names and items marked as locations
 router.get('/locations', (req: Request, res: Response) => {
   try {
     const db = getDatabase();
     
     // Add user_id filtering for non-admin users
     const userFilter = req.user?.role !== 'admin' ? 'AND user_id = ?' : '';
-    const userValues = req.user?.role !== 'admin' ? [req.user?.userId, req.user?.userId] : [];
     
-    const safes = db.prepare(
-      `SELECT name FROM items WHERE category = 'Gun Safes' ${userFilter} ORDER BY name`
-    ).all(...(req.user?.role !== 'admin' ? [req.user?.userId] : [])) as { name: string }[];
+    // Get existing location strings
     const existing = db.prepare(
       `SELECT DISTINCT location FROM items WHERE location != '' ${userFilter} ORDER BY location`
     ).all(...(req.user?.role !== 'admin' ? [req.user?.userId] : [])) as { location: string }[];
+    
+    // Get gun safes (legacy support)
+    const safes = db.prepare(
+      `SELECT name FROM items WHERE category = 'Gun Safes' ${userFilter} ORDER BY name`
+    ).all(...(req.user?.role !== 'admin' ? [req.user?.userId] : [])) as { name: string }[];
+    
+    // Get items marked as locations
+    const locationItems = db.prepare(
+      `SELECT name FROM items WHERE is_location = 1 ${userFilter} ORDER BY name`
+    ).all(...(req.user?.role !== 'admin' ? [req.user?.userId] : [])) as { name: string }[];
 
     const locationSet = new Set<string>();
-    for (const s of safes) locationSet.add(s.name);
     for (const e of existing) locationSet.add(e.location);
+    for (const s of safes) locationSet.add(s.name);
+    for (const l of locationItems) locationSet.add(l.name);
 
     res.json([...locationSet].sort());
   } catch (error) {
@@ -318,6 +326,7 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
           userId: req.user?.userId, // Set to current user
           expirationDate: item.expirationDate || null,
           expirationNotes: item.expirationNotes || '',
+          isLocation: item.isLocation ? 1 : 0,
           createdAt: now,
           updatedAt: now,
         }, JSON_FIELDS) as Record<string, unknown>;
@@ -355,6 +364,7 @@ router.post('/bulk-create', validate(bulkCreateSchema), (req: Request, res: Resp
           userId: req.user?.userId, // Set to current user
           expirationDate: item.expirationDate || null,
           expirationNotes: item.expirationNotes || '',
+          isLocation: item.isLocation ? 1 : 0,
           createdAt: now,
           updatedAt: now,
         }, JSON_FIELDS) as Record<string, unknown>;
@@ -618,7 +628,7 @@ router.get('/:id', (req: Request, res: Response) => {
 router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
   try {
     const now = new Date().toISOString();
-    const { name, description, quantity, unitValue, picture, category, location, barcode, reorderPoint, inventoryTypeId, customFields, parentItemId, expirationDate, expirationNotes } = req.body;
+    const { name, description, quantity, unitValue, picture, category, location, barcode, reorderPoint, inventoryTypeId, customFields, parentItemId, expirationDate, expirationNotes, isLocation } = req.body;
     const typeId = inventoryTypeId || 1;
     const qty = quantity || 0;
     const uv = unitValue || 0;
@@ -650,6 +660,7 @@ router.post('/', validate(createItemSchema), (req: Request, res: Response) => {
       userId: req.user?.userId, // Always set to the current user
       expirationDate: expirationDate || null,
       expirationNotes: expirationNotes || '',
+      isLocation: isLocation ? 1 : 0,
       createdAt: now,
       updatedAt: now,
     }, JSON_FIELDS);
@@ -699,6 +710,10 @@ router.put('/:id', validate(updateItemSchema), (req: Request, res: Response) => 
     // Firearms: value = unitValue (children added separately via recalc)
     // Others: value = quantity * unitValue
     merged.value = firearm ? uv : qty * uv;
+    // Convert isLocation boolean to integer for database
+    if (merged.isLocation !== undefined) {
+      merged.isLocation = merged.isLocation ? 1 : 0;
+    }
     delete merged.id;
 
     const oldParentId = existing.parentItemId as number | null;

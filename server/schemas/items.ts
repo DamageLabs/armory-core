@@ -15,6 +15,7 @@ export const createItemSchema = z.object({
   parentItemId: z.number().int().positive().nullable().default(null),
   expirationDate: z.string().nullable().default(null),
   expirationNotes: z.string().default(''),
+  isLocation: z.boolean().optional(),
 });
 
 export const updateItemSchema = z.object({
@@ -32,6 +33,7 @@ export const updateItemSchema = z.object({
   parentItemId: z.number().int().positive().nullable().optional(),
   expirationDate: z.string().nullable().optional(),
   expirationNotes: z.string().optional(),
+  isLocation: z.boolean().optional(),
 });
 
 const bulkItemSchema = z.object({
@@ -49,6 +51,7 @@ const bulkItemSchema = z.object({
   parentItemId: z.number().nullable().default(null),
   expirationDate: z.string().nullable().default(null),
   expirationNotes: z.string().default(''),
+  isLocation: z.boolean().optional(),
   id: z.number().optional(),
 });
 
