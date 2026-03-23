@@ -4,6 +4,7 @@ export interface User {
   role: 'admin' | 'user';
   signInCount: number;
   lastSignInAt: string | null;
+  avatarUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }

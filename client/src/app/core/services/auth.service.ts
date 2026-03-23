@@ -85,6 +85,22 @@ export class AuthService {
     this.isAuthenticated.set(false);
   }
 
+  updateProfile(id: number, data: { email?: string; password?: string; currentPassword?: string }): Observable<User> {
+    return this.http.put<User>(`/api/auth/profile/${id}`, data).pipe(
+      tap(updatedUser => {
+        // Update stored user data if email was changed
+        if (data.email) {
+          localStorage.setItem(this.userKey, JSON.stringify(updatedUser));
+          this.currentUserSubject.next(updatedUser);
+        }
+      })
+    );
+  }
+
+  deleteAccount(id: number): Observable<{message: string}> {
+    return this.http.delete<{message: string}>(`/api/auth/profile/${id}`);
+  }
+
   checkAuthStatus(): Observable<User> {
     return this.http.get<User>('/api/auth/me').pipe(
       tap(user => {
@@ -96,5 +112,24 @@ export class AuthService {
         return of(null as any);
       })
     );
+  }
+
+  uploadAvatar(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post('/api/auth/avatar', formData);
+  }
+
+  deleteAvatar(): Observable<any> {
+    return this.http.delete('/api/auth/avatar');
+  }
+
+  getAvatarUrl(userId: number): string {
+    return `/api/auth/avatar/${userId}`;
+  }
+
+  updateStoredUser(user: User): void {
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 }

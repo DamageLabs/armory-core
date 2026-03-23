@@ -1,9 +1,13 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { userQueries, rateLimitQueries, getDatabase } from '../db';
 import { sendVerificationEmail } from '../services/emailService';
 import { hashPassword, verifyPassword } from '../utils/password';
-import { signToken } from '../middleware/auth';
+import { signToken, requireAuth } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { registerSchema, loginSchema, verifyEmailSchema, emailSchema, updateProfileSchema } from '../schemas/auth';
 import { logAudit } from '../services/auditService';
@@ -12,6 +16,38 @@ const router = Router();
 
 // Token expiry duration (24 hours)
 const TOKEN_EXPIRY_HOURS = 24;
+
+// Avatar upload configuration
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const AVATARS_DIR = process.env.AVATARS_PATH || path.join(__dirname, '../../data/avatars');
+
+if (!fs.existsSync(AVATARS_DIR)) {
+  fs.mkdirSync(AVATARS_DIR, { recursive: true });
+}
+
+const ALLOWED_AVATAR_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'] as const;
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
+
+const avatarStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, AVATARS_DIR),
+  filename: (_req, file, cb) => {
+    const uuid = crypto.randomUUID();
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${uuid}${ext || '.jpg'}`);
+  },
+});
+
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  limits: { fileSize: MAX_AVATAR_SIZE },
+  fileFilter: (_req, file, cb) => {
+    if ((ALLOWED_AVATAR_TYPES as readonly string[]).includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Unsupported file type. Allowed: PNG, JPEG, GIF, WebP'));
+    }
+  },
+});
 
 function generateToken(): string {
   return crypto.randomUUID();
@@ -22,6 +58,149 @@ function getTokenExpiryDate(): string {
   date.setHours(date.getHours() + TOKEN_EXPIRY_HOURS);
   return date.toISOString();
 }
+
+// POST /api/auth/avatar — upload avatar for current user
+router.post('/avatar', requireAuth, (req: Request, res: Response) => {
+  uploadAvatar.single('file')(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        res.status(400).json({ error: 'File must be under 5MB' });
+        return;
+      }
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    if (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    if (!req.file) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+
+    try {
+      const db = getDatabase();
+      const userId = req.user!.userId;
+      
+      // Get current user to check for existing avatar
+      const currentUser = db.prepare('SELECT avatar_filename FROM users WHERE id = ?').get(userId) as { avatar_filename?: string } | undefined;
+      
+      // Delete old avatar file if it exists
+      if (currentUser?.avatar_filename) {
+        const oldFilePath = path.join(AVATARS_DIR, currentUser.avatar_filename);
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+      
+      // Update user with new avatar filename
+      const now = new Date().toISOString();
+      db.prepare('UPDATE users SET avatar_filename = ?, updated_at = ? WHERE id = ?').run(
+        req.file.filename,
+        now,
+        userId
+      );
+
+      logAudit({
+        userId: req.user!.userId,
+        userEmail: req.user!.email,
+        action: 'user.avatar_uploaded',
+        resourceType: 'user',
+        resourceId: userId,
+        details: { filename: req.file.filename },
+      });
+
+      res.status(201).json({ 
+        message: 'Avatar uploaded successfully',
+        avatarUrl: `/api/auth/avatar/${userId}`
+      });
+    } catch (error) {
+      // Clean up uploaded file on error
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      console.error('Error saving avatar:', error);
+      res.status(500).json({ error: 'Failed to save avatar' });
+    }
+  });
+});
+
+// GET /api/auth/avatar/:userId — serve avatar image (NO auth required)
+router.get('/avatar/:userId', (req: Request, res: Response) => {
+  try {
+    const userId = parseInt(req.params.userId, 10);
+    
+    const user = getDatabase().prepare('SELECT avatar_filename FROM users WHERE id = ?').get(userId) as { avatar_filename?: string } | undefined;
+    
+    if (!user || !user.avatar_filename) {
+      res.status(404).json({ error: 'Avatar not found' });
+      return;
+    }
+
+    const filePath = path.join(AVATARS_DIR, user.avatar_filename);
+    if (!fs.existsSync(filePath)) {
+      res.status(404).json({ error: 'Avatar file not found' });
+      return;
+    }
+
+    // Set appropriate content type based on file extension
+    const ext = path.extname(user.avatar_filename).toLowerCase();
+    let contentType = 'image/jpeg'; // default
+    switch (ext) {
+      case '.png': contentType = 'image/png'; break;
+      case '.gif': contentType = 'image/gif'; break;
+      case '.webp': contentType = 'image/webp'; break;
+    }
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error('Error serving avatar:', error);
+    res.status(500).json({ error: 'Failed to serve avatar' });
+  }
+});
+
+// DELETE /api/auth/avatar — remove current user's avatar
+router.delete('/avatar', requireAuth, (req: Request, res: Response) => {
+  try {
+    const db = getDatabase();
+    const userId = req.user!.userId;
+    
+    // Get current user avatar
+    const user = db.prepare('SELECT avatar_filename FROM users WHERE id = ?').get(userId) as { avatar_filename?: string } | undefined;
+    
+    if (!user || !user.avatar_filename) {
+      res.status(404).json({ error: 'No avatar to remove' });
+      return;
+    }
+
+    // Delete the file
+    const filePath = path.join(AVATARS_DIR, user.avatar_filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    // Clear avatar_filename in database
+    const now = new Date().toISOString();
+    db.prepare('UPDATE users SET avatar_filename = "", updated_at = ? WHERE id = ?').run(now, userId);
+
+    logAudit({
+      userId: req.user!.userId,
+      userEmail: req.user!.email,
+      action: 'user.avatar_deleted',
+      resourceType: 'user',
+      resourceId: userId,
+      details: { filename: user.avatar_filename },
+    });
+
+    res.json({ message: 'Avatar removed successfully' });
+  } catch (error) {
+    console.error('Error deleting avatar:', error);
+    res.status(500).json({ error: 'Failed to delete avatar' });
+  }
+});
 
 // POST /api/auth/register
 router.post('/register', validate(registerSchema), async (req: Request, res: Response) => {
@@ -206,6 +385,9 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response)
 
     logAudit({ userId: user.id, userEmail: user.email, action: 'user.login', resourceType: 'user', resourceId: user.id });
 
+    // Get updated user data including avatar
+    const updatedUser = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id) as Record<string, unknown>;
+    
     res.json({
       token,
       user: {
@@ -216,6 +398,7 @@ router.post('/login', validate(loginSchema), async (req: Request, res: Response)
         lastSignInAt: now,
         lastSignInIp: clientIp,
         emailVerified: true,
+        avatarUrl: updatedUser.avatar_filename ? `/api/auth/avatar/${user.id}` : null,
         createdAt: user.createdAt,
         updatedAt: now,
       },
@@ -272,6 +455,7 @@ router.put('/profile/:id', validate(updateProfileSchema), async (req: Request, r
         lastSignInAt: updatedRow.last_sign_in_at,
         lastSignInIp: updatedRow.last_sign_in_ip,
         emailVerified: updatedRow.email_verified === 1,
+        avatarUrl: updatedRow.avatar_filename ? `/api/auth/avatar/${id}` : null,
         createdAt: updatedRow.created_at,
         updatedAt: updatedRow.updated_at,
       },
@@ -318,9 +502,11 @@ router.post('/sync', validate(loginSchema), async (req: Request, res: Response) 
 
     res.json({
       user: {
+        id: user.id,
         email: user.email,
         role: user.role,
         emailVerified: user.emailVerified,
+        avatarUrl: user.avatarFilename ? `/api/auth/avatar/${user.id}` : null,
       }
     });
   } catch (error) {

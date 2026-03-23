@@ -362,6 +362,13 @@ export function runMigrations(db: Database.Database): void {
     db.exec('CREATE INDEX IF NOT EXISTS idx_wishlist_priority ON wishlist_items(priority)');
   });
 
+  // v007: Add avatar column to users
+  runOnce(db, 'v007', 'Add avatar column to users', (db) => {
+    if (tableExists(db, 'users') && !hasColumn(db, 'users', 'avatar_filename')) {
+      db.exec("ALTER TABLE users ADD COLUMN avatar_filename TEXT DEFAULT ''");
+    }
+  });
+
   // Always recalc firearm values to ensure consistency (not a migration, just maintenance)
   recalcAllFirearmValues(db);
 }
