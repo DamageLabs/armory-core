@@ -19,6 +19,7 @@ export interface Item {
   expirationDate?: string;
   expirationNotes?: string;
   expirationStatus?: 'expired' | 'warning' | 'good';
+  isLocation?: boolean;
   // Additional fields from API joins
   child_count?: number;
   parent_name?: string;
@@ -37,6 +38,7 @@ export interface PaginatedItems {
 export interface ItemFilters {
   search?: string;
   category?: string;
+  location?: string;
   typeId?: number;
   page?: number;
   pageSize?: number;

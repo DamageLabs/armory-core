@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS items (
   user_id INTEGER REFERENCES users(id),
   expiration_date TEXT,
   expiration_notes TEXT DEFAULT '',
+  is_location INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

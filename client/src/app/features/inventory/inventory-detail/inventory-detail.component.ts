@@ -46,7 +46,14 @@ import { Item } from '../../../types/item';
               </svg>
             </button>
             <div>
-              <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">{{ itemData.name }}</h1>
+              <div class="flex items-center space-x-3">
+                <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">{{ itemData.name }}</h1>
+                @if (itemData.isLocation) {
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                    📦 Storage Location
+                  </span>
+                }
+              </div>
               @if (itemData.description) {
                 <p class="mt-1 text-slate-500 dark:text-slate-400">{{ itemData.description }}</p>
               }
@@ -238,6 +245,56 @@ import { Item } from '../../../types/item';
                               </td>
                               <td class="py-3 px-3 text-right">
                                 <a [routerLink]="['/inventory', child.id, 'edit']" 
+                                   class="text-amber-400 hover:text-amber-300 text-sm font-medium">
+                                  Edit
+                                </a>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
+
+                <!-- Items stored here (when this item is a location) -->
+                @if (itemData.isLocation && storedItems().length > 0) {
+                  <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-between mb-4">
+                      <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        Items Stored Here ({{ storedItems().length }})
+                      </h2>
+                      <div class="text-sm text-slate-500 dark:text-slate-400">
+                        Total Value: {{ formatCurrency(storedItems().reduce((sum, item) => sum + (item.unitValue * item.quantity), 0)) }}
+                      </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                      <table class="w-full">
+                        <thead class="border-b border-slate-200 dark:border-slate-700">
+                          <tr>
+                            <th class="text-left py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
+                            <th class="text-left py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                            <th class="text-right py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quantity</th>
+                            <th class="text-right py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Value</th>
+                            <th class="text-right py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                          @for (storedItem of storedItems(); track storedItem.id) {
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                              <td class="py-3 px-3">
+                                <a [routerLink]="['/inventory', storedItem.id]" class="text-amber-400 hover:text-amber-300 font-medium">
+                                  {{ storedItem.name }}
+                                </a>
+                              </td>
+                              <td class="py-3 px-3 text-slate-600 dark:text-slate-300">{{ storedItem.category || '-' }}</td>
+                              <td class="py-3 px-3 text-right text-slate-600 dark:text-slate-300">{{ storedItem.quantity | number }}</td>
+                              <td class="py-3 px-3 text-right text-slate-600 dark:text-slate-300">
+                                {{ storedItem.unitValue ? formatCurrency(storedItem.unitValue * storedItem.quantity) : '-' }}
+                              </td>
+                              <td class="py-3 px-3 text-right">
+                                <a [routerLink]="['/inventory', storedItem.id, 'edit']" 
                                    class="text-amber-400 hover:text-amber-300 text-sm font-medium">
                                   Edit
                                 </a>
@@ -792,6 +849,7 @@ export class InventoryDetailComponent implements OnInit {
 
   item = signal<Item | null>(null);
   children = signal<Item[]>([]);
+  storedItems = signal<Item[]>([]);
   isLoading = signal(false);
   errorMessage = signal('');
   isSubmitting = signal(false);
@@ -845,6 +903,10 @@ export class InventoryDetailComponent implements OnInit {
         this.item.set(item);
         this.loadChildren(item.id);
         this.loadNoteCount(item.id);
+        // If this item is a location, load items stored here
+        if (item.isLocation) {
+          this.loadStoredItems(item.name);
+        }
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -873,6 +935,21 @@ export class InventoryDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to load note count:', error);
+      }
+    });
+  }
+
+  private loadStoredItems(locationName: string): void {
+    // Get all items that have this item's name as their location
+    this.itemService.getItems({ location: locationName, pageSize: 1000 }).subscribe({
+      next: (response) => {
+        // Filter out the current item to avoid self-reference
+        const filtered = response.data.filter(item => item.id !== this.item()?.id);
+        this.storedItems.set(filtered);
+      },
+      error: (error) => {
+        console.error('Failed to load stored items:', error);
+        this.storedItems.set([]);
       }
     });
   }

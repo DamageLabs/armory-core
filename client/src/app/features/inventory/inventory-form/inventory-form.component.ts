@@ -153,6 +153,24 @@ import { InventoryType, FieldDefinition } from '../../../types/inventory-type';
             }
           </div>
 
+          <!-- Item as Storage Location -->
+          <div>
+            <div class="flex items-center space-x-3">
+              <input
+                id="isLocation"
+                type="checkbox"
+                formControlName="isLocation"
+                class="w-4 h-4 text-amber-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded focus:ring-amber-500 focus:ring-2"
+              />
+              <label for="isLocation" class="block text-sm font-medium text-slate-600 dark:text-slate-300">
+                This item is a storage location
+              </label>
+            </div>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              This item can store other items (e.g., gun safe, range bag, case)
+            </p>
+          </div>
+
           <!-- Parent Item -->
           <div>
             <label for="parentItemId" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
@@ -406,7 +424,8 @@ export class InventoryFormComponent implements OnInit {
       inventoryTypeId: [null],
       customFields: [{}],
       expirationDate: [null],
-      expirationNotes: ['']
+      expirationNotes: [''],
+      isLocation: [false]
     });
   }
 
@@ -604,6 +623,9 @@ export class InventoryFormComponent implements OnInit {
       if (!formData.expirationNotes) {
         formData.expirationNotes = '';
       }
+
+      // Ensure isLocation is a boolean
+      formData.isLocation = Boolean(formData.isLocation);
       
       const request = this.isEditMode() && this.itemId 
         ? this.itemService.updateItem(Number(this.itemId), formData)
