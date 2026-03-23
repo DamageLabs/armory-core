@@ -533,9 +533,20 @@ export class InventoryFormComponent implements OnInit {
       
       // Map form fields to backend API fields
       if (formData.cost !== null && formData.cost !== undefined) {
-        formData.unitValue = formData.cost;
+        formData.unitValue = Number(formData.cost);
         delete formData.cost;
       }
+      
+      // Ensure numeric fields are numbers (form inputs return strings)
+      if (formData.quantity !== null && formData.quantity !== undefined) {
+        formData.quantity = Number(formData.quantity);
+      }
+      if (formData.inventoryTypeId) {
+        formData.inventoryTypeId = Number(formData.inventoryTypeId);
+      }
+      
+      // Remove notes field (not part of item schema)
+      delete formData.notes;
       
       // Convert empty string to null for parentItemId
       if (formData.parentItemId === '' || formData.parentItemId === undefined) {
