@@ -120,13 +120,37 @@ import { InventoryType, FieldDefinition } from '../../../types/inventory-type';
             <label for="location" class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
               Location
             </label>
-            <input
-              id="location"
-              type="text"
-              formControlName="location"
-              class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              placeholder="Where is this item stored?"
-            />
+            @if (!customLocation()) {
+              <div class="flex gap-2">
+                <select
+                  id="location"
+                  formControlName="location"
+                  class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                  <option value="">Select location...</option>
+                  @for (loc of locations(); track loc) {
+                    <option [value]="loc">{{ loc }}</option>
+                  }
+                </select>
+                <button type="button" (click)="customLocation.set(true); itemForm.get('location')?.setValue('')"
+                        class="px-3 py-2 text-sm text-blue-500 hover:text-blue-400 border border-slate-600 rounded-lg whitespace-nowrap">
+                  + New
+                </button>
+              </div>
+            } @else {
+              <div class="flex gap-2">
+                <input
+                  id="location"
+                  type="text"
+                  formControlName="location"
+                  class="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  placeholder="Enter new location (e.g., Gun Safe A)"
+                />
+                <button type="button" (click)="customLocation.set(false)"
+                        class="px-3 py-2 text-sm text-slate-400 hover:text-slate-300 border border-slate-600 rounded-lg whitespace-nowrap">
+                  ← List
+                </button>
+              </div>
+            }
           </div>
 
           <!-- Parent Item -->
@@ -364,6 +388,8 @@ export class InventoryFormComponent implements OnInit {
   itemId: string | null = null;
   availableParents = signal<Item[]>([]);
   inventoryTypes = signal<InventoryType[]>([]);
+  locations = signal<string[]>([]);
+  customLocation = signal(false);
   selectedInventoryType = signal<InventoryType | null>(null);
   customFieldGroups = signal<{[key: string]: FieldDefinition[]}>({});
   activeCustomFieldTab = signal<string>('Details');
@@ -388,6 +414,7 @@ export class InventoryFormComponent implements OnInit {
     this.itemId = this.route.snapshot.paramMap.get('id');
     this.loadAvailableParents();
     this.loadInventoryTypes();
+    this.loadLocations();
     
     // Watch for inventory type changes
     this.itemForm.get('inventoryTypeId')?.valueChanges.subscribe((typeId) => {
@@ -417,6 +444,19 @@ export class InventoryFormComponent implements OnInit {
       error: (error) => {
         console.error('Failed to load available parents:', error);
         // Don't show error for this - it's not critical
+      }
+    });
+  }
+
+  private loadLocations(): void {
+    this.itemService.getLocations().subscribe({
+      next: (locs) => {
+        this.locations.set(locs);
+        // If editing and current location isn't in list, switch to custom
+        const currentLoc = this.itemForm.get('location')?.value;
+        if (currentLoc && !locs.includes(currentLoc)) {
+          this.customLocation.set(true);
+        }
       }
     });
   }
